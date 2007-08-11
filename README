@@ -1,0 +1,72 @@
+xzgv 0.8 - picture viewer for X, with thumbnail-based file selector.
+Copyright (C) 1999-2003 Russell Marks.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+Roadmap
+-------
+
+The COPYING file contains a copy of the GPL described above.
+
+The NEWS file describes the changes made in each version, so if you're
+upgrading from an old xzgv, be sure to read the relevant parts of
+that.
+
+ChangeLog is similar to NEWS, but more hacker-orientated. :-)
+
+See INSTALL for details of how to install.
+
+
+Description
+-----------
+
+xzgv is a picture viewer for X, with a thumbnail-based file selector.
+It uses GTK+ and Imlib. Most file formats are supported, and the
+thumbnails used are compatible with xv, zgv, and the Gimp. It can also
+be used with `xzgv file(s)', to effectively bypass the file selector.
+For more on how xzgv works and how to use it, do `info xzgv' or `man
+xzgv' once it's installed.
+
+xzgv differs from other picture viewers for X in that it uses one
+window for both the file selector and viewer, it (unlike xv) allows
+both scrolling and fit-to-window methods of viewing large pictures,
+and it (unlike xv and some others) doesn't ever mangle the picture's
+aspect ratio without you telling it to.
+
+It also provides extensive keyboard support; if you prefer using the
+keyboard, this is probably the best viewer for you. But it doesn't
+skimp on the mousey stuff, either.
+
+So anyway, it's just terribly great. :-)
+
+
+About use of GTK+ 1.x and Imlib 1.x
+-----------------------------------
+
+xzgv currently uses rather old libraries for the GUI and image
+rendering. I realise this is an issue, and both should be changed at
+some point. But realistically, this isn't going to be any time soon.
+
+
+Contacting me
+-------------
+
+You can email me at rus@svgalib.org.
+
+
+Share and enjoy! 
+
+-Rus.

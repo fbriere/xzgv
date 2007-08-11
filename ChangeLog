@@ -1,0 +1,1353 @@
+2005-12-21  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (do_logo_invert): fixed previous "*ptr++=255-*ptr",
+	which was obviously not too clever.
+
+2005-12-18  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/help.c (help_about): updated URL.
+
+	* src/logoconv.c: another missing string.h.
+
+	* src/resizepic.c: didn't include string.h previously, and should
+	have.
+
+2005-09-21  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readjpeg.c (read_jpeg_file): now supports YCCK/CMYK
+	colourspaces, as can be written by e.g. Photoshop. Thanks to
+	Michael Woerdehoff for pointing out the problem.
+
+2004-12-15  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readpng.c (read_png_file): bizarrely, I missed the
+	width/height limit on PNG before. :-( Added it now, thanks to
+	Ludwig Nussel for pointing this out.
+
+2004-11-03  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Added width/height limits to all native picture readers. This is
+	a crude (albeit effective) fix for heap overflow bugs - there may
+	yet be more subtle problems, but I can't really fix them until I
+	know they're there. :-) Thanks to Luke Macken for letting me know
+	about the heap overflow problems (in zgv). I suppose I should also
+	thank "infamous41md" for publishing the original advisory/exploit
+	(again for zgv), even if he didn't bother emailing me or anything.
+
+2003-09-16  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Version 0.8.
+
+	* src/help.c (help_about): now says what the program does. Which
+	is probably rather obvious, but what the heck. :-)
+
+	* src/main.c (viewer_expose): fixed long-standing bug with
+	interpolation, which could have resulted in segfaults (though it's
+	hard to say if it ever actually did).
+
+	* src/rcfile.c (usage_help): removed embedded LFs.
+
+	* src/readjpeg.c (get_exif_orientation): added support for the
+	Exif orientation tag (Exif in this context is a form of JPEG). If
+	you enable the "Use Exif Orientation" option in the viewer (or
+	`exif-orient' config/option), it'll compensate for the (e.g.)
+	digital camera's orientation when viewing, so pictures taken with
+	the camera side-on will display the way you would probably want
+	them to. However, since this differs from how most *other*
+	programs will see the files - which are, after all, carefully
+	constructed to be compatible with JFIF/JPEG files - and has the
+	potential to be extremely confusing if you don't know exactly
+	what's going on, it's not enabled by default. Thanks to Fraser
+	Wright for suggesting this feature.
+
+2003-07-10  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readpng.c (read_png_file): don't set background colour to
+	black for mono PNG files, where this may cause problems. This
+	change was ported from zgv; thanks to Morten Bo Johansen for
+	spotting it there.
+
+2003-04-05  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/makeman.awk: fixed some bugs which became apparent when run
+	with gawk 3.1.
+
+2003-02-01  Russell Marks  <russell.marks@ntlworld.com>
+
+	* INSTALL: added report of MacOS X compile, from
+	krisa@subtend.net.
+
+2002-08-22  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (selector_key_press): added 9/0 as yet another way of
+	doing file untag/tag. These are last-ditch alternatives for
+	keyboards where -/= don't make sense (some non-US/UK keyboards),
+	and where keypad -/+ aren't easily accessible (e.g. laptops).
+	Thanks to Szabó, Balázs for inspiring this one.
+
+2002-07-25  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (main): added call to gtk_set_locale() which should
+	hopefully avoid problems when GTK+'s default font is set to
+	something which isn't ASCII-friendly. Thanks to Alexander Pohoyda
+	for this one.
+
+2002-07-09  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (cb_hide_selector): stopped selector getting
+	permanently hidden if two middle-button presses were too close
+	together. Thanks to José Luis González González for spotting this.
+
+2002-03-03  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readgif.c (outputstring): broken GIFs could overrun a buffer
+	previously - fixed.
+
+2002-01-16  Russell Marks  <russell.marks@ntlworld.com>
+
+	* INSTALL: added IRIX success report. Thanks to Andreas Backhaus.
+
+2002-01-01  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readjpeg.c (read_jpeg_file): fixed post-image corruption
+	bug, so it shouldn't segfault now. (!) Now it should ignore any
+	errors which come after we've got an image (based on the idea that
+	since we do *have* an image, we should display it). Thanks to
+	Aaron Brick for spotting this one.
+
+2001-10-24  Russell Marks  <russell.marks@ntlworld.com>
+
+	* INSTALL: added Solaris success report. Thanks to Sven Goldt for
+	that. [And to Steven Bankowitz, who also reported success.]
+
+2001-09-20  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/rcfile.c (usage_help): fixed typo.
+
+2001-04-10  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Version 0.7.
+
+	* src/Makefile: whoops, `-lz' was missing. I usually got away
+	with this, but it did break in some cases (perhaps with Imlib
+	1.9.10?). Thanks to Gabor Z. Papp for pointing this out
+	(albeit, again, somewhat indirectly :-)).
+
+	* src/mkopts.awk: there isn't any reason I can't just use stdout
+	for error messages, so do that.
+
+	* src/updatetn.c (cb_update_tn): this'll be fun to explain. :-)
+	Ok... the non-recursive thumbnail update stops thumbnail reading
+	before doing the update (as does the recursive one, but never mind
+	that). Previously, if you pressed `u' soon enough after the
+	thumbnail-read had started, and only files a long way down in a
+	big directory needed new thumbnails, then you could be left with a
+	mostly-blank set of thumbnails onscreen for (say) a few seconds.
+	It now makes sure all thumbnails in the visible portion of the
+	list are read before it starts, rather like recursive update.
+
+	* src/backend.c: marking image as uncacheable seems to *very*
+	occasionally lead to a segfault (infrequently enough that I've
+	found this hard to track down), apparently due to unearthing a bug
+	in Imlib1's uncacheable-image code which is (I think) never
+	otherwise used. So we don't do that any more.
+
+2001-04-09  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Added support for PRF (ported from zgv), which is basically a
+	kind of extrapolated version of my old mrf format - unlike mrf,
+	PRF supports greyscale and colour. Thanks to Brian Raiter for both
+	devising the format, and writing the reference implementation
+	readprf.c is heavily based on.
+
+	* src/mkopts.awk: now detects running under an old awk, and
+	complains about it with a pointer to config.mk.
+
+2001-03-01  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: toggling all tags is now possible, with Alt-o or
+	Tagging/Toggle All.
+
+	* src/main.c: you can now move to the next/previous tagged file
+	with `/' and `?' respectively (or equivalent menu options). When
+	used in the viewer, this also views the file.
+	(init_window): moved `Tag then Next' to new viewer `Tagging' menu.
+
+	* src/main.c: fix for redraw-related position problem. (In 0.6,
+	try going to the end of the selector's list, pressing `v', then
+	pressing `v' again - the row positioning is slightly wrong.)
+	(init_window): added `Open' to selector `File' menu, and
+	rearranged the menu slightly; moved tagging commands to `Tagging'
+	menu.
+
+2001-02-03  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (set_title): no longer includes the version number in
+	the window title, as you can get this from both `xzgv --version'
+	and About on either Help menu.
+
+	* Added help menus. Currently just runs info on the relevant node,
+	but it's better than nothing I s'pose. :-)
+
+2001-01-16  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Added choice of timestamps to use when sorting in time/date
+	order - you can now choose mtime (default), ctime, or atime. You
+	can switch with alt-shift-m/c/a, or from selector menu's
+	Directory/Time & Date Type submenu, or with `sort-timestamp-type'
+	option/config. Thanks for Wolfram Kleff for suggesting this.
+
+	* src/main.c (viewer_key_press): you can now use shifted cursor
+	keys as an alternative means of paging up/down/left/right in the
+	viewer.
+	(selector_key_press): any `Menu' key you might have can now be
+	used to show the selector/viewer menus, just as right-clicking or
+	pressing F10 does.
+
+2000-12-28  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readtiff.c: didn't need to include rcfile.h.
+	(read_tiff_file): previously flipped the image incorrectly.
+
+2000-12-21  Russell Marks  <russell.marks@ntlworld.com>
+
+	* `make install' now uses slightly more friendly Debian-ish
+	permissions (755 for executable, 644 for docs).
+
+2000-12-15  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readgif.c (outputstring): copied new non-recursive
+	outputstring() across from zgv. No real advantage in xzgv, but
+	it saves a gratuitous inconsistency at least. :-) Oh,
+	actually, there is an advantage - this version shouldn't be
+	hangable even with badly broken GIFs.
+
+2000-12-14  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (cb_selection): made toggles which could possibly
+	affect the image display (in fact, did just about any which do
+	GTK+ stuff) ignore the toggle attempt if currently loading an
+	image. The main problem this fixes is the weirdness that used to
+	happen after toggling zoom while a picture was loading
+	(particularly when unzooming, and loading a `big' picture).
+
+2000-12-13  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readgif.c (decompress): inittable() shouldn't have trusted
+	code size to match numcols. It broke on a certain flavour of
+	unusual and suboptimal, but valid, GIF with less than 256 colours
+	(probably generated by a `broken' encoder). Thanks to Lenart
+	Janos, Josip Rodin, and Chris Lawrence for spotting this and/or
+	pushing the bug report to your friendly neighbourhood upstream
+	maintainer. :-)
+
+	* src/readjpeg.c (read_jpeg_file): sped things up a bit by reading
+	in a slightly less simplistic manner, and by not doing "fancy
+	upsampling" (doing this previously was the main reason why
+	Imlib1's reader was faster). Combined with the change below, this
+	makes native JPEG reading a teeny bit faster than Imlib1's, so
+	it's now done that way for non-thumbnail use too. Also added
+	`careful-jpeg' option/config, in case you want to leave it
+	enabled (seems to be about a 10% slowdown).
+
+	* src/backend.c (backend_create_image_from_data_destructively):
+	now properly implemented for Imlib1. The way I've done it is
+	slightly evil, but it speeds things up. ;-)
+
+	* doc/xzgv.texi (File Type Identification): this bit could
+	probably do with a rewrite, but at least it vaguely resembles
+	reality now. :-)
+
+	* src/readtiff.c: TIFF reader - uses libtiff. This means yet
+	another library dependancy :-/, but enough people seem to use xzgv
+	with TIFFs that it's probably worth doing properly.
+
+2000-12-10  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/updatetn.c (update_one_tn): now makes sure a page of
+	thumbnails is visible even when doing non-recursive update -
+	previously doing such an update before all thumbnails had been
+	read in would show blank spots during the update (unlike the
+	now-usual xzgv behaviour of loading onscreen thumbnails asap).
+	This only seems to slow it down fractionally (by about 0.5% in a
+	large dir full of small files in thin-rows mode), so I think it's
+	worth it to get the consistency.
+
+2000-11-24  Russell Marks  <russell.marks@ntlworld.com>
+
+	* INSTALL: added more 0.6 success/failure reports - thanks to
+	Joerg Reuter at SuSE.
+
+	* src/main.c (viewer_key_press): whoops, I broke alt-a/u from
+	viewer when I added ^a/^u - sorted that out.
+
+	* src/backend.c: added gdk-pixbuf backend (aimed at 0.9.0).
+	gdk-pixbuf doesn't quite provide everything xzgv needs, and seems
+	rather slower than Imlib1 at rendering *despite* avoiding some
+	unnecessary pixmap creation, so I don't see myself recommending
+	use of this any time soon. Anyway, it's there if you want to try
+	it. It doesn't support flip/mirror/rotate, or any
+	brightness/contrast/gamma changes (I suppose I'll get around to
+	these eventually, but expect them to be *slow* as gdk-pixbuf
+	doesn't provide native facilities for this stuff), and doesn't
+	support as many filetypes as Imlib1 (no fallback I suppose), but
+	the rest is there.
+
+2000-11-23  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/readjpeg.c: adapted readjpegtn.c so it's usable as a normal
+	JPEG reader too. Unfortunately this seems to be slower than Imlib1
+	at reading JPEGs :-) (probably because creating Imlib's image from
+	the RGB data involves copying it?), so it's still only used for
+	thumbnails.
+
+	* src/main.c (cb_delete_file): added `delete-single-prompt'
+	option (cmdline and config file) so you can disable the y/n
+	prompt when deleting a file, rather like zgv's `nodelprompt'.
+	Thanks to Martin Bialasinski for suggesting this.
+
+2000-11-21  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/xzgv.texi: case of chars in Alt-x and Ctrl-x forms should
+	now be uniformly lowercase.
+	(File Details): now mentions problem with zgv 5.0/5.1 generating
+	incorrect thumbnail width/height details (5.2 is ok).
+
+	* src/main.c: many keyboard navigation fixes/additions. Selector
+	and viewer now both support ^u/^v/^a/^e as alternatives to page
+	up/down and home/end. j/k in selector were fixed to behave more
+	like cursor up/down do.
+
+2000-11-20  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: concerted attempt to nail all the remaining
+	recursion problems. Now everything which even *thinks* of calling
+	render_pixmap() is protected. :-) This isn't perfect though, as
+	the protections are independent (do a mirror and flip at about the
+	same time, and it'll mess up), so I'll need a better fix
+	eventually.
+	(do_gtk_stuff): this is now a LOT smarter about what to do when
+	thumbnails are being loaded - fixes the bug where (while
+	thumbnails were being loaded) holding down space to storm through
+	N images got it very confused indeed.
+
+	* doc/xzgv.texi (Renaming a File): it's xzgv not zgv. :-)
+
+	* src/main.c (load_image): X windows are limited to a maximum size
+	of 32767x32767 pixels, and xzgv uses a GTK+ widget based on an X
+	window for its image. That's not the change, this is - previously,
+	my GIF/PNG/mrf file readers failed to notice the problem larger
+	images would cause, leading to a segfault - they now give an
+	error.
+	(cb_selection): now ensures focus is returned to selector when
+	changing dir, making the pastpos action clearer when using the
+	mouse (i.e. if you go down into a dir and then back up, the
+	keyboard cursor will show which dir you just left). Previously, if
+	you'd viewed an image before changing dir with the mouse, focus
+	would have remained on the image.
+
+	* src/updatetn.c: recursive thumbnail update no longer reads all
+	thumbnails before doing updates - it now only bothers to read
+	visible thumbnails. This makes the `fast-recursive-update' option
+	rather less useful, as it's nearly that fast already. :-)
+	(cb_update_tn_recursive_confirmed): previously didn't do pastpos
+	stuff to save/restore cursor row `around' recursive update -
+	fixed.
+
+2000-11-17  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Now adapts rendering method for big images. When the number of
+	pixels in the image exceeds the value set by
+	image-bigness-threshold (as set in config file or on command-line,
+	defaulting to 2 million pixels), it's drawn piece-by-piece on
+	demand rather than all-at-once. The all-at-once behaviour is worth
+	keeping around for smaller images, as it gives much nicer
+	scrolling - but for big images it's just impractical, hence this
+	feature.
+
+	* src/main.c: previously, when you scaled down as far as it would
+	go, it would never let you scale down again in the same way, due
+	to breaking an anti-recursion measure. Fixed that.
+
+2000-11-16  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/backend.c: wrapper for rendering backend. This is now (apart
+	from the Makefile) the only place with any Imlib1 dependence, so
+	this should make it easier (or rather, slightly less than
+	infinitely hard :-)) to switch backends if I decide to do that, or
+	to support multiple backends (choosing backend at compile time).
+
+2000-11-11  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/Makefile: replaced ifeq/ifneq with shell equivalent, which
+	turns out to be sufficient (if uglier). This should avoid the need
+	to use GNU make. Thanks to Frank Pohl for spotting this problem.
+
+2000-11-07  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Changed `install -m' invocations to do plain install and change
+	permissions after (with chmod). Thanks to Steven Bankowitz for
+	reminding me of `-m' being a problem on things like Solaris.
+
+2000-10-29  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (init_window): as must be traditional by now, I found
+	a bug almost immediately after the release. :-) Quite a minor one,
+	thankfully. Previously you could still toggle thin-rows while
+	running in the `xzgv file(s)' way, which was silly and made things
+	look strange. Harmless, but fixed now.
+
+2000-10-28  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Version 0.6.
+
+2000-10-27  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/filedetails.c (make_details_win): file details dialog now
+	works fully even when started with `xzgv file(s)' (previously the
+	details from any thumbnail were missing).
+
+2000-10-26  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c (cb_selection): before, when you used decoupled
+	scaling and then rotated a picture, it messed up when resetting
+	things for the next picture. Fixed that. (It swapping the scalings
+	inappropriately when setting picture orientation to either 0 or
+	the last picture's state.)
+	(reinit_dir): when rescanning the directory (in the control-r
+	sense :-)), the keyboard cursor now tries to stay at the same
+	place in dir list, for consistency with zgv and because it's just
+	nicer. Thanks to Philippe Marzouk for spotting this one.
+
+	* TODO: made into an outline to keep the less important stuff from
+	crowding out the things I should really be thinking about.
+
+2000-10-25  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/makeman.awk: previously, a one-line paragraph with a
+	formatting-type @-command would merge into the start of the next
+	paragraph.
+
+	* src/readgif.c (outputchr): was previously broken for interlaced
+	GIFs with less than 4 lines; this broke the heap, leading to
+	difficult-to-pin-down segfaults.
+
+	* INSTALL: generally updated and tidied up. Also added a section
+	reporting how past versions of xzgv (currently 0.5) have been said
+	to react on certain non-Linux/x86 systems.
+
+2000-10-23  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/copymove.c: now copes with copy/move when started as `xzgv
+	file(s)'. It's not perfect, in that the selector isn't updated (so
+	after a move things can be confusing), but at least it's usable.
+
+	* Made icon a bit less indistinct. :-)
+
+2000-10-22  Russell Marks  <russell.marks@ntlworld.com>
+
+	* You can now change the sorting order from the command-line with
+	`-o'/`--sort-order' (and from a config file similarly), which
+	takes a name/ext/size/date (or time) arg (though only the first
+	char is required).
+
+	* src/rcfile.c: if you omitted the arg to an option in a config
+	file, it would segfault. Fixed that, and applied brown paper
+	bag as appropriate. :-)
+
+	* src/rcfile.c (usage_help): usage help is now strictly sorted in
+	long-option order.
+	(geom_parse): would previously get stuck in an infinite loop if
+	given a bogus geometry arg.
+
+2000-10-17  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Added my own PNG reader (well, libpng interface :-)), ported
+	from zgv. This avoids the Imlib PNG problems (still present in
+	1.9.8, the latest version I've checked), such that greyscale
+	PNGs are now read correctly, and you no longer have the `now
+	it's purple, now it's not' problem with partly-transparent
+	PNGs. (Though that does still affect, for example, XPMs.) It
+	also seems to be slightly faster, but only very slightly. So
+	note that you now need to have png.h and pngconf.h available
+	when compiling xzgv (you already needed the *library* for
+	Imlib, but now you need the headers too).
+
+2000-10-10  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/makeman.awk: ported over zgv change - previously it didn't
+	output a correct NAME line (it used "-" rather than "\-").
+
+2000-10-07  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Since I've finally switched to using Emacs's c-mode, after
+	getting the indentation configured correctly with no bugs
+	getting in the way (I hope :-)), I've reindented everything
+	(other than getopt* and install-info.c) with it. The changes
+	are minor, obviously - essentially it's just lining things up
+	a bit more nicely, though some long lines in main.c had to be
+	mangled a bit to keep the line length under 80 chars.
+
+2000-09-30  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/rcfile.c: get_config() previously assumed $HOME was set.
+
+2000-09-25  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: added gamma support, but as with brightness/contrast
+	this is only available from the keyboard for now. The basic idea
+	is to ignore the rather unworkable image/screen gamma distinction,
+	and just use a relative gamma with fast shortcuts for common
+	cases. So pressing `1' gives a gamma adjustment of 1.0 (i.e. no
+	adjustment), `2' gives 2.2 (for e.g. viewing linear-gamma files on
+	an average PC monitor), `3' gives 1/2.2 (~0.45, for e.g. viewing
+	2.2-gamma files on a linear-gamma display), and `4' reverts to any
+	`--gamma' setting (or 1.0 if none was set). You can also use
+	alt-comma and alt-dot for more precise control of gamma
+	adjustment. Note that gamma is deliberately *not* reset by the
+	brightness/contrast resetting keys.
+
+2000-08-26  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/xzgv.texi (Invoking xzgv): --zoom-reduce-only line should
+	have been an `itemx' not an `item'.
+	(Rescanning the Directory): rephrased to avoid awkward repetition
+	of `however'.
+
+	* Changed `$(MAKE) -C foo bar' in Makefiles to the more portable
+	form `cd foo && $(MAKE) bar'.
+
+	* Unfortunately doc/makeman.awk really does require gawk (some
+	features of gensub are too difficult to do without), so I've
+	changed the Makefiles such that a prebuilt man page will come with
+	the xzgv tgz. This doesn't make the tgz much larger, and seems a
+	tolerable compromise for coping with gawkless systems.
+
+2000-08-24  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/Makefile: install-info uses getopt_long(), so it needs to
+	link with getopt.o and getopt1.o to avoid problems on non-glibc
+	systems. Thanks to Steven Bankowitz for the feedback on a Solaris
+	build which lead to this fix (and those below).
+
+	* src/install-info.c: now uses the bundled getopt.h rather than
+	assuming there's one on the system.
+
+	* config.mk: added AWK line, so you can specify the awk
+	interpreter to use. (A `new' awk is needed, so gawk is the
+	default, but nawk is another possibility.) This setting doesn't
+	yet apply to doc/makeman.awk, which is currently hardcoded to use
+	gawk since it requires a gawk extension. (One to fix later, I
+	suppose. :-))
+
+2000-08-17  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Version 0.5.
+
+2000-08-15  Russell Marks  <russell.marks@ntlworld.com>
+
+	* logo.c: whoops, still had a zgv header, fixed that. :-)
+
+	* TODO: checked up on does-this-still-happen bugs - most do still
+	happen. They're not major ones, I s'pose, but it's enough for the
+	next version to be 0.5 rather than the 1.0 I'd been considering.
+	:-/
+
+	* src/main.c: made the thumbnail loading's jumping-about
+	behaviour considerably smarter - it should be pretty optimal
+	now (given the requirement that it jump around to show
+	currently-visible stuff, that is).
+
+2000-08-04  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/libmmx-990416/mmx.h: fixed so it compiles even with
+	optimisation off, though I can't imagine why you'd compile it like
+	that. :-) Thanks to Gabor Z. Papp for pointing this out (albeit
+	somewhat indirectly).
+
+2000-07-25  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/gotodir.c: previously, jumping from a large dir to a large
+	dir (or even to a small dir, sometimes) could result in the
+	redrawing of the main window being noticeably delayed after the
+	dir-change window being destroyed - fixed that (mostly).
+
+2000-07-24  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: massively reduced *apparent* thumbnail load time, by
+	making it jump around to whichever part of the directory you're
+	currently looking at. :-) (It will eventually fill in any gaps,
+	when you stop moving around for long enough.)
+
+2000-07-13  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: added preliminary check when reading files from
+	command-line, to get rid of (at least in most cases) the
+	window-open-then-close ugliness you used to get before a `no
+	files' error message.
+
+2000-07-11  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: rows have been made 2 pixels taller, to allow room
+	for the outline cursor to go either side of the thumbnail rather
+	than potentially XORing over it. In addition to being a little
+	more aesthetically pleasing :-), this works around what seems to
+	be a GTK+ bug (as of 1.2.7 at least), where scrolling with the
+	cursor keys can leave part of the XOR'd cursor outline stuck on
+	the thumbnail (I suspect the pixmap is being drawn at the wrong
+	time). The extra pixel lines reduce the number of thumbnails
+	visible at once very slightly, which is unfortunate, but I really
+	think it's necessary.
+
+2000-07-10  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: fixed recursion problems in scaling. Thanks to
+	Steven Flintham for reminding me of this, and noting how badly it
+	affected decoupled scaling.
+
+2000-07-04  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: anti-clockwise rotation previously didn't swap x/y
+	scaling values, so when using decoupled scaling it screwed up.
+
+2000-06-28  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: fixed a significant memory leak, though you probably
+	wouldn't have noticed it unless you did a recursive thumbnail
+	update on a fairly well-populated hierarchy. I have a feeling this
+	fix *may* break older GTK+ versions; if changing directory
+	segfaults, you need to upgrade. :-) It's known to work on at least
+	GTK+ >=1.2.6.
+
+2000-06-27  Russell Marks  <russell.marks@ntlworld.com>
+
+	* doc/xzgv.texi: finally got around to documenting decoupled
+	scaling stuff. :-)
+
+	* doc/xzgv.texi (Viewer Options): listed keyboard shortcut for
+	zoom-reduce-only was wrong.
+
+	* src/options.src: added short option `-r' for zoom-reduce-only.
+	It's a useful enough option that it's worth having a shortcut. :-)
+
+	* src/main.c: added mouse shortcut for decoupled scaling. This is
+	quite a tricky one on the UI front, but the basic idea is that you
+	can scale only one axis directly from the mouse, as it were, with
+	ctrl-click and ctrl-right-click. You can change the axis to scale
+	(default is the Y axis) by using the axis toggle on the viewer
+	options menu (or by pressing alt-c). You can change the default by
+	enabling `mouse-scale-x', on the cmdline or in a config file.
+
+2000-06-08  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: added decoupled scaling - you can now scale x and y
+	axes of a picture independently. Thanks to Steven Flintham for
+	suggesting this. It's primarily for fixing aspect ratios on pics
+	intended for viewing with non-square pixels. Interpolation isn't
+	supported when the x scale doesn't equal the y scale.
+
+2000-05-11  Russell Marks  <russell.marks@ntlworld.com>
+
+	* config.mk: changed back to using -O2. It seems this doesn't
+	break anything any more. Presumably I'm now avoiding whatever
+	compiler bug was probably responsible for problems before. :^)
+
+2000-05-06  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: clicking on the viewer now moves to the next
+	image. Dragging the picture around still works - any mouse
+	movement at all during the click, and the picture gets dragged
+	instead. (If you want/need to disable this for some reason,
+	you can do so with `click-for-next off' in ~/.xzgvrc.) Thanks
+	to Paul E. Johnson for this idea.
+
+2000-05-03  Russell Marks  <russell.marks@ntlworld.com>
+
+	* src/main.c: previously, if you had auto-hide and zoom turned on,
+	then turned off auto-hide, the picture wasn't rezoomed when the
+	selector was shown - fixed that.
+
+	* src/libmmx-990416/mmx.h: fixed to work with gcc 2.95.x. Had to
+	remove eax from clobber list in mm_support(), and get rid of some
+	spurious colons after instructions. It now compiles
+	(and seems to work ok) with -DINTERP_MMX on at least three
+	different versions of gcc (thanks to Steven Flintham for testing
+	two of them :-)).
+
+2000-04-23  Russell Marks  <russell.marks@ntlworld.com>
+
+	* Updated email address everywhere (except below).
+
+2000-04-14  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* config.mk: now easier to install info file/man page in
+	FHS-friendly PREFIX/share (e.g. /usr/share/man/man1). However, the
+	traditional locations are still the default, as I suspect e.g.
+	/usr/local/share/man/man1 is much less widely accepted than
+	/usr/local/man/man1. If you're installing in /usr, though,
+	uncommenting the SHARE_INFIX line may be a good idea.
+
+2000-03-31  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* Version 0.4.
+
+	* README: removed mrf stuff which I suspect no-one cared about in
+	the first place. (Even I was getting tired of it, and I *use*
+	mrf... :-))
+
+2000-03-14  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* doc/xzgv.texi: documented cut/copy/paste in `goto dir' dialog.
+
+	* doc/xzgv.texi (Moving Around The List): removed link from after
+	"Mouse-happy types can freely skip it" comment, as it wasn't that
+	useful and would have looked odd in a printed copy... :-)
+
+	* src/main.c: you can now use j/k for down/up in the selector, as
+	vi-like alternatives to the cursor keys.
+
+2000-03-12  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* src/main.c: added brightness/contrast, which works in just the
+	same way as in zgv. No mouse equivalent yet though, as I'm having
+	some difficulty thinking of a reasonable way to do it. (I may even
+	end up (ab)using a modal dialog for it, which would be *odd* but
+	may be the least unreasonable approach given the way xzgv works in
+	general.) I'd ended up putting it off for a while to ponder this,
+	but in the end decided to get it done and add the mousey version
+	later.
+
+	* src/main.c: now avoids a malloc()/free() for each thumbnail
+	read. I doubt it makes much difference to anything though.
+
+2000-03-08  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* INSTALL: updated to reflect MMX change, and asked for feedback
+	regarding portability.
+
+	* config.mk: disabled INTERP_MMX by default, as libmmx doesn't
+	seem to compile under a newer gcc/egcs, and there was no newer
+	libmmx when I last checked, *and* I can't easily try fixing this
+	myself until I'm running 2.95.* or whatever. :-/
+
+2000-03-07  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* doc/xzgv.texi (Invoking xzgv): de-biased bit which mentioned
+	GNOME in passing to mention both GNOME and KDE, as both are
+	equally valid in context.
+
+	* src/main.c: 15/16-bit dithering can now be toggled with shift-f,
+	by analogy with zgv's `fakecols' toggle.
+
+2000-03-03  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* src/main.c: fixed the problem with toggling zoom off and on
+	quickly, where scrollbars were disabled but an unzoomed image was
+	shown instead of a zoomed one. This was due to recursion in
+	toggle_zoom(), which is now avoided.
+
+2000-02-11  Russell Marks  <russell.marks@dtn.ntl.com>
+
+	* I now actually bother using my email address for changelog
+	entries. :-)
+
+	* src/main.c: renamed `Exit viewer' menu item to `Exit to
+	Selector', which should make the meaning less ambiguous.
+
+	* TODO: slightly tidied up and checked/updated.
+
+2000-02-05  Russell Marks  <rus@cartman>
+
+	* README: looks like I left this on 0.2 for 0.3, whoops :-)
+
+	* src/main.c: added file rename. The key it's on is heavily
+	suboptimal (^n), but all the good ones were taken. :-) Menu-wise
+	it's ok though - File/Rename file (by analogy with the
+	delete-single-file one).
+
+	* src/rename.c: created.
+
+2000-02-03  Russell Marks  <rus@cartman>
+
+	* src/main.c: file magic tests in load_image() supplied 4 bytes to
+	test, but only bothered testing 3. :-)
+
+2000-01-29  Russell Marks  <rus@cartman>
+
+	* src/updatetn.c: now avoids the nasty `shear' effect you got when
+	updating thumbnails and it needed to scroll the window before
+	updating a thumbnail.
+
+2000-01-14  Russell Marks  <rus@cartman>
+
+	* Version 0.3.
+
+	* src/config.mk: changed CFLAGS to use -O instead of -O2 (I
+	actually did this a few days back); Steven has had weird problems
+	with a recent gcc with -O2, but -O works. (I seem to be ok with
+	(according to `gcc --version') egcs 2.91.66, but it's easier to
+	just throttle back than have it screw up. Besides, all this really
+	does is slow down scaling a bit.)
+
+	* Removed mention of the forfree.at email address, which seems to
+	be b0rken :-(, and replaced with my actual current address.
+
+	* INSTALL: removed note about needing getopt_long().
+
+	* Added getopt.[ch] and getopt1.c from glibc, so things should
+	hopefully still work on a libc which lacks getopt_long().
+
+2000-01-10  Russell Marks  <rus@cartman>
+
+	* src/copymove.c: use pastpos to try and stay in similar place in
+	selector when rescanning dir. It isn't perfect - in particular, if
+	the old row no longer exists it goes to row 0 rather than staying
+	at the end - but it's better than *always* going to row 0.
+
+2000-01-09  Russell Marks  <rus@cartman>
+
+	* src/copymove.c: added copy/move. These work like zgv - copy/move
+	tagged files if any tagged, otherwise copy/move the file the
+	cursor is on. (Being zgv-like also means they stop if they run
+	across an existing file, which can be a little annoying but is
+	probably safest.)
+
+	* src/gotodir.c: made cb_ok_button() static.
+
+1999-12-19  Russell Marks  <rus@cartman>
+
+	* src/main.c: you can now use `-k' or `--skip-parent' (or config
+	file entry) to skip the (keyboard) cursor past `..' on the
+	directory xzgv starts on. This can be useful when you want to
+	immediately use space to `page' through a dir. Thanks to Steven
+	Flintham for this idea.
+
+1999-12-14  Russell Marks  <rus@cartman>
+
+	* src/main.c: the idle_zoom_resize() idle func is now default
+	priority rather than resize priority. This fixes a problem where
+	zoom mode resizes were one resize behind (!) - thanks to Steven
+	Flintham for pointing this out. Unfortunately this makes `opaque
+	resize' a bit slower, but I think this fix is clearly the Right
+	Thing.
+
+1999-12-13  Russell Marks  <rus@cartman>
+
+	* doc/makeman.awk: fixed spurious blank line output in middle of
+	@item/@itemx pairs when there was a comment line between them.
+	It's a pretty ugly kludge, but I couldn't really see any other fix
+	which wouldn't break something else. :-/
+
+	* src/main.c: scaling can now scale the image *down* as well as
+	up. That is, you can make the image smaller more controllably than
+	you can by using zoom mode. I thought I'd add this as, given the
+	way Imlib works, it comes very cheaply indeed. However, it tends
+	to only be useful (i.e. be any advantage over zoom mode) on big
+	images, where you might want to scale down a bit rather than a
+	lot. One thing I should point out - if you've got used to doing
+	e.g. shift-d lots to get back to 1:1, you'll just have to learn
+	about the `n' (= Scaling/Normal) key... :-)
+
+	* src/main.c: invert-logo now kludges the bottom/rightmost lines
+	of the logo (which are black in the original, and thus turn white)
+	to be a more appropriate grey. A miswart, essentially - it's
+	horrible, but probably the Right Thing in context. :-)
+
+1999-12-10  Russell Marks  <rus@cartman>
+
+	* AUTHORS: created. Just points at the main docs, I'm sure a
+	duplicate copy would get out of date. :-)
+
+1999-12-09  Russell Marks  <rus@cartman>
+
+	* src/main.c: various things which implicitly turned off zoom mode
+	(basically scaling and `normal') didn't reenable scrollbars
+	afterwards; fixed that.
+
+1999-12-08  Russell Marks  <rus@cartman>
+
+	* src/main.c: new `invert-logo' config file option, flips the
+	colours in the logo to look less awful on dark GTK+ themes. :-)
+	The obvious way to `fix' this is to provide some way of disabling
+	the logo, but at the moment it assumes there's always a picture in
+	the viewer window, so this is a bit hairy. (And I think it looks
+	odd with the viewer window empty, which is the reason I bothered
+	with a logo in the first place!)
+
+1999-12-06  Russell Marks  <rus@cartman>
+
+	* src/main.c: added MMX-aware version of scaling with
+	interpolation code (using a bundled copy of Hank Dietz/Randy
+	Fisher's libmmx). According to my tests, it's `only' about 35%
+	faster, but it feels like more. :-) See config.mk for details.
+
+	* src/rcfile.c: you can now set the selector's initial/default
+	width with `--selector-width' (or config file setting). It can
+	only be specified in pixels for the time being, but I should add a
+	percentage option at some point. :-)
+
+1999-11-30  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi (Config Variable Types): added `geometry', which
+	was missing, and corrected previous bit which said all config vars
+	were boolean.
+
+1999-11-22  Russell Marks  <rus@cartman>
+
+	* Version 0.2.
+
+	* Made install targets use `mkinstalldirs' (from texinfo) to make
+	paths to installation dirs first. Apparently the FHS guarantees
+	little if anything about /usr/local, so this is basically required
+	rather than merely being a good idea. I've left `mkinstalldirs'
+	non-executable (and run /bin/sh on it directly from the
+	Makefiles), as I don't like the idea of having a single executable
+	file in the top-level dir (some people might think it's like a GNU
+	configure script or whatever, and run it :-)).
+
+1999-11-16  Russell Marks  <rus@cartman>
+
+	* src/main.c: some fixes to avoid unwanted recursion when e.g.
+	space is being held down. There still seem to be problems with
+	this when you're really hammering it though (space held down for a
+	long time in a dir with many small images).
+
+1999-11-13  Russell Marks  <rus@cartman>
+
+	* src/main.c: now have a reduce-only option for zoom mode, meaning
+	you can have xzgv fit big pictures to the window without having
+	tiny icons etc. balloon up and look horrible. It's not the
+	default, but you can enable it with Alt-r or the viewer options
+	menu's "When Zooming Reduce Only" toggle or `--zoom-reduce-only'
+	or equivalent config file setting. Thanks to Steven Flintham and
+	Robert Braddock for this idea.
+
+1999-11-12  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi (Invoking xzgv): missed out `geom' arg after `-g'
+	previously, fixed that.
+
+1999-11-06  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi (Acknowledgements): added a credit for
+	`install-info', which *seems* to have been largely written by Karl
+	Berry, though it's not terribly clear (e.g. the initial change log
+	entry is by RMS, but it just says "new file" or similar, so I'm
+	assuming he didn't do a great deal :-)).
+
+1999-11-04  Russell Marks  <rus@cartman>
+
+	* src/main.c: fixed bug where, if you enabled zoom on a picture of
+	nearly the same shape as the viewer window, it left the scrollbars
+	on.
+
+1999-11-03  Russell Marks  <rus@cartman>
+
+	* src/main.c: you can now set whether to use 15/16-bit dithering
+	or not independent of Imlib's default setting. The option is
+	Options/Dither in 15 & 16-bit (guess who's using item_factory :-))
+	on the viewer menu, and can also be set by --dither-hicol or
+	equivalent config file setting.
+
+1999-11-01  Russell Marks  <rus@cartman>
+
+	* src/rcfile.c: added `-g'/`--geometry' option (and config file
+	setting), which lets you set the xzgv window's geometry in the
+	usual X fashion. As an extension, all positions/sizes can be given
+	as percentages of the screen size - for example, the default
+	geometry is `92%x85%'.
+
+1999-10-31  Russell Marks  <rus@cartman>
+
+	* src/main.c: no longer keeps saying "Reading file..." on
+	statusbar if a file couldn't be read.
+
+	* src/main.c: error dialogs now use an Ok button a third the width
+	of the window, so they look a bit more like the other dialogs.
+
+	* src/updatetn.c: made recursive update require confirmation.
+	There's some annoyance value to this, I suppose, but I think it's
+	justified. It really *can* take a long time, after all, and the
+	dialog also explains what `recursive update' actually means; I
+	think this is useful as it's a term some non-programmers are
+	unlikely to be very familiar with.
+
+	* src/main.c: added file delete (with confirmation), as
+	File/Delete and ctrl-d. I couldn't seem to figure out how to get
+	it bound to Delete (and the hairy and somewhat religious
+	Backspace/Delete mapping area is probably best avoided anyway). I
+	did consider putting it on shift-d like in zgv, but I thought the
+	clash with shift-d as used in the viewer made this potentially a
+	bad idea. (Also, ctrl-d has a `delete' meaning in various other
+	things (e.g. Emacs), while shift-d is probably only used for this
+	by zgv.)
+
+	* src/confirm.c: generic confirmation (yes/no) dialog.
+
+1999-10-27  Russell Marks  <rus@cartman>
+
+	* Added recursive thumbnail update. One problem with this is that
+	it reads all existing thumbnails in a dir before updating (like
+	xv, IIRC) to try and avoid having a really ugly selector during
+	the update :-), though you can disable this with
+	`--fast-recursive-update' or an equivalent config file line.
+
+	* src/updatetn.c: moved thumbnail-update stuff here, and removed
+	extra GTK+ update from makexv332(), which was causing problems (it
+	usually segfaulted if you destroyed the main xzgv window while
+	updating thumbnails).
+
+1999-10-26  Russell Marks  <rus@cartman>
+
+	* src/main.c: now copes with being started in an unreadable dir,
+	and avoids selecting files/dirs it doesn't have sufficient
+	permissions for.
+
+1999-10-25  Russell Marks  <rus@cartman>
+
+	* src/main.c: you can now tag an image while viewing (like in zgv)
+	by doing ctrl-space (not like in zgv :-)). Also on viewer menu
+	after next/previous image.
+
+	* src/resizepic.c: added a similar speedup which should work
+	for any file type - it's not quite as fast as the JPEG
+	approach, which is only really applicable to JPEGs, but it
+	speeds things up a *lot* for non-JPEGs. It does mean that
+	thumbnails for dithered images don't usually look as good as
+	before, but you could probably argue that this makes them more
+	faithful. :-) (Ok, I realise this could be annoying, so this
+	speedup will probably become optional at some point...)
+
+	* src/readjpegtn.c: custom JPEG loader for thumbnails, makes them
+	as fast to generate as in zgv (well, curiously, it works out
+	faster in xzgv for, uh, `technical reasons' :-)). The code which
+	actually makes things faster was contributed to zgv by Costa
+	Sapuntzakis.
+
+1999-10-24  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi: hacked to reflect recent changes.
+
+	* src/main.c: you can now `close' a file (clear the viewer,
+	returning to the startup logo).
+
+	* src/gotodir.c: `go to dir' dialog. (Only text-entry for now (!),
+	but I'll probably extend it at some point.) Changed Sort Order
+	menu items to be `Sort by Name' etc. under new `Directory' menu to
+	accomodate this as Directory/Change (also on G (zgv-like)). Added
+	Directory/Rescan (^R) while I was at it. :-)
+
+	* src/main.c: error dialog looked weird before, doesn't look as
+	weird now. :-)
+
+1999-10-23  Russell Marks  <rus@cartman>
+
+	* src/main.c: Esc now exits an error dialog (making it consistent
+	with the other ones).
+
+	* src/filedetails.c: `file details' dialog - selected by
+	File/Details or (as in zgv) `:'/`;'. Includes width/height from
+	thumbnail, if present. (Thumbnails from versions of zgv before 5.0
+	didn't include this - you may to delete your old thumbnails and
+	`update' if you find that a problem. Note that thumbnails
+	generated with xzgv/xv/Gimp should be ok.)
+
+	* src/main.c: right-clicking on the selector to get the menu
+	now also moves the focus row (keyboard cursor) to the file you
+	right-clicked on (and switches focus to the selector). This
+	should give us a way of doing single-file operations (well,
+	those other than viewing) with the mouse, without needing to
+	sacrifice the IMHO very nice single-click-to-view behaviour.
+
+1999-10-20  Russell Marks  <rus@cartman>
+
+	* Replaced the directory/file-without-thumbnail icons with nicer
+	ones. They're loosely based on gmc's `dir-close.xpm', which I
+	think Tuomas Kuosmanen was responsible for (judging from the
+	change log). Thanks also to Steven Flintham for pointing out that
+	the old icons were pretty crap. :-)
+
+1999-10-19  Russell Marks  <rus@cartman>
+
+	* Bothered giving it a half-decent logo. :-) Also has a similar
+	icon.
+
+	* src/main.c: thumbnail updates now make sure any row a thumbnail
+	is being updated for is visible, making the update look more like
+	it does in zgv - as well as making it rather more clear what's
+	going on. :-) (The old position is restored when the update is
+	finished.)
+
+1999-10-03  Russell Marks  <rus@cartman>
+
+	* src/main.c: made middle-click on the viewer toggle the selector
+	rather than always acting like Exit viewer. Thanks to Steven
+	Flintham for suggesting this.
+
+	* src/main.c: previously segfaulted on files less than 4 bytes
+	long due to a typo. Um, whoops... :-}
+
+1999-09-30  Russell Marks  <rus@cartman>
+
+	* src/readgif.c: shouldn't hang on some corrupt GIFs now. This
+	change reflects the one in zgv 5.0, and thanks go to Andy Mortimer
+	for the fix (to zgv, but it (currently) applies to xzgv too).
+
+1999-09-27  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi: corrected a couple of typos.
+
+1999-09-14  Russell Marks  <rus@cartman>
+
+	* src/main.c: now has tagging - `-' untags, `=' tags, and with
+	Alt (Meta) they untag/tag all. As for the mouse, ctrl-click
+	tags/untags, and there's now a File menu (might become Tagging
+	or similar, haven't really made up my mind) which has items
+	for tag/untag all. No way of tagging from the viewer
+	currently, though, and at the moment nothing at all takes any
+	notice of whether a file is tagged or not. :-) (Also, you
+	can't tell if a file is tagged if it's also selected!)
+
+1999-09-12  Russell Marks  <rus@cartman>
+
+	* src/main.c: pixmaps for dirs and thumbnailless pics are now
+	shaped, rather than having an ugly white background.
+
+	* src/main.c: another focus-row bug fixed - when the selector lost
+	focus due to selecting a picture, it didn't undraw the focused
+	row. (This isn't very obvious with the default GTK+ theme, but it
+	really shows up with e.g. Rasterman's `pixmap' one.) This was due
+	to my disabling can-focus *before* changing focus (whoops).
+
+	* src/main.c: fixed problem where xzgv's moving the focused row
+	`by hand' sometimes messed up the display.
+
+1999-09-08  Russell Marks  <rus@cartman>
+
+	* doc/makeman.awk: previously the last output line of a
+	paragraph was never escaped, meaning it would most likely be
+	lost if it began with a dot (this mangled the first paragraph
+	of the `Updating Thumbnails' node).
+
+1999-09-02  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi (Updating Thumbnails): fixed fixed double double
+	word word. :-)
+
+1999-08-14  Russell Marks  <rus@cartman>
+
+	* Version 0.1.
+
+	* doc/xzgv.texi: cleaned up - mainly a matter of updating a few
+	bits, and removing all the zgv stuff which doesn't yet apply (for
+	as-yet-unimplemented stuff like brightness/contrast, tagging,
+	slideshows... the list goes on :-)).
+
+	* Various cmdline/config options added, so that all runtime
+	options can now have defaults messed about with. :-)
+
+1999-08-09  Russell Marks  <rus@cartman>
+
+	* src/main.c: previously render_pixmap() didn't bother checking if
+	theimage was NULL (i.e. if no picture was loaded), which broke
+	e.g. `xzgv --zoom *.jpg'.
+
+	* Rearranged things to give a more zgv-like directory layout,
+	things were getting a bit confusing with all sorts packed into one
+	dir.
+
+	* rcfile.c: ok, it was deeply hairy, but I've converted zgv's
+	option-parsing and config-file-reading code and (the hairy part)
+	added long-option support, making long-option names and config
+	file variable names the same, and having stuff only defined once.
+	I thought I'd be able to use some cpp trickery to get this
+	working, but I ended up using an awk script. :-/
+
+1999-08-08  Russell Marks  <rus@cartman>
+
+	* main.c: finally have keyboard control over relative window sizes
+	(paned widget). `[' moves splitter left, `]' moves it right,
+	with ctrl+[ and ctrl+] moving in smaller steps. `~' returns
+	selector to default size, as well as unhiding it.
+
+	* main.c: cursor-key equivalents of the small hjkl movements
+	added; ctrl-cursor moves 10 rather than 100 pixels.
+
+	* main.c: fixed bug where any viewer exposure after a
+	failed-picture-load caused a segfault. (!) I think the code
+	changes I needed for scaling probably teased this one out, as that
+	works with the imlib image itself, rather than a pixmap rendered
+	by it.
+
+1999-08-05  Russell Marks  <rus@cartman>
+
+	* doc/xzgv.texi: created, based on zgv's zgv.texi. Pretty scrappy
+	for now, but at least I've started. :-)
+
+1999-08-04  Russell Marks  <rus@cartman>
+
+	* main.c: thumbnail column now matches maximum possible thumbnail
+	width, making thin rows mode look a *lot* better.
+
+	* main.c: menus popped up with F10 now appear in more reasonable
+	places (top-left of the subwindow they were popped up from).
+
+	* main.c: you can now iconify (minimise) the window with ^Z. I
+	also put it on the menu, which might be handy if you're running
+	fullscreen and don't know what a keyboard is. :-) Also moved `hide
+	selector' to the new `window' menu created primarily for minimise.
+
+	* main.c: rearranged some menu items - in particular, shifted all
+	viewer toggles onto an `options' menu. It looked ugly with the
+	options littering otherwise `normal' menus, and I'm not sure that
+	(e.g.) having zoom on the scaling menu was all that smart to begin
+	with. :-)
+
+	* main.c: fullscreen option (start with `-f'). Uses the entire
+	screen with no window frame or anything (if your wm recognises the
+	decor hints - I think they're mwm ones, but fvwm handles them,
+	meaning that most wm's around today do :-)). I tried having it as
+	a run-time option, but it was just too evil trying to `switch
+	back' from fullscreen, and I never got it entirely working.
+
+1999-08-02  Russell Marks  <rus@cartman>
+
+	* main.c: now has the full range of revert stuff from zgv. This
+	has been streamlined a little to make sense in the largely
+	modeless xzgv, so now you only have the revert-orientation option,
+	but it's on the viewer menu so the effect of zgv's
+	saved-orientation stuff isn't too hard to duplicate.
+
+	* main.c: now supports scaling, interpolation and all. :-) Since
+	keeping a scaled-up image in memory would take up a LOT of room
+	(we're talking hundreds of megs, even gigs - work it out), the
+	scaling has to be done on the fly, so it's a bit slow even on
+	(what I would consider to be) a fast machine. But hey, at least
+	it's there, and nothing's any slower when you're not using it.
+
+	* main.c: thumbnail update now updates pixmaps in selector
+	directly. This is more efficient than the old behaviour, and has
+	the additional advantage that you can get to see thumbnails even
+	if you don't have permission to write them (though you'd have to
+	do an update every time you revisited the dir!).
+
+	* main.c: couldn't-load-file errors now go in dialog rather than
+	on stderr. :-) They also result in the selector being shown,
+	useful if you ran xzgv on pics from the command-line.
+
+1999-08-01  Russell Marks  <rus@cartman>
+
+	* main.c: made thin rows mode considerably more useful by
+	maintaining a separate rescaled thumbnail. This is only rescaled
+	crudely (a take-every-nth-pixel approach), but it works
+	surprisingly well.
+
+1999-07-31  Russell Marks  <rus@cartman>
+
+	* main.c: selector now has zgv-like goto-next-char on g and '.
+	Like in zgv, there's no indication that it's waiting for a char,
+	so I've made it timeout after two seconds in case of accidental
+	presses and the like. (Strictly speaking it doesn't *wait* for the
+	char; the initial g or ' just sets a flag.)
+
+	* main.c: F10 now pops up the right-button menu (in both the
+	selector and the viewer). You can now also use Enter (well,
+	actually Return) instead of Space as an alternative way of
+	selecting a pic.
+
+	* main.c: markedly improved keyboard support in viewer by handling
+	keypresses directly. This is a bit kludgey really, but given that
+	keyboard movement is now quite faithfully zgv-like, I think it's
+	worth it. :-) Had to move hide-selector to shift-z (the idea being
+	it's a bit like zoom but in a different sense) to make room for
+	hjkl; while I was at it, I changed hide to really be a hide/unhide
+	toggle.
+
+1999-07-28  Russell Marks  <rus@cartman>
+
+	* main.c: bugfix after trying it on my 486 - it wasn't giving GTK+
+	a chance to run after creating the `Updating Thumbnails' window
+	until after the first file's thumbnail had been checked/updated,
+	leaving the window briefly blank. (Since the first file is almost
+	always `..', it takes very little time to deal with (as dirs don't
+	have thumbnails), so much so that I hadn't noticed this delay at
+	all on cartman.)
+
+1999-07-27  Russell Marks  <rus@cartman>
+
+	* main.c: now supports loading picture(s) from command-line. Works
+	by faking up a selector `directory' containing them, and hiding
+	the selector.
+
+	* main.c: can now explicitly hide selector from viewer. Probably
+	more useful than auto-hide mode for most people, I'd have thought;
+	you might find having the selector visible fine generally, but
+	still occasionally need the full window for a big image.
+
+	* main.c: finally, has create/update thumbnails. Also added
+	`pastpos' stuff from zgv, which remembers where you were when you
+	last left a previously-visited directory.
+
+	* main.c: viewer now uses pixmap background. This causes some
+	difficulties (which I've mostly managed to work around - er, I
+	hope :-)), but makes scrolling much easier on the eye. Also
+	disabled "Reading thumbnails" messages by default and added option
+	to enable them.
+
+1999-07-25  Russell Marks  <rus@cartman>
+
+	* main.c: middle button now does `exit viewer', like Esc (and
+	equivalent menu option). Handy when in auto-hide mode.
+
+	* main.c: added auto-hide mode. Rather nice for those of us
+	running in relatively low resolutions. :-) However, since I reckon
+	you're unlikely to want it if you're running in 800x600 or
+	greater, and since it can be a little confusing, I've resisted the
+	temptation to make it the default.
+
+1999-07-24  Russell Marks  <rus@cartman>
+
+	* main.c: cleaned up some early kludgey stuff - in particular,
+	removed the long-gone quit button (which until now was merely not
+	shown, ouch :-)). It's still fairly kludgey in parts, but one
+	thing at a time eh...
+
+	* main.c: fixed `losing' of current selection and focus row
+	(the keyboard cursor) when sort order is changed. Also fixed
+	the focus to match selection in this case, and in the other
+	cases where it was previously a problem (next/prev image, and
+	thin rows toggle).
+
+1999-07-23  Russell Marks  <rus@cartman>
+
+	* Kludged around apparently-buggy imlib GIF support (in v1.9.5 at
+	least) by adding my own GIF support, via readgif.c and wrapper
+	mentioned below. Hopefully this will only be a temporary kludge
+	until imlib gets fixed. :-) PNGs with few colours also have
+	problems, but that's not so easy to work around, unfortunately.
+	(Rather, it is in theory, but PNG is a much harder format to read;
+	readgif.c is only about 400 lines.)
+
+	* main.c: now has next/previous image in viewer (on space and b
+	rather than zgv's space and del, as a) del/backspace issues are
+	non-trivial in X and b) I couldn't get del to work :-)).
+
+	* Added mrf support via readmrf.c and wrapper for
+	gdk_imlib_load_image(). This is probably the only way mrf support
+	would get added, as imlib only seems to support the most popular
+	formats `natively'.
+
+	* main.c: finally you can change dir once it's started. :-) Also
+	added custom sorting routine (so dirs come first, thank ghod for
+	that), and different sorting orders (as in zgv).
+
+	* main.c: loads of changes. Fixed memory leak the size of a planet
+	(50 meg X server, anyone? :-)), made image draggable with the
+	mouse, added right-button menus for both selector and viewer,
+	added `thin rows', `status bar' and `zoom' options, and probably
+	lots more I can't remember right now.
+
+1999-07-22  Russell Marks  <rus@cartman>
+
+	* First, really crap version. (Several more really crap versions
+	to follow. :-))

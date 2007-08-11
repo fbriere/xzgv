@@ -1,0 +1,73 @@
+INSTALL - information about compilation etc.
+--------------------------------------------
+
+You'll need these libraries installed:
+
+- GTK+		(>=1.2.x)
+- Imlib		(1.x)
+- libjpeg
+- libpng
+- libtiff
+
+(Also, the `imlib-config' and `gtk-config' programs must be on your
+path - this shouldn't be a problem though, any valid installations
+should have those.)
+
+If you use Linux, your distribution is likely to come with all of
+these libraries, but be sure to install any relevant `development'
+packages too (e.g. SuSE's GTK+ and Imlib dev packages were `gtkdev'
+and `imlibdev' last time I looked, and Debian's are `libgtk1.2-dev'
+and `gdk-imlib-dev' at the time of writing), or you may not be able to
+*compile* a program using the libraries.
+
+If you don't use Linux, or need more up-to-date copies than your
+distribution carries, check out http://www.gtk.org/ and
+ftp://ftp.gnome.org/pub/GNOME/stable/sources/imlib/ - they're the most
+recent URLs I have for GTK+ and Imlib1.
+
+
+Anyway, once GTK+, Imlib, libjpeg, libpng, and libtiff are in place,
+you'll want to have a look at `config.mk' to see if there's anything
+there you want to change.
+
+(In particular, if you're compiling on a non-x86 machine, or with
+something other than gcc, you'll have to comment out the `INTERP_MMX'
+line. If you don't have the faintest idea what I'm on about, leave it
+alone. :-))
+
+After that, it's just `make' then (as root) `make install'. This
+compiles xzgv, then installs it and its documentation (both info files
+and man page).
+
+
+Note that the only platform I'm usually sure xzgv compiles on is
+Linux/x86 - if you get it to compile ok on others I'd appreciate
+knowing about it. (There are good reasons why zgv is pretty
+non-portable, alas, but xzgv shouldn't have those problems.) I'd
+especially like to know how it plays on non-x86 non-Linux platforms.
+I've had these reports for previous xzgv versions (only the most
+recent report for any given platform is included):
+
+xzgv ver	OS (platform)		How it went
+
+0.7		Solaris 8 (UltraSparc)	compiled/installed ok
+0.7		IRIX 6.5.8		compiled/installed ok (with gcc)
+0.7		MacOS X 10.2		compiled ok; needed X, Fink, and
+					 required libs (also `dlcompat'),
+					 and "-I /sw/include" in CFLAGS
+0.6		Linux (PPC)		weird thumbnail problem [1]
+0.6		Linux (UltraSparc)	compiled/installed ok
+0.6		Linux (Alpha)		same problem as PPC, and an
+					even stranger window-width
+					oddity [1]
+0.5		FreeBSD (x86?)		compiled ok except install-info
+0.5		HP-UX 10.20 (PA-RISC)	compiled ok except install-info;
+					 required gawk for man page and
+					 GNU fileutils for install
+
+Good luck!
+
+-Rus.
+
+[1] It seems there's a fair chance these may have been due to compiler
+bugs.

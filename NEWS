@@ -1,0 +1,570 @@
+* Changes between versions   -*- mode:indented-text; mode:outline-minor -*-
+
+This file (NEWS) documents the significant changes between all
+versions of xzgv, with the newest changes first.
+
+
+* Changes in xzgv 0.8
+
+** New features
+
+Added support for the Exif orientation tag (Exif in this context is a
+form of JPEG). If you enable the "Use Exif Orientation" option in the
+viewer (or `exif-orient' config/option), it'll compensate for the
+(e.g.) digital camera's orientation when viewing, so pictures taken
+with the camera side-on will display the way you would probably want
+them to. However, since this differs from how most *other* programs
+will see the files - which are, after all, carefully constructed to be
+compatible with JFIF/JPEG files - and has the potential to be
+extremely confusing if you don't know exactly what's going on, it's
+not enabled by default. Thanks to Fraser Wright for suggesting this
+feature.
+
+
+** Bugfixes
+
+Broken GIFs could overrun a buffer previously - fixed.
+
+Added call to gtk_set_locale() which should hopefully avoid problems
+when GTK+'s default font is set to something which isn't
+ASCII-friendly. Thanks to Alexander Pohoyda for this one.
+
+Fixed JPEG segfault bug on files which were corrupted after the image
+itself. Thanks to Aaron Brick for spotting this one.
+
+Fixed long-standing bug with interpolation, which could have resulted
+in segfaults (though it's hard to say if it ever actually did).
+
+Stopped selector getting permanently hidden if two middle-button
+presses were too close together. Thanks to José Luis González González
+for spotting this.
+
+No longer sets background colour to black for mono PNG files, where
+this may cause problems. This change was ported from zgv; thanks to
+Morten Bo Johansen for spotting it there.
+
+
+** Other changes
+
+Added 9/0 keys as yet another way of doing file untag/tag. These are
+last-ditch alternatives for keyboards where -/= don't make sense (some
+non-US/UK keyboards), and where keypad -/+ aren't easily accessible
+(e.g. laptops). Thanks to Szabó, Balázs for inspiring this one.
+
+
+* Changes in xzgv 0.7
+
+** New features
+
+Now adapts rendering method for big images. When the number of pixels
+in the image exceeds the value set by image-bigness-threshold (as set
+in config file or on command-line, defaulting to 2 million pixels),
+it's drawn piece-by-piece on demand rather than all-at-once. The
+all-at-once behaviour is worth keeping around for smaller images, as
+it gives much nicer scrolling - but for big images it's just
+impractical, hence this feature.
+
+Added a builtin TIFF reader (libtiff-based); TIFFs should be read more
+quickly now.
+
+Also uses builtin JPEG reader (libjpeg-based) for all JPEG reading now
+(not just thumbnails), which is a tiny bit faster. A new command-line
+and config file option `careful-jpeg' lets you enable `fancy
+upsampling', the disabling of which is why Imlib's reader was
+previously faster. (I wouldn't have chosen this as the default if I'd
+known, but enabling it means a 10% slowdown. :-/)
+
+Added support for PRF (ported from zgv), which is basically a kind of
+extrapolated version of my old mrf format - unlike mrf, PRF supports
+greyscale and colour. Thanks to Brian Raiter for both devising the
+format, and writing the reference implementation readprf.c is heavily
+based on.
+
+Recursive thumbnail update no longer reads all thumbnails before doing
+updates - it now only bothers to read visible thumbnails. This makes
+the `fast-recursive-update' option rather less useful, as it's nearly
+that fast already. :-)
+
+Added choice of timestamps to use when sorting in time/date order -
+you can now choose between mtime (default), ctime, and atime. You can
+switch with alt-shift-m/c/a, or from the selector menu's
+Directory/Time & Date Type submenu, or with `sort-timestamp-type'
+option (on command-line or in config file). Thanks for Wolfram Kleff
+for suggesting this.
+
+You can now move to the next/previous tagged file with `/' and `?'
+respectively (or equivalent menu options). When used in the viewer,
+this also views the file.
+
+Toggling all tags is now possible, with Alt-o or Tagging/Toggle All.
+
+Added `delete-single-prompt' option (on command-line and in config
+file) so you can disable the confirmation prompt when deleting a file,
+rather like zgv's `nodelprompt'. Thanks to Martin Bialasinski for
+suggesting this.
+
+Added help menus. Currently just runs info on the relevant node -
+pretty crude, but better than nothing. :-)
+
+Keyboard navigation additions - you can now use shifted cursor keys as
+an alternative means of paging up/down/left/right in the viewer, and
+^u/^v/^a/^e are supported as alternatives to Page Up/Page Down and
+Home/End in both the selector and the viewer.
+
+Any `Menu' key you might have can now be used to show the
+selector/viewer menus, just as right-clicking or pressing F10 does.
+
+
+** Bugfixes
+
+A fix for certain unusual GIFs (with an abnormally large code size -
+larger than even non-LZW GIFs need), which previously caused xzgv to
+segfault. Thanks to Lenart Janos (in particular), Josip Rodin, Chris
+Lawrence, and Andy Mortimer for all helping with this in one way or
+another.
+
+Changed make install's `install -m' invocations to do plain install
+and change permissions after (with chmod). Thanks to Steven Bankowitz
+for reminding me of `-m' being a problem on things like Solaris.
+
+Replaced make install's ifeq/ifneq with shell equivalent, which turns
+out to be sufficient (if uglier). This should avoid the need to use
+GNU make. Thanks to Frank Pohl for spotting this problem.
+
+Previously, the GIF/PNG/mrf file readers failed to notice the problem
+images larger than 32767 in either dimension would cause (by being
+bigger than an X window can handle), leading to a segfault - they now
+give an error.
+
+Fixed bug where (while thumbnails were being loaded) doing things like
+holding down space to storm through N images got it very confused
+indeed.
+
+Concerted attempt to nail all the remaining recursion problems
+(essentially, it could previously get confused if you told it to do
+certain things twice, and it saw the second request while dealing with
+the first). Not perfect though, as the protections are
+independent (do a mirror and flip at about the same time, and it'll
+mess up), so this needs a better fix eventually.
+
+Previously, when you scaled down as far as it would go, it would never
+let you scale down again in the same way, due to breaking an
+anti-recursion measure. Fixed that.
+
+`-lz' was missing from src/Makefile. I usually got away with this, but
+it did break in some cases (perhaps with Imlib 1.9.10?). Thanks to
+Gabor Z. Papp for pointing this out.
+
+The alternative up/down movement keys in the selector (j and k) should
+now work the same way cursor up/down do.
+
+Focus is now returned to selector when changing dir, making the
+past-position action clearer when using the mouse (i.e. if you go down
+into a dir and then back up, the keyboard cursor will show which dir
+you just left). Previously, if you'd viewed an image before changing
+dir with the mouse, focus would have remained on the image.
+
+Now does cursor past-position save/restore `around' recursive update.
+
+As must be traditional by now, I found a bug almost immediately after
+the (0.6) release. :-) Previously you could still toggle thin-rows
+while running in the `xzgv file(s)' way, which was silly and made
+things look strange (but was otherwise harmless).
+
+Fixed redraw-related position problem. (In 0.6, try going to the end
+of the selector's list, pressing `v', then pressing `v' again - the
+row positioning is slightly wrong.)
+
+
+** Other changes
+
+Rendering (and fallback file-reading) is now indirected through the
+new backend.c, which should now be the only part of xzgv dependent on
+Imlib 1.x (well, apart from src/Makefile). This should make it easier
+to switch backends, or to support multiple backends. I've also added
+most of a gdk-pixbuf backend, but I've not been too impressed with the
+performance, and there are some inconvenient omissions which explain
+the current, uh, `partialness'. :-)
+
+Now makes sure a page of thumbnails is visible even when doing
+non-recursive update - previously doing such an update before all
+thumbnails had been read in would show blank spots during the update
+(unlike the now-usual xzgv behaviour of loading onscreen thumbnails
+asap). This only seems to slow it down fractionally (by about 0.5% in
+a large dir full of small files in thin-rows mode), so I think it's
+worth it to get the consistency.
+
+Various changes to the selector and viewer menus, in an attempt to
+tidy things up a bit.
+
+`make install' permissions are now Debian-ish, i.e. explicitly marked
+as writeable by root (rather than implicitly so ;-)), and all
+world-readable.
+
+No longer includes the version number in the window title.
+
+
+* Changes in xzgv 0.6
+
+** New features
+
+Added gamma support, but as with brightness/contrast this is only
+available from the keyboard for now. (This works just like it does in
+zgv, though I added it to xzgv first.) The basic idea is to ignore the
+rather unworkable image/screen gamma distinction, and just use a
+relative gamma with fast shortcuts for common cases. So pressing `1'
+gives a gamma adjustment of 1.0 (i.e. no adjustment), `2' gives 2.2
+(for e.g. viewing linear-gamma files on an average PC monitor), `3'
+gives 1/2.2 (~0.45, for e.g. viewing 2.2-gamma files on a linear-gamma
+display), and `4' reverts to any `--gamma' setting (or 1.0 if none was
+set). You can also use alt-comma and alt-dot for more precise control
+of gamma adjustment. Note that gamma is deliberately *not* reset by
+the brightness/contrast resetting keys.
+
+You can now change the sorting order from the command-line with
+`-o'/`--sort-order' (and from a config file similarly).
+
+
+** Bugfixes
+
+Added my own PNG reader (well, libpng interface :-)), ported from zgv.
+This avoids a couple of Imlib problems - notably, greyscale PNGs are
+now read correctly.
+
+If you omitted the arg to an option in a config file, it would
+segfault. Fixed that, and applied brown paper bag as appropriate. :-)
+It would also previously get stuck in an infinite loop if given a
+bogus geometry arg, and it assumed $HOME was set - both fixed.
+
+GIF reader was previously broken for interlaced GIFs with less than 4
+lines; this broke the heap, leading to difficult-to-pin-down
+segfaults. No longer. :-)
+
+Various portability fixes - thanks to Steven Bankowitz, Juergen Salk,
+and Norio Suzuki for letting me know how 0.5 did on various non-Linux
+systems. I hope xzgv will now compile and run ok on *BSD, Solaris, and
+HP-UX, though there are probably still issues with installation in
+some cases.
+
+Before, when you used decoupled scaling and then rotated a picture, it
+messed up when resetting things for the next picture. Fixed that.
+
+Now copes with copy/move when started as `xzgv file(s)'. It's not
+perfect, in that the selector isn't updated (so after a move things
+can be confusing), but at least it's usable.
+
+When rescanning the directory (in the control-r sense :-)), the
+keyboard cursor now tries to stay at the same place in dir list, for
+consistency with zgv and because it's just nicer. Thanks to Philippe
+Marzouk for spotting this one.
+
+The file details dialog now works fully even when started with `xzgv
+file(s)' (previously the details from any thumbnail were missing).
+
+
+** Other changes
+
+Made icon a bit less indistinct. :-)
+
+
+* Changes in xzgv 0.5
+
+** New features
+
+Massively reduced *apparent* thumbnail load time, by making it jump
+around to whichever part of the directory you're currently looking at.
+(It does eventually fill in any gaps, even if you maliciously keep
+moving around in an attempt to put it off. Not that I had fun testing
+this, or anything. :-)) It's debatable whether this counts as a new
+feature or not, but what the heck...
+
+Clicking on the viewer now moves to the next image. Dragging the
+picture around still works - any mouse movement at all during the
+click, and the picture gets dragged instead. (If you want/need to
+disable this for some reason, you can do so with `click-for-next off'
+in ~/.xzgvrc.) Thanks to Paul E. Johnson for this idea.
+
+Decoupled (axis-specific) scaling, which lets you scale both axes of
+the picture independently. Thanks to Steven Flintham for suggesting
+this. The way this works is analogous to how the `normal' scaling
+works, but hard to explain briefly - you'll have to check the
+`Scaling' section of the info file or man page.
+
+
+** Bugfixes
+
+Fixed a significant memory leak, though you probably wouldn't have
+noticed it unless you did a recursive thumbnail update on a fairly
+well-populated hierarchy. I have a feeling this fix *may* break older
+GTK+ versions; if changing directory segfaults, you need to upgrade.
+:-) It's known to work on at least GTK+ >=1.2.6.
+
+Fixed the MMX stuff, which is now enabled by default again.
+
+Previously, if you had auto-hide and zoom turned on, then turned off
+auto-hide, the picture wasn't rezoomed when the selector was shown -
+fixed that.
+
+Fixed recursion problems in scaling. Thanks to Steven Flintham (again)
+for reminding me about this.
+
+Added preliminary check when reading files from command-line, to get
+rid of (at least in most cases) the window-open-then-close ugliness
+you used to get before a `no files' error message.
+
+Previously, jumping from a large dir to a large dir (or even to a
+small dir, sometimes) could result in the redrawing of the main window
+being noticeably delayed after the dir-change window being destroyed -
+fixed that (mostly).
+
+
+** Other changes
+
+Added short option `-r' for zoom-reduce-only. It's a useful enough
+option that it's worth having a shortcut. :-)
+
+It's now slightly easier to install the info file/man page in an
+FHS-friendly PREFIX/share (e.g. /usr/share/man/man1). However, the
+traditional locations are still the default, as I suspect e.g.
+/usr/local/share/man/man1 is much less widely accepted than
+/usr/local/man/man1. If you're installing in /usr, though,
+uncommenting the SHARE_INFIX line may be a good idea.
+
+Selector rows have been made 2 pixels taller, to allow room for the
+outline cursor to go either side of the thumbnail rather than
+potentially XORing over it. In addition to being a little more
+aesthetically pleasing :-), this works around what seems to be a GTK+
+bug (as of 1.2.7 at least), where scrolling with the cursor keys can
+leave part of the XOR'd cursor outline stuck on the thumbnail (I
+suspect the pixmap is being drawn at the wrong time).
+
+
+* Changes in xzgv 0.4
+
+** New features
+
+Added brightness/contrast, which works in just the same way as in zgv.
+No mouse equivalent yet though, as I'm having some difficulty thinking
+of a reasonable way to do it. (I may even end up (ab)using a modal
+dialog for it, which would be *odd* but may be the least unreasonable
+approach given the way xzgv works in general.) I'd ended up putting it
+off for a while to ponder this, but in the end decided to get it done
+and add the mousey version later.
+
+Added file rename. The key it's on is heavily suboptimal (^n), but all
+the good ones were taken. :-) Menu-wise it's ok though.
+
+You can now use j/k for down/up in the selector, as vi-like
+alternatives to the cursor keys.
+
+
+** Bugfixes
+
+Fixed the problem with toggling zoom off and on quickly, where
+scrollbars were disabled but an unzoomed image was shown instead of a
+zoomed one.
+
+Now avoids the nasty `shear' effect you got when updating thumbnails
+and it needed to scroll the window before updating a thumbnail.
+
+
+** Other changes
+
+I've (temporarily, I hope) disabled the MMX stuff by default; some
+people were having trouble compiling with that enabled. You can still
+enable it by editing config.mk.
+
+Renamed `Exit viewer' menu item to `Exit to Selector', which should
+make the meaning less ambiguous.
+
+15/16-bit dithering can now be toggled with shift-f, by analogy with
+zgv's `fakecols' toggle.
+
+
+* Changes in xzgv 0.3
+
+** New features
+
+Added file copy/move. These work like zgv - copy/move tagged files if
+any tagged, otherwise copy/move the file the cursor is on. (Being
+zgv-like also means they stop if they run across an existing file,
+which can be a little annoying but is probably safest.)
+
+Scaling can now scale the image *down* as well as up. That is, you can
+make the image smaller more controllably than you can by using zoom
+mode. I thought I'd add this as, given the way Imlib works, it comes
+very cheaply indeed. However, it tends to only be useful (i.e. be any
+advantage over zoom mode) on big images, where you might want to scale
+down a bit rather than a lot. One thing I should point out - if you've
+got used to doing e.g. shift-d lots to get back to 1:1, you'll just
+have to learn about the `n' (= Scaling/Normal) key... :-)
+
+You can now set the selector's initial/default width with
+`--selector-width' (or config file setting).
+
+You can now use `-k' or `--skip-parent' (or config file entry) to skip
+the (keyboard) cursor past `..' on the directory xzgv starts on. This
+can be useful when you want to immediately use space to `page' through
+a dir. Thanks to Steven Flintham for this idea.
+
+New `invert-logo' config file option, flips the colours in the logo to
+look less awful on dark GTK+ themes. :-)
+
+
+** Bugfixes
+
+The idle_zoom_resize() idle func is now default priority rather than
+resize priority. This fixes a problem where zoom mode resizes were one
+resize behind (!) - thanks to Steven Flintham for pointing this out.
+
+Various things which implicitly turned off zoom mode (basically
+scaling and `normal') didn't reenable scrollbars afterwards; fixed
+that.
+
+Added getopt.[ch] and getopt1.c from glibc, so things should hopefully
+still work on a libc which lacks getopt_long().
+
+Fixed a couple of spurious blank lines in man page.
+
+
+** Other changes
+
+Added MMX-aware version of scaling with interpolation code (using a
+bundled copy of Hank Dietz/Randy Fisher's libmmx). According to my
+tests, it's `only' about 35% faster, but it feels like more. :-)
+(Don't worry, it's easily disabled at compile time, it's clueful about
+when it uses it even when it's enabled, etc. - I haven't broken
+anything.)
+
+Removed mention of the forfree.at email address, which seems to be
+b0rken :-(, and replaced with my actual current address.
+
+Created an `AUTHORS' file (which just points at the main docs, I'm
+sure a duplicate copy would get out of date :-)).
+
+
+* Changes in xzgv 0.2
+
+** New features
+
+Generation of thumbnails is *much* faster. This is partly due to
+inclusion of the JPEG speedup code contributed to zgv (way back when)
+by Costa Sapuntzakis, and partly due to a generic adaptation of that
+approach I've added which is now used for all other files. xzgv should
+now generate thumbnails at a similar speed to xv overall - it's a bit
+faster on JPEGs, but a bit slower on other files.
+
+Added recursive thumbnail update. One problem with this is that it
+reads all existing thumbnails in a dir before updating (like xv, IIRC)
+to try and avoid having a really ugly selector during the update :-),
+though you can disable this with `--fast-recursive-update' or an
+equivalent config file line.
+
+Added `-g'/`--geometry' option (and config file setting), which lets
+you set the xzgv window's geometry in the usual X fashion. As an
+extension, all positions/sizes can be given as percentages of the
+screen size, e.g. `92%x85%'.
+
+Now has tagging - `-' untags, `=' tags, and with Alt (Meta) they
+untag/tag all. As for the mouse, ctrl-click tags/untags, and there's
+now a File menu which has items for tag/untag, and tag/untag all. From
+the viewer, you can tag (though not untag) with ctrl-space, which tags
+the current file then moves to the next image. One problem with
+tagging is that, at the moment, only the new `-T' (or `--show-tagged')
+option takes any notice of whether a file is tagged or not. :-) Copy,
+move, and (multi-file) delete should be added `soon', possibly with
+slideshows after that.
+
+`File details' popup (on `:', `;', and Selector menu, File, Details)
+shows size, date/time, etc. of the file under the keyboard cursor, or
+the file right-clicked on when the selector's menu was popped up.
+(This is also how the tag/untag menu items work, though in that case
+using ctrl-click is obviously more convenient.)
+
+Added file delete with confirmation (on ctrl-d and Selector menu,
+File, Delete). The way the file to delete is selected is the same as
+for `file details'.
+
+There's now a reduce-only option for zoom mode, meaning you can have
+xzgv fit big pictures to the window without having tiny icons etc.
+balloon up and look horrible. It's not the default, but you can enable
+it with Alt-r or the viewer options menu's "When Zooming Reduce Only"
+toggle or `--zoom-reduce-only' or equivalent config file setting.
+Thanks to Steven Flintham and Robert Braddock for this idea.
+
+Middle-clicking on the viewer now toggles the selector rather than
+always acting like Exit viewer. Thanks to Steven Flintham for
+suggesting this.
+
+`go to dir' dialog. (Only text-entry for now (!), but I'll probably
+extend it at some point.) On shift-g, and Directory/Change.
+
+You can now `close' a file (clear the viewer). On ctrl-w, and
+File/Close.
+
+Added a way to rescan a directory (ctrl-r, Directory/Rescan).
+
+You can now set whether to use 15/16-bit dithering or not independent
+of Imlib's default setting. The option is Options/Dither in 15 &
+16-bit on the viewer menu, and can also be set by --dither-hicol or
+equivalent config file setting.
+
+
+** Bugfixes
+
+It previously segfaulted on files less than 4 bytes long due to a
+typo. Um, whoops... :-}
+
+Previously it would hang on some corrupt GIFs. The fix for this
+reflects the one in zgv 5.0, and thanks go to Andy Mortimer for the
+fix (to zgv, but it (currently) applies to xzgv too).
+
+Fixed problem where xzgv's moving the focused row `by hand' sometimes
+messed up the display. And similarly, when the selector lost focus due
+to selecting a picture, it previously didn't undraw the focused row.
+
+It now copes with being started in an unreadable dir, and avoids
+selecting files/dirs it doesn't have sufficient permissions for.
+
+Pixmaps for dirs and thumbnailless pics are now shaped, rather than
+having an ugly white background.
+
+Fixed bug where, if you enabled zoom on a picture of nearly the same
+shape as the viewer window, it left the scrollbars on.
+
+Esc now exits an error dialog (making it consistent with the other ones).
+
+It no longer keeps saying "Reading file..." on the statusbar if a file
+couldn't be read.
+
+
+** Other changes
+
+Thumbnail updates now make sure any row a thumbnail is being updated
+for is visible, making the update look more like it does in zgv - as
+well as making it rather more clear what's going on. :-)
+
+Bothered giving it a half-decent logo. :-) Also has a similar icon.
+
+Replaced the directory/file-without-thumbnail icons with nicer ones.
+They're loosely based on gmc's `dir-close.xpm', which I think Tuomas
+Kuosmanen was responsible for (judging from the change log). Thanks
+also to Steven Flintham for pointing out that the old icons were
+pretty crap. :-)
+
+Changed Sort Order menu items to be `Sort by Name' etc. under new
+`Directory' menu to accomodate `Change' and `Rescan'.
+
+Error dialogs look a bit better.
+
+Install targets now use `mkinstalldirs' (from texinfo) to make paths
+to installation dirs first. It seems the FHS guarantees little if
+anything about /usr/local, so this is basically required rather than
+merely being a good idea.
+
+
+* Changes in xzgv 0.1
+
+** New features
+
+Everything. :-)

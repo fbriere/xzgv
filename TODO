@@ -1,0 +1,237 @@
+* TODO list		-*- mode:indented-text; mode:outline-minor -*-
+
+This file documents planned future features, known bugs, and that sort
+of thing.
+
+
+* Important in short-term
+
+Add an optional confirm-on-quit dialog, to appear if any files are
+tagged (on the assumption that you might have wanted to do something
+with the tagged files). Might be best not to make this default, not
+sure. (Suggested by Brad Templeton.)
+
+Document the way thin-rows mode is always enabled when files are
+specified on the command-line. The "Invoking xzgv" node already has a
+bit about files-on-cmdline, so probably best to add it there.
+
+Renaming a file should give the current filename as a default.
+(Suggested by "Micha".)
+
+Slideshow. I've put this off for ages, and it shouldn't be *that*
+hard... right? :-) But one problem wrt zgv similiarity is that I can't
+really put it on Tab.
+
+You should be able to choose what command gets run for help, such that
+e.g. the default one would be "xterm -e info '(xzgv)%s'".
+
+Dest for copy/move should accept "-" for most-recently-entered dir, by
+analogy with `cd -'. Goto-dir dialog should probably also accept it,
+but have independent `history'.
+
+Add toolbar-ish thing (which should be disabled by default, but appear
+at top of viewer window when enabled; could use alt-t for the toggle,
+that's available) for general viewer stuff, but most importantly for
+mouse-based adjustment of gamma/brightness/contrast. These are all
+difficult to deal with in a scrollbar-friendly manner (especially
+gamma), so I'll have to think about how best to do this. Having
+up/down adjustment buttons is obviously the least painful approach,
+but that doesn't seem terribly friendly. OTOH, it wouldn't take up
+much room, which would be helpful.
+
+[was going to do this for 0.6 but need to think about it a bit more]
+Look into sane ways to add shift-click behaviour for tagging multiple
+files with the mouse. The main difficulty is in where you consider the
+other end of the region to be - focus row seems bogus, selected row is
+similarly bad, and last ctrl-click should be tolerable but is still a
+bit odd. Thinking about it, I'm pretty sure it *has* to be last
+ctrl-click/shift-click to be at all usable.
+
+want an option to fit the viewer (and thus the window) to the size of
+the first image loaded if one or more images are specified on the
+cmdline. Also (this suggested by Wolfram Kleff) a
+fit-viewer-to-current-pic option; not a toggle, but a one-off `resize
+now' kind of thing like (IIRC) ^e in the Gimp.
+
+Need to *properly* block keyboard input to selector while loading an
+image - I probably need to catch key_release, but it's not too clear.
+Here's why - do mouse click in viewer to load an image, and press
+space while it's loading. Often you'll end up with one file apparently
+selected, but another file being viewed.
+
+Document the way the keyboard cursor follows last-selected dir when
+returning to a previously-visited one. (The logical place to document
+this is in the "changing dir" node.) This is important for mouse-happy
+users, who could conceivably not otherwise notice. [Perhaps not so
+important since selector focus fix, but still worth pointing out.]
+
+Some way to set the background colour in the viewer. Should make sure
+it overrides any pixmaps in the theme. [Obvious approaches didn't
+work; RTFS job on GTK+, I think...]
+
+
+* Important in long-term
+
+Switch to GTK+ 2.x (unless that causes problems), and use some other
+rendering backend than Imlib 1.x by default. The problem with the
+latter is that the alternatives I've seen are all awkward and/or
+slower in one way or another. :-/
+
+Have thumbnails in the selector only read/rendered/stored-as-pixmap
+*when displayed*, like zgv. I think overall this would be a win, and
+it would be much less demanding of pixmap resources in the X server.
+The only question is whether I can manage this without display
+glitches; should be possible if non-visible rows are kept pixmapless.
+
+Make help suck less. And I think viewing HTML would suck *more* in
+most cases, so this is going to be a bit tricky.
+
+Cursor left/right in selector (when filenames are longer than can fit)
+don't work that well. Should take these over and tweak the hadj
+manually, if possible (but IIRC it may not be easy :-/). Should also
+add h/l equivalents if I do this.
+
+The goto-dir dialog (and copy/move) should have some graphical means
+of choosing a dir, in addition to the text-entry widget. The only
+thing I've seen which looks reasonable is xmms's `DIR+' dialog, which
+doesn't look like it'd be too hard to adapt (though it's hard to tell
+for sure who I should credit this to if I did nick it :-)), but it
+might be better to wait until GTK+ has some standard
+file-selection-like thing for doing this. Anyway, even if I do add
+some `pretty' dir chooser I *have* to ensure you can always just do
+`G', type in the name, then enter (like you can now).
+
+
+* Wishlist features (not too important)
+
+Something to put current-file-or-tagged onto the clipboard would be
+really neat. (Just the (full) filenames, not the contents.) A bit like
+a more GUIfied version of `-T'. :-) (Good-ish name would be `copy file
+location' or similar, as used in Netscape.)
+
+`--selector-width' doesn't allow percentages. Should add that. This is
+slightly hairy as we have to leave it as a float percentage until we
+know we've got the actual window width. Also, it implies that the
+percentage should be recalculated every time we resize the window!
+(Not that we *set the selector* to the new size, just that we
+recalculate the default setting for `~'.)
+
+It might be nice if viewer shift-click changed scaling *around the
+point clicked on* (rather than always the centre of the window). This
+would be a bit hairy though, and since I tend to use the keyboard for
+scaling anyway I'm not sure I'm likely to bother. :-)
+
+Currently always uses a 48x48 icon pixmap. Should look into what hints
+are available about icon size, and should also offer overrides in case
+that's useless or whatever. :-)
+
+main() has got a bit ugly, that could do with cleaning up. Actually,
+main.c as a whole is a bit of a mess. :-)
+
+
+* Trivia
+
+[is this next one still the case?]
+Incredibly, texi2html doesn't support @email, so you end up with e.g.
+"you can email me at @email{rus@svgalib.org}" in the output HTML.
+Mmmm, classy. :-( Should I just use @code? IIRC the formatting is much
+the same.
+
+When you delete a file from the viewer (ctrl-d works there too), it
+works fine, but the deleted picture stays in the viewer. It might be
+better if it auto-closed the file (though this may be somewhat
+disturbing visually, which is why I've not taken this approach
+currently). (This suggested by Wolfram Kleff.)
+
+
+* Known bugs
+
+- when you delete a file at the cursor, if it's at the end of the file
+  list the cursor disappears. Should make it move the cursor back
+  before removing the entry. [This could well be a GTK+ bug in late
+  1.2.x versions, IIRC it didn't happen with 1.2.7 or thereabouts.]
+
+- callback routines which call render_pixmap() should really be
+  protected against recursion. Ok, this is basically done now, but the
+  protections are independent - so e.g. do a mirror and flip at about
+  the same time and it can still mess up. I expect I need to have a
+  general `stop listening to the user' callback-defending thing to get
+  this stuff truly fixed.
+
+- If you change themes, the current picture isn't updated (more
+  precisely, if you expose it afterwards it's not redrawn). This
+  happens when `normal' and zoomed, but *not* when scaling up. You
+  also get a GTK+ error of some kind IIRC.
+
+- Imlib problem. Same filename, different dirs, different images, both
+  recent - you don't get to see the 2nd image. :-( I'm not sure
+  there's much I can do about this, at least not when relying on Imlib
+  for picture-reading. Probably the best thing to do is add further
+  readers of my own, as I already have for e.g. GIF and PNG.
+
+- it doesn't apply any tranparency mask returned by Imlib. The
+  practical result of this seems to be purple transparent bits in
+  thumbnails and scaled-up pics, and black transparent bits elsewhere.
+  This doesn't affect GIF or PNG files, though.
+
+- in zoom mode, it copes with resizing the window as a whole, but
+  *doesn't* when you change the size of the pane (apart from when
+  hiding/showing selector or resizing from keyboard, but that's only
+  'cos I kludged it :-)). Might be fixable by catching configure
+  events on an event box containing sw_for_pic? [Tried it on clist
+  ebox, which is resized whenever viewer win is, but it didn't seem to
+  work...]
+
+- tagged filenames only appear in red when not selected. This doesn't
+  appear to be trivial to work around, unfortunately, and I can't
+  really see any other way of showing tagging which wouldn't look
+  nasty or take up loads of room.
+
+- 8-bit and/or dithering-related bugs:
+
+  - when scaling up and Imlib is dithering, you end up with a
+    crappy-looking picture if you drag the picture around slowly (since
+    each exposed bit is dithered independently, with no regard given to
+    matching up to any previous error-diffusion). But if I redrew the
+    whole thing each time, it would be *really* slow (this was the
+    approach I initially took in anticipation of this dithering problem,
+    but the slowness was astounding). Probably the best kludge is to
+    make sure it always redraws at least an NxN rectangle (N=20 might be
+    reasonable), but even this is a bit hairy, and would still be
+    somewhat ugly. [Though I've played about with xzgv in 8-bit mode a
+    bit more since writing this, and I think it might actually be ok.]
+  
+  - thumbnails don't look so great in palette-based (e.g. 8-bit) modes.
+    Should either dither them myself if depth<=8 (a bit painful but
+    probably the way to go), or load them as Imlib images (easy but may
+    prove very memory-hungry, and may possibly be slower).
+
+- if you use Tab (or the cursor keys) to move around in dialogs, it
+  acts like there's an invisible widget in addition to the ones you
+  can see. So in e.g. the file details (with only an Ok button) you
+  press Tab and the highlight disappears from Ok - press it again and
+  it returns. Investigation shows window->focus_widget is set to NULL
+  when on this `invisible widget', so it's hard to tell WTF is going
+  on, exactly. (A quick test of other GTK+ and Gnome programs seems to
+  suggest this is a GTK+ `feature'.)
+
+- Thumbnails are given an accurate width/height `IMGINFO' comment, but
+  are always claimed to be "RGB", as Imlib doesn't provide any way for
+  us to find out what type they are (other Gimp-style types are
+  "Grayscale" and "Indexed", IIRC). I could possibly kludge this for
+  common file types by reading the file's header, but this would be
+  really ugly - is it worth it or not? (An xv-ish file type after the
+  width/height would be easier, but still kludgey, and I'd much rather
+  be Gimp-friendly than xv-friendly.) May be worth returning valid
+  image-type info for own-reader types like GIF and PNG, though.
+
+- it seems Imlib doesn't `dirty' or copy images when you use its own
+  image-modify functions (!), so sometimes (due to pixmap cacheing,
+  which isn't easily avoided without constructing an entire config
+  structure) a file you e.g. mirror, then came back to soon after, can
+  have that mirrored version presented as if it were the actual image.
+  Probably the only ways of avoiding this which wouldn't be crushingly
+  slow are to a) copy images the first time they're modified and drop
+  the original version, or b) put together a config structure :-( in
+  order to disable the pixmap cache. [update: uh, isn't there some way
+  to just dirty the image/pixmap instead?]
