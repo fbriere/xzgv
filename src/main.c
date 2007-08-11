@@ -44,12 +44,6 @@
 #endif
 
 #include "backend.h"
-#include "readmrf.h"
-#include "readgif.h"
-#include "readpng.h"
-#include "readjpeg.h"
-#include "readtiff.h"
-#include "readprf.h"
 #include "resizepic.h"
 #include "rcfile.h"		/* needed for config vars */
 #include "filedetails.h"
@@ -65,7 +59,6 @@
 #include "dir_icon_small.xpm"
 #include "file_icon.xpm"
 #include "file_icon_small.xpm"
-#include "logo.h"
 #include "icon-48.xpm"
 
 #include "main.h"
@@ -150,7 +143,6 @@ int numrows=0;			/* number of rows in clist */
 
 gint zoom_resize_idle_tag=-1;	/* tag for zoom-resize kludge idle func */
 
-int pic_is_logo=1;		/* initial pic is logo, don't zoom it :-) */
 int listen_to_toggles=0;	/* ignore fix-up toggles initially */
 				/* (see init_window()) */
 int in_nextprev=0;		/* needed to protect against recursion */
@@ -895,7 +887,7 @@ if(img==NULL)
   return(FALSE);
 
 /* apply brightness/contrast to it */
-if((brightness!=0 || contrast!=1.0 || picgamma!=1.0) && !pic_is_logo)
+if((brightness!=0 || contrast!=1.0 || picgamma!=1.0))
   backend_set_value_mapping(img,bcg_mapping);
 
 backend_render_image_into_window(img,drawing_area->window,rx,ry);
@@ -1402,12 +1394,9 @@ switch(event->keyval)
     /* deliberately *doesn't* reset gamma */
     
   bcg_end:
-    if(!pic_is_logo)
-      {
       make_bcg_mapping(theimage);
       render_pixmap(0);
       if(SCALING_BY_HAND()) viewer_expose(NULL,NULL);
-      }
     break;
   
   
@@ -1759,7 +1748,7 @@ height=theimage->h;
 
 sw=width; sh=height;
 
-if(zoom && !pic_is_logo)
+if(zoom)
   get_zoomed_size(&sw,&sh);
 
 if(!zoom)
@@ -3453,25 +3442,11 @@ gtk_widget_show(error_win);
 }
 
 
-void show_logo(void)
-{
-image_is_big=0;
-theimage=backend_create_image_from_data(logo_data,logo_w,logo_h);
-
-render_pixmap(1);
-}
-
-
-/* close file (clear viewer) and replace with startup logo.
- * (Yeah, crappy, but better than an empty window (allegedly :-)).)
- */
+/* close file (clear viewer). */
 void cb_file_close(void)
 {
-if(pic_is_logo) return;		/* no need if on logo already */
-
 gtk_clist_unselect_all(GTK_CLIST(clist));
 current_selection=-1;
-pic_is_logo=1;
 cb_back_to_clist();		/* enable selector */
 
 if(theimage)
@@ -3480,8 +3455,6 @@ if(theimage)
 /* ignore revert/revert_orient for this */
 xscaling=yscaling=1;
 orient_current_state=0;
-
-show_logo();
 }
 
 
@@ -3782,10 +3755,6 @@ if((theimage=load_image(ptr,0,NULL,NULL))==NULL)
    */
   cb_back_to_clist();	/* enable selector */
   
-  /* if we didn't have anything before, resort to logo */
-  if(oldimage==NULL)
-    show_logo();
-
   selector_unblock();
   in_nextprev=in_routine=0;
   return;
@@ -3794,8 +3763,6 @@ if((theimage=load_image(ptr,0,NULL,NULL))==NULL)
 /* reflect loading of new pic in orientation stuff */
 orient_lastpicexit_state=orient_current_state;
 orient_current_state=0;
-
-pic_is_logo=0;
 
 /* see if it's a `big' image or not.
  *
@@ -4496,33 +4463,6 @@ for(f=0;f<numrows;f++)
 }
 
 
-void do_logo_invert(void)
-{
-int f,siz=logo_w*logo_h*3,c;
-unsigned char *ptr=logo_data;
-
-/* invert it */
-for(f=0;f<siz;f++,ptr++) *ptr=255-*ptr;
-
-/* ok, now kludge it :-) - the black right/bottom edge turns to white,
- * which is too bright. Make that the same as the grey line above/left of it.
- * (XXX this assumes the logo is a normal-GTK+-button-lookalike, and that the
- * colour is a greyscale.)
- */
-
-/* get pixel which is one up/left of bottom-right one */
-c=logo_data[(logo_w-2+(logo_h-2)*logo_w)*3];
-
-/* set bottom line */
-memset(logo_data+logo_w*(logo_h-1)*3,c,logo_w*3);
-
-/* set rightmost column */
-for(f=0;f<logo_h-1;f++)
-  memset(logo_data+(logo_w-1+logo_w*f)*3,c,3);
-}
-
-
-
 int main(int argc,char *argv[])
 {
 int f,argsleft;
@@ -4564,9 +4504,6 @@ if(old_hidith!=-1)
 else
   hicol_dither=-1;	/* if it was n/a before, it should be n/a now :-) */
 
-if(invert_logo)
-  do_logo_invert();
-
 if(argsleft==1 && isdir(argv[optind]))
   chdir(argv[optind]);	/* change to start directory */
 else
@@ -4607,10 +4544,6 @@ init_icon_pixmaps();
 /* read dir (unless loading pics from cmdline) */
 if(read_dir)
   {
-  /* show xzgv logo as initial image (mainly so it looks a bit less bizarre
-   * when it first starts up, yes really, honest :-)).
-   */
-  show_logo();
   create_clist_from_dir();
   if(skip_parent && numrows>1)		/* skip .. if they asked us to */
     {

@@ -25,7 +25,7 @@ OBJS=	main.o \
 	filedetails.o gotodir.o updatetn.o confirm.o help.o \
 	copymove.o rename.o \
 	resizepic.o dither.o \
-	rcfile.o misc.o logo.o \
+	rcfile.o misc.o \
 	getopt.o getopt1.o \
 	backend.o
 
@@ -34,9 +34,6 @@ xzgv: $(OBJS)
 
 backend.o:
 	$(CC) $(CFLAGS) $(GDK_PIXBUF_CFLAGS) -c -o backend.o backend.c
-
-logoconv: logoconv.o
-	$(CC) $(CFLAGS) -o logoconv logoconv.o
 
 install-info: install-info.c getopt.o getopt1.o
 	$(CC) $(INFODIRDEF) -o install-info install-info.c getopt.o getopt1.o
@@ -54,7 +51,6 @@ uninstall:
 clean:
 	$(RM) *~ *.o xzgv install-info
 	$(RM) rcfile_opt.h rcfile_var.h rcfile_short.h
-	$(RM) logodata.h logoconv
 
 
 # dependancies
@@ -68,8 +64,6 @@ getopt1.o: getopt1.c getopt.h
 gotodir.o: gotodir.c backend.h main.h gotodir.h
 help.o: help.c backend.h main.h rcfile.h help.h
 install-info.o: install-info.c getopt.h
-logo.o: logo.c logodata.h
-logoconv.o: logoconv.c
 main.o: main.c backend.h resizepic.h rcfile.h filedetails.h gotodir.h \
  updatetn.h confirm.h misc.h copymove.h rename.h help.h dir_icon.xpm \
  dir_icon_small.xpm file_icon.xpm file_icon_small.xpm logo.h \
@@ -83,8 +77,6 @@ updatetn.o: updatetn.c backend.h main.h rcfile.h dither.h resizepic.h \
  confirm.h misc.h updatetn.h
 
 # more involved dependancy stuff
-logodata.h: logoconv logo.ppm
-	./logoconv <logo.ppm >logodata.h
 rcfile_opt.h rcfile_var.h rcfile_short.h: options.src mkopts.awk
 	$(AWK) -f mkopts.awk <options.src
 
