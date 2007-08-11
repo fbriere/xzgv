@@ -377,101 +377,17 @@ backend_set_value_mapping(image,bcg_mapping);
 xzgv_image *load_image(char *file,int for_thumbnail,
                           int *origwp,int *orighp)
 {
-unsigned char *bmap;
-int w,h;
 xzgv_image *ret;
-char buf[4];
-FILE *in;
-int iret;
-int make_image=0;
 int origw,origh;
 
 jpeg_exif_orient=0;
 
-if((in=fopen(file,"rb"))==NULL)
-  return(NULL);
-
-iret=fread(buf,1,4,in);
-fclose(in);
-if(iret!=4)
-  return(NULL);
-
-if(strncmp(buf,"GIF8",4)==0)		/* GIF */
+ret=backend_create_image_from_file(file);	/* use backend's loader */
+origw=0; origh=0;
+if(ret)
   {
-  if(!read_gif_file(file,&bmap,&w,&h))
-    return(NULL);
-  origw=w; origh=h;
-  make_image=1;
-  }
-
-if(strncmp(buf,"\x89PNG",4)==0)		/* PNG */
-  {
-  if(!read_png_file(file,&bmap,&w,&h))
-    return(NULL);
-  origw=w; origh=h;
-  make_image=1;
-  }
-
-if(strncmp(buf,"MRF1",4)==0)		/* mrf */
-  {
-  if(!read_mrf_file(file,&bmap,&w,&h))
-    return(NULL);
-  origw=w; origh=h;
-  make_image=1;
-  }
-
-if(strncmp(buf,"PRF1",4)==0)		/* PRF */
-  {
-  if(!read_prf_file(file,&bmap,&w,&h))
-    return(NULL);
-  origw=w; origh=h;
-  make_image=1;
-  }
-
-if(memcmp(buf,"II*\0",4)==0 || memcmp(buf,"MM\0*",4)==0)	/* TIFF */
-  {
-  if(!read_tiff_file(file,&bmap,&w,&h))
-    return(NULL);
-  origw=w; origh=h;
-  make_image=1;
-  }
-
-if(buf[0]=='\xff' && buf[1]=='\xd8')	/* JPEG */
-  {
-  if(!read_jpeg_file(file,&bmap,&w,&h,&origw,&origh,for_thumbnail))
-    return(NULL);
-  if(use_exif_orient)
-    jpeg_exif_orient=get_exif_orientation(file);
-  make_image=1;
-  }
-
-if(make_image)
-  {
-  /* XXX would be better to put this check in each reader, but
-   * this is a fairly extreme error so I suppose it doesn't matter
-   * all that much...? Would be nice to say something other than
-   * "Couldn't find file" for this though.
-   */
-  if(origw>32767 || origh>32767)
-    {
-    if(bmap) free(bmap);
-    jpeg_exif_orient=0;
-    return(NULL);
-    }
-  
-  ret=backend_create_image_from_data_destructively(bmap,w,h);
-  /* that takes over bmap, so we don't free it */
-  /* orig[wh] already set */
-  }
-else
-  {
-  ret=backend_create_image_from_file(file);	/* use backend's loader */
-  origw=0; origh=0;
-  if(ret)
-    {
     origw=ret->w;
     origh=ret->h;
-    }
   }
 
 if(origwp) *origwp=origw;

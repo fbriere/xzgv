@@ -4,13 +4,12 @@
  * backend.c - picture rendering and (to a certain extent) loading.
  *
  * This is intended to be a reasonably generic wrapper for the library
- * which is actually doing the work, to ease any transition from Imlib
- * 1.x to something else. (Or I could keep the Imlib 1.x backend in,
- * but add another and recommend using that, etc.)
+ * which is actually doing the work, to ease any transition, or allow
+ * extra backends.
  *
  * The basic assumptions are:
  *
- * - all pictures loaded as 24-bit. (So Imlib2 support'll be fun :-( )
+ * - all pictures loaded as 24-bit.
  *
  * - a 24-bit copy is stored in an opaque (or mostly opaque) image
  *   structure of some sort; this is then rendered as needed.

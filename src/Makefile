@@ -24,8 +24,6 @@ all: xzgv install-info
 OBJS=	main.o \
 	filedetails.o gotodir.o updatetn.o confirm.o help.o \
 	copymove.o rename.o \
-	readmrf.o readgif.o readpng.o readjpeg.o \
-	readtiff.o readprf.o \
 	resizepic.o dither.o \
 	rcfile.o misc.o logo.o \
 	getopt.o getopt1.o \
@@ -72,20 +70,13 @@ help.o: help.c backend.h main.h rcfile.h help.h
 install-info.o: install-info.c getopt.h
 logo.o: logo.c logodata.h
 logoconv.o: logoconv.c
-main.o: main.c backend.h readmrf.h readgif.h readpng.h readjpeg.h \
- readtiff.h readprf.h resizepic.h rcfile.h filedetails.h gotodir.h \
+main.o: main.c backend.h resizepic.h rcfile.h filedetails.h gotodir.h \
  updatetn.h confirm.h misc.h copymove.h rename.h help.h dir_icon.xpm \
  dir_icon_small.xpm file_icon.xpm file_icon_small.xpm logo.h \
  icon-48.xpm main.h
 misc.o: misc.c misc.h
 rcfile.o: rcfile.c getopt.h rcfile.h rcfile_opt.h rcfile_var.h \
  rcfile_short.h
-readgif.o: readgif.c reader.h readgif.h
-readjpeg.o: readjpeg.c rcfile.h reader.h readjpeg.h
-readmrf.o: readmrf.c reader.h readmrf.h
-readpng.o: readpng.c readpng.h
-readprf.o: readprf.c reader.h readprf.h
-readtiff.o: readtiff.c reader.h readtiff.h
 rename.o: rename.c backend.h main.h rename.h
 resizepic.o: resizepic.c resizepic.h
 updatetn.o: updatetn.c backend.h main.h rcfile.h dither.h resizepic.h \
@@ -96,3 +87,6 @@ logodata.h: logoconv logo.ppm
 	./logoconv <logo.ppm >logodata.h
 rcfile_opt.h rcfile_var.h rcfile_short.h: options.src mkopts.awk
 	$(AWK) -f mkopts.awk <options.src
+
+loc:
+	sloccount *.c *.h
