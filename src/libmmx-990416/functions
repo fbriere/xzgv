@@ -1,0 +1,328 @@
+Function definitions in libmmx.
+
+	In general, the library functions are provided to support 2x32, 4x16,
+	and 8x8 register partitionings.  However, MMX does not support each of
+	these partitionings for every operation.
+
+	Most operations are provided with signed wrap-around (modular), signed
+	saturation, and unsigned saturation forms.  For each library function,
+	the supported forms are listed after a short description of the
+	function.
+
+	In a modular operation, each field result is calculated as though the
+	field contains an infinite number of bits.  Then the n low-order bits
+	are stored in the n-bit field.  This is called modular because it is
+	the equivalent of storing (result mod 2^n).  In a signed saturated
+	operation, the result is calculated as though the field contains an
+	infinite number of bits.  Then, if the value is greater than the
+	most positive value that can be stored in n bits, the most positive
+	value is stored.  If it is less than the most negative value that can
+	be stored in n bits, the most negative value is stored.  An unsigned
+	saturated operation is the same as a signed saturated operation, except
+	that the most positive value is twice as large as for a signed
+	operation, and there are no negative values.  Thus, if the result is
+	negative, the value stored is 0.
+
+	Most libmmx function names start with the Intel MMX instruction
+	mnemonic, which consists of a base name for the operation, optionally
+	followed by a form modifier, followed by a suffix indicating the
+	partitioning to be used during the operation.  This is optionally
+	followed by an underscore and the a operand location indicator.
+
+	In the descriptions which follow, "mmxreg" refers to an parameter which
+	takes the name of one of the MMX registers: mm0 through mm7.
+	Other parameters take a value of the type indicated.  In some functions
+	it is possible to use the name of an integer register instead of an MMX
+	registers.  Consult the "Intel Architecture Software Developer's Manual
+	Volume 2" for information about this.
+	
+
+Setup functions:
+	These functions determine if MMX support is available and restore the
+	registers to floating point (FP) mode for use with floating point
+	instructions after MMX instructions have been used.
+
+	Check the CPU ID to see if MMX is supported.  If so, return a positive
+	value.  If not, return 0.
+		int mmx_ok(void);
+
+	Execute the EMMS instruction to place the CPU in FP mode after other
+	MMX instructions have been executed.
+		void emms(void);
+
+
+Load/Store functions:
+	These functions move data between memory, integer registers, or MMX
+	registers, and memory, integer registers, or MMX registers.
+
+	Move a 64-bit value from memory op1 to MMX register op2.
+		movq_m2r(const mmx_t op1, mmxreg op2);
+	Move a 64-bit value from MMX register op1 to memory op2.
+		movq_r2m(mmxreg op1, mmx_t op2);
+	Move a 64-bit value from MMX register op1 to MMX register op2.
+		movq_r2r(mmxreg op1, mmxreg op2);
+	Move a 64-bit value from memory op1 to memory op2.
+		movq(const mmx_t op1, mmx_t op2);
+
+	Move a 32-bit value from memory op1 to MMX register op2, clearing the
+	upper 32 bits of op2.
+		movd_m2r(const long op1, mmxreg op2);
+	Move the low 32 bits of MMX register op1 to memory op2.
+		movd_r2m(mmxreg op1, long op2);
+	Move the low 32 bits of MMX register, or memory op, op1 to memory op,
+	or the low 32 bits of MMX register, op2.
+		movd_r2r(const long op1, mmxreg op2);
+		movd_r2r(mmxreg op1, long op2);
+	Move a 32-bit value from memory op1 to memory op2.
+		movd(const long op1, long op2);
+
+Arithmetic functions:
+	These functions provide addition, subtraction, multiplication,
+	and a combined multiplication/addition operation.
+
+	Store the parallel sum of op1 and op2 using signed wrap-around
+	addition in op2 (2x32, 4x16, 8x8):
+		mmx_paddd_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddd_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddd(const mmx_t op1, mmx_t op2);
+		mmx_paddw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddw_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddw(const mmx op1, mmx op2);
+		mmx_paddb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddb_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddb(const mmx_t op1, mmx_t op2);
+
+	Store the parallel sum of op1 and op2 using signed saturation
+	addition in op2 (4x16, 8x8):
+		mmx_paddsw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddsw_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddsw(const mmx_t op1, mmx_t op2);
+		mmx_paddsb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddsb_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddsb(const mmx_t op1, mmx_t op2);
+
+	Store the parallel sum of op1 and op2 using unsigned saturation
+	addition in op2 (4x16, 8x8):
+		mmx_paddusw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddusw_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddusw(const mmx_t op1, mmx_t op2);
+		mmx_paddusb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_paddusb_r2r(mmxreg op1, mmxreg op2);
+		mmx_paddusb(const mmx_t op1, mmx_t op2);
+
+	Parallel subtract op1 from op2 using signed wrap-around subtraction
+	and store the difference in op2 (2x32, 4x16, 8x8):
+		mmx_psubd_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubd_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubd(const mmx_t op1, mmx_t op2);
+		mmx_psubw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubw_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubw(const mmx_t op1, mmx_t op2);
+		mmx_psubb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubb_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubb(const mmx_t op1, mmx_t op2);
+
+	Parallel subtract op1 from op2 using signed saturation subtraction
+	and store the difference in op2 (4x16, 8x8):
+		mmx_psubsw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubsw_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubsw(const mmx_t op1, mmx_t op2);
+		mmx_psubsb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubsb_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubsb(const mmx_t op1, mmx_t op2);
+
+	Parallel subtract op1 from op2 using unsigned saturation subtraction
+	and store the difference in op2 (4x16, 8x8):
+		mmx_psubusw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubusw_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubusw(const mmx_t op1, mmx_t op2);
+		mmx_psubusb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psubusb_r2r(mmxreg op1, mmxreg op2);
+		mmx_psubusb(const mmx_t op1, mmx_t op2);
+
+	Parallel multiply op1 and op2 using unsigned saturation multiplication
+	and store the low-order word of the result in op2 (4x16):
+		mmx_pmullw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pmullw_r2r(mmxreg op1, mmxreg op2);
+		mmx_pmullw(const mmx_t op1, mmx_t op2);
+
+	Parallel multiply op1 and op2 using unsigned saturation multiplication
+	and store the high-order word of the result in op2 (4x16):
+		mmx_pmulhw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pmulhw_r2r(mmxreg op1, mmxreg op2);
+		mmx_pmulhw(const mmx_t op1, mmx_t op2);
+
+	Parallel multiply the words of op1 and op2 using signed multiplication
+	to form four signed doubleword intermediate results.  Parallel add the
+	intermediate results formed by the high-order doublewords of op1 and
+	op2 into the high-order doubleword of op2, and parallel add the
+	intermediate results formed by the low-order doublewords of op1 and op2
+	into the low-order doubleword of op2 (4x16):
+		mmx mmx_pmaddwd_m2r(const mmx_t op1, mmxreg op2);
+		mmx mmx_pmaddwd_r2r(mmxreg op1, mmxreg op2);
+		mmx mmx_pmaddwd(const mmx_t op1, mmx_t op2);
+
+
+The bitwise logical functions:
+	These functions work for any partitioning and form.
+
+	Store the bitwise-AND of op1 and op2 in op2:
+		mmx_pand_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pand_r2r(mmxreg op1, mmxreg op2);
+		mmx mmx_pand(const mmx_t op1, mmx_t op2);
+	Store the bitwise-AND of op1 and the ones-compliment of op2 in op2:
+		mmx_pandn_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pandn_r2r(mmxreg op1, mmxreg op2);
+		mmx_pandn(const mmx_t op1, mmx_t op2);
+	Store the bitwise-OR of op1 and op2 in op2:
+		mmx_por_m2r(const mmx_t op1, mmxreg op2);
+		mmx_por_r2r(mmxreg op1, mmxreg op2);
+		mmx_por(const mmx_t op1, mmx_t op2);
+	Store the bitwise-XOR of op1 and op2 in op2:
+		mmx_pxor_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pxor_r2r(mmxreg op1, mmxreg op2);
+		mmx_pxor(const mmx_t op1, mmx_t op2);
+
+
+The comparison functions:
+	These functions store an mmx value in op2 in which every bit of each
+	field for which the comparison is true set to '1', and every other bit
+	set to '0'.  For example, if op1 contains 0x01...005f33 and op2
+	contains 0x00...006f33, the result of mmx_pcmpeqb(op1,op2) would be
+	0x00...FF00FF, and the result of mmx_pcmpgtb(op1,op2) would be
+	0x00...00FF00.
+
+	Set to true if op1 equals op2 (2x32, 4x16, 8x8):
+		mmx_pcmpeqd_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pcmpeqd_r2r(mmxreg op1, mmxreg op2);
+		mmx_pcmpeqd(const mmx_t op1, mmx_t op2);
+		mmx_pcmpeqw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pcmpeqw_r2r(mmxreg op1, mmxreg op2);
+		mmx_pcmpeqw(const mmx_t op1, mmx_t op2);
+		mmx_pcmpeqb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pcmpeqb_r2r(mmxreg op1, mmxreg op2);
+		mmx_pcmpeqb(const mmx_t op1, mmx_t op2);
+
+	Set to true if op2 is greater than op1 (2x32, 4x16, 8x8):
+		mmx_pcmpgtd_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pcmpgtd_r2r(mmxreg op1, mmxreg op2);
+		mmx_pcmpgtd(const mmx_t op1, mmx_t op2);
+		mmx_pcmpgtw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pcmpgtw_r2r(mmxreg op1, mmxreg op2);
+		mmx_pcmpgtw(const mmx_t op1, mmx_t op2);
+		mmx_pcmpgtb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pcmpgtb_r2r(mmxreg op1, mmxreg op2);
+		mmx_pcmpgtb(const mmx_t op1, mmx_t op2);
+
+
+The bit shifting functions:
+	In these operations, if an MMX register is used as the shift count
+	(i.e. op1), the data in the register is taken as a single unsigned
+	64-bit value, and is used as the count for each of the fields of op2.
+
+	Parallel shift left logical each of the fields in op2 by the unsigned
+	number of bits in op1 (2x32, 4x16, 8x8).  In the _i2r forms, op1 is
+	an unsigned 64-bit immediate value, but only the lower 8 bits are used
+	by the instruction:
+		mmx_psllq_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psllq_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psllq_r2r(mmxreg op1, mmxreg op2);
+		mmx_psllq(const mmx_t op1, mmx_t op2);
+		mmx_pslld_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_pslld_m2r(const mmx_t op1, mmxreg op2);
+		mmx_pslld_r2r(mmxreg op1, mmxreg op2);
+		mmx_pslld(const mmx_t op1, mmx_t op2);
+		mmx_psllw_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psllw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psllw_r2r(mmxreg op1, mmxreg op2);
+		mmx_psllw(const mmx_t op1, mmx_t op2);
+
+	Parallel shift right logical each of the fields in op2 by the unsigned
+	number of bits in op1 (2x32, 4x16, 8x8).  In the _i2r forms, op1 is
+	an unsigned 64-bit immediate value, but only the lower 8 bits are used
+	by the instruction:
+		mmx_psrlq_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psrlq_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psrlq_r2r(mmxreg op1, mmxreg op2);
+		mmx_psrlq(const mmx_t op1, mmx_t op2);
+		mmx_psrld_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psrld_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psrld_r2r(mmxreg op1, mmxreg op2);
+		mmx_psrld(const mmx_t op1, mmx_t op2);
+		mmx_psrlw_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psrlw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psrlw_r2r(mmxreg op1, mmxreg op2);
+		mmx_psrlw(const mmx_t op1, mmx_t op2);
+
+	Parallel shift right arithmetic each of the fields in op2 by the
+	unsigned number of bits in op1 (4x16, 8x8).  In the _i2r forms, op1 is
+	an unsigned 64-bit immediate value, but only the lower 8 bits are used
+	by the instruction:
+		mmx_psrad_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psrad_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psrad_r2r(mmxreg op1, mmxreg op2);
+		mmx_psrad(const mmx_t op1, mmx_t op2);
+		mmx_psraw_i2r(const unsigned byte op1, mmxreg op2);
+		mmx_psraw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_psraw_r2r(mmxreg op1, mmxreg op2);
+		mmx_psraw(const mmx_t op1, mmx_t op2);
+
+
+The format conversion functions:
+	Pack and saturate the signed doublewords of op2 into the low-order
+	words of the result, and pack and saturate the signed doublewords of
+	op1 into the high-order words of the result.  Copy the result to op2.
+		mmx_packssdw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_packssdw_r2r(mmxreg op1, mmxreg op2);
+		mmx_packssdw(const mmx_t op1, mmx_t op2);
+
+	Pack and saturate the signed words of op2 into the low-order bytes of
+	the result, and pack and saturate the signed words of op1 into the
+	high-order bytes of the result.  Copy the result to op2.
+		mmx_packsswb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_packsswb_r2r(mmxreg op1, mmxreg op2);
+		mmx_packsswb(const mmx_t op1, mmx_t op2);
+
+	Pack and saturate the signed words of op2 into the low-order bytes of
+	the result, and pack and saturate the signed words of op1 into the
+	high-order bytes of the result.  Copy the result to op2.
+		mmx_packuswb_m2r(const mmx_t op1, mmxreg op2);
+		mmx_packuswb_r2r(mmxreg op1, mmxreg op2);
+		mmx_packuswb(const mmx_t op1, mmx_t op2);
+
+
+	Unpack and interleave the low-order bytes of op2 and op1 with the
+	lowest-order byte of op2 becoming the lowest order byte of the result,
+	the lowest-order byte of op1 becoming the second lowest byte of the
+	result, the second lowest byte of op2 becoming the third lowest byte of
+	the result, etc.  Copy the result to op2.
+		mmx_punpcklbw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_punpcklbw_r2r(mmxreg op1, mmxreg op2);
+		mmx_punpcklbw(const mmx_t op1, mmx_t op2);
+	Same as above but with words.
+		mmx_punpcklwd_m2r(const mmx_t op1, mmxreg op2);
+		mmx_punpcklwd_r2r(mmxreg op1, mmxreg op2);
+		mmx_punpcklwd(const mmx_t op1, mmx_t op2);
+	Same as above but with doublewords.
+		mmx_punpckldq_m2r(const mmx_t op1, mmxreg op2);
+		mmx_punpckldq_r2r(mmxreg op1, mmxreg op2);
+		mmx_punpckldq(const mmx_t op1, mmx_t op2);
+
+
+	Unpack and interleave the high-order bytes of op2 and op1 with the
+	highest-order byte of op1 becoming the highest order byte of the
+	result, the highest-order byte of op2 becoming the second highest byte
+	of the result, the second highest byte of op1 becoming the third
+	highest byte of the result, etc.  Copy the result to op2.
+		mmx_punpckhbw_m2r(const mmx_t op1, mmxreg op2);
+		mmx_punpckhbw_r2r(mmxreg op1, mmxreg op2);
+		mmx_punpckhbw(const mmx_t op1, mmx_t op2);
+	Same as above but with words.
+		mmx_punpckhwd_m2r(const mmx_t op1, mmxreg op2);
+		mmx_punpckhwd_r2r(mmxreg op1, mmxreg op2);
+		mmx_punpckhwd(const mmx_t op1, mmx_t op2);
+	Same as above but with doublewords.
+		mmx_punpckhdq_m2r(const mmx_t op1, mmxreg op2);
+		mmx_punpckhdq_r2r(mmxreg op1, mmxreg op2);
+		mmx_punpckhdq(const mmx_t op1, mmx_t op2);
+

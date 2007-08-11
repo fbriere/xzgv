@@ -1,0 +1,40 @@
+Should I upgrade to libmmx-990416 from libmmx-990325?
+  If you are having problems with the r2r macros and %%mm? register names, then
+    yes.  Otherwise, no.
+
+Should I upgrade to libmmx-990416 from earlier versions of the library?
+  Yes.
+
+----------
+What steps do I need to take to upgrade my system to libmmx-990416 from
+libmmx versions 980714 through 990325?
+	1) Remove (or archive) the header file "mmx.h" from INCDIR as defined
+	   in the Makefile for your current version.
+	2) Perform the steps in the INSTALL file for libmmx-990416.
+
+What steps do I need to take to upgrade my applications to libmmx-990416 from
+libmmx versions 980714 through 990325?
+	Please take note of the changes to mmx_t which may affect your
+	  application.
+	Recompile after upgrading the header file as above.
+
+----------
+What steps do I need to take to upgrade my system to libmmx-990416 from
+libmmx-980501?
+	1) Remove the library file "libmmx.a" from LIBDIR.
+	2) Remove the header file "libmmx.h" from INCDIR.
+	3) Remove the manual pages from MANDIR.
+	4) Remove the HTML manual from HTMLDIR.
+	5) Perform the steps in the INSTALL file for libmmx-990416.
+
+What steps do I need to take to upgrade my applications to libmmx-990416 from
+libmmx-980501?
+	1) Change references to the header file "libmmx.h" to "mmx.h"
+	2) Change the operand order for those functions whose ordering differs
+	   between the old and new libraries.
+	3) Eliminate any linking steps from make files, etc., which link the
+	   old library file "libmmx.a" to your application.
+	4) Recompile.
+	After this, you may want to make use of the forms which leave the
+	results in MMX registers to increase performance.
+

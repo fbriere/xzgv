@@ -1,0 +1,43 @@
+1997-99 by H. Dietz and R. Fisher
+
+97-98*	R.Fisher	Early versions
+980501	R.Fisher	Original Release
+980611*	H.Dietz		Rewrite, correctly implementing inlines, and
+	R.Fisher	 including direct register accesses.
+980616	R.Fisher	Release of 980611 as 980616.
+980714	R.Fisher	Minor corrections to Makefile, etc.
+980715	R.Fisher	mmx_ok() now prevents optimizer from using
+			 clobbered values.
+			mmx_ok() now checks if cpuid instruction is
+			 available before trying to use it.
+980726*	R.Fisher	mm_support() searches for AMD 3DNow, Cyrix
+			 Extended MMX, and standard MMX.  It returns a
+			 value which is positive if any of these are
+			 supported, and can be masked with constants to
+			 see which.  mmx_ok() is now a call to this
+980726*	R.Fisher	Added i2r support for shift functions
+980919	R.Fisher	Fixed AMD extended feature recognition bug.
+980921	R.Fisher	Added definition/check for _MMX_H.
+			Added "float s[2]" to mmx_t for use with
+			  3DNow and EMMX.  So same mmx_t can be used.
+981013	R.Fisher	Fixed cpuid function 1 bug (looked at wrong reg)
+			Fixed psllq_i2r error in mmxtest.c
+990113*	R.Fisher	First shot at Cyrix recognition bug
+			Put union on an 8-byte boundary
+990114	R.Fisher	First short at fixing the tracing on _i2r macros
+990122	R.Fisher	Another pass at the Cyrix detection.
+			History and Acknowledgments sections removed
+			from header file.
+990123	R.Fisher	Change mmx.h tracing macros and mmxtest.c to work with
+			compilers without "ll" format in printf's.
+			Change _i2r TRACE macro to case "imm" to an "mmx_t" on
+			assignment.
+990124	R.Fisher	Change arguments in movq's around psllq_i2r and
+			constant arguments in ps*lq to LL in mmxtest.c.
+990208	R.Fisher	Change argument type for i2r macros for egcs.
+990325	R.Fisher	Change % to %% in r2r macros before register name.
+990416	R.Fisher	Added optional CPP definition in Makefile
+			Changed "%%" to "%" in _r2r macro def'n.
+
+* Unreleased (internal or interim) versions
+

@@ -1,0 +1,73 @@
+# This is mangled by mkopts.awk to make rcfile_{opt,var,short}.h. Such
+# an approach is necessary so we can use it to make the tables for
+# both getopt_long() and my config file stuff. It also generates the
+# short-options getopt string as a #define in rcfile_short.h, so that
+# it doesn't have to be duplicated by hand in rcfile.c (which would suck).
+#
+# The main remaining duplication is that options are documented in
+# both rcfile.c's usage_help() and the texinfo docs, but I don't see
+# that as too huge a problem really. :-)
+
+
+# The format is one record per line, with blank lines and lines
+# starting with `#' ignored. Lines have these fields (separated
+# by whitespace, and *without any commas*):
+#
+# name		long option/config variable name.
+# shortopt	char used for short option (0 if none or not appropriate).
+# allow_option	1 if allowed as option.
+# allow_config	1 if allowed as config variable.
+# has_arg	NO_ARG/REQ_ARG/OPT_ARG, like the no_argument/required_argument/
+#		optional_argument used by getopt_long().
+# funcptr	function to call if opt/var is encountered.
+# dataptr	data pointer supplied to function.
+#
+# funcptr is called like this:
+#
+#	funcptr(optarg,dataptr);
+#
+# with `optarg' being any argument given to the opt/var, NULL if none.
+
+# Note that most apparently-boolean args below which are OPT_ARG use
+# the extra arg to override the default set-the-flag behaviour; so for
+# example, `--fullscreen' sets the fullscreen flag, but
+# `--fullscreen=off' unsets it (useful if it's set in a config file).
+
+
+# name		short	opt,cfg,has_arg	funcptr		dataptr
+
+# help opts
+"help"		'h'	1 0 NO_ARG	usage_help	NULL
+"version"	'v'	1 0 NO_ARG	print_version	NULL
+"version-gtk"	0	1 0 NO_ARG	print_gtk_ver	NULL
+
+"auto-hide"	'a'	1 1 OPT_ARG	get_bool	&auto_hide
+"careful-jpeg"	0	1 1 OPT_ARG	get_bool	&careful_jpeg
+"click-for-next" 0	0 1 OPT_ARG	get_bool	&click_nextpic
+"dither-hicol"	0	1 1 OPT_ARG	get_bool	&hicol_dither
+"delete-single-prompt" 0 1 1 OPT_ARG	get_bool	&delete_single_prompt
+"exif-orient"	0	1 1 OPT_ARG	get_bool	&use_exif_orient
+"fast-recursive-update" 0 1 1 OPT_ARG	get_bool	&fast_recursive_update
+"fullscreen"	'f'	1 1 OPT_ARG	get_bool	&fullscreen
+"gamma"		'G'	1 1 REQ_ARG	get_double	&picgamma
+"geometry"	'g'	1 1 REQ_ARG	get_geom	NULL
+"image-bigness-threshold" 0 1 1 REQ_ARG	get_int	       &image_bigness_threshold
+"interpolate"	0	1 1 OPT_ARG	get_bool	&interp
+"mouse-scale-x" 0	1 1 OPT_ARG	get_bool	&mouse_scale_x
+"revert-orient"	0	1 1 OPT_ARG	get_bool	&revert_orient
+"revert-scale"	0	1 1 OPT_ARG	get_bool	&revert
+"selector-width" 0	1 1 REQ_ARG	get_selwidth	&default_sel_width
+"show-thumbnail-messages" 0 1 1 OPT_ARG	get_bool	&tn_msgs
+"skip-parent"	'k'	1 1 OPT_ARG	get_bool	&skip_parent
+"sort-order"	'o'	1 1 REQ_ARG	get_sortorder	NULL
+"sort-timestamp-type" 0 1 1 REQ_ARG	get_timetype	NULL
+"statusbar"	0	1 1 OPT_ARG	get_bool	&have_statusbar
+"thin-rows"	't'	1 1 OPT_ARG	get_bool	&thin_rows
+"zoom"		'z'	1 1 OPT_ARG	get_bool	&zoom
+"zoom-reduce-only" 'r'	1 1 OPT_ARG	get_bool	&zoom_reduce_only
+
+# `one-offs', ones you can't enable in a config file
+"show-tagged"	'T'	1 0 OPT_ARG	get_bool	&show_tagged
+
+# config-file-only ones
+"invert-logo"	0	0 1 OPT_ARG	get_bool	&invert_logo

@@ -1,0 +1,31 @@
+INSTALL for libmmx.
+
+Step 1: Edit the top-level Makefile to choose your installation directories
+
+	INCDIR: You will need to have write permission to this directory.
+		For a site-wide installation, you should choose a directory
+		which is executable by those you want to use the library.  It
+		should also be on a standard include search path if possible
+		to avoid having to tell everyone which -I switch to include.
+
+		For private installations, you should first see if there is
+		a current site-wide distribution.  Assuming there isn't, you
+		should pick a directory where you have read/write permissions.
+
+		The default is /usr/local/include
+
+
+Step 2: Decide what to install
+
+	The targets you may want to give to the top-level Makefile are:
+		examples	Build and run the test app "Examples/testit"
+		install		Copy the the header file to INCDIR.
+		all		Do all the above
+
+		The default target is "all".
+
+
+Applications should #include <mmx.h> if INCDIR is on the include search path,
+or #include "mmx.h" if INCDIR is not.  In the latter case, the -I may be
+required to inform the compiler where to look for the header file.
+

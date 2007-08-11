@@ -1,0 +1,27 @@
+Jussi Laako for pointing out the errors ultimately found to be connected to the
+failure to notify the optimizer of clobbered values.
+
+Roger Hardiman for reminding us that CPUID isn't everywhere, and that someone
+may actually try to use this on a machine without CPUID.  Also for suggesting
+code for checking this.
+
+Robert Dale for pointing out the AMD recognition bug.
+
+Jimmy Mayfield and Carl Witty for pointing out the Intel recognition bug.
+
+Serge Krier for pointing out missing i2r versions of shifts (on same weekend I
+realized it was missing, but thanks for the note).
+
+Carl Witty for pointing out the psllq_i2r test bug.
+
+Franco Bez for pointing out and testing the Cyrix recognition problem.
+
+Valient Gough for alignment suggestion and indicating, and suggesting a fix
+for, the _i2r tracing bug.
+
+Franco Bez for help with the egcs i2r bugs.
+
+Hugh Holbrook for catching the latest %% bug, for suggesting the use of
+"gcc -E" as a replacement for cpp which may not be easy to find, and for
+noting the ecgs warnings about __volatile__ with __asm__.
+

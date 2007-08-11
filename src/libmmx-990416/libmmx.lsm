@@ -1,0 +1,17 @@
+Begin3
+Title:          libmmx
+Version:        990416
+Entered-date:   16APR99
+Description:    A C macro interface to the MMX multimedia extensions to the
+                ix86 instruction set
+Keywords:       MMX multimedia
+Author:         hankd@ecn.purdue.edu (Hank Dietz)
+		rfisher@ecn.purdue.edu (Randall Fisher)
+Maintained-by:  rfisher@ecn.purdue.edu (Randall Fisher)
+Primary-site:   sunsite.unc.edu /pub/Linux/libs/
+		15436 libmmx-990416.tgz
+Alternate-site: 
+Original-site:  
+Platforms:      GNU assembler 2.8.1; MMX-enhanced CPU to run derivative code
+Copying-policy: PD
+End
