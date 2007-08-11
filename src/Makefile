@@ -66,7 +66,7 @@ help.o: help.c backend.h main.h rcfile.h help.h
 install-info.o: install-info.c getopt.h
 main.o: main.c backend.h resizepic.h rcfile.h filedetails.h gotodir.h \
  updatetn.h confirm.h misc.h copymove.h rename.h help.h dir_icon.xpm \
- dir_icon_small.xpm file_icon.xpm file_icon_small.xpm logo.h \
+ dir_icon_small.xpm file_icon.xpm file_icon_small.xpm \
  icon-48.xpm main.h
 misc.o: misc.c misc.h
 rcfile.o: rcfile.c getopt.h rcfile.h rcfile_opt.h rcfile_var.h \
