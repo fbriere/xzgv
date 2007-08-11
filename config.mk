@@ -29,15 +29,6 @@ AWK=awk
 #
 CFLAGS+=-DINTERP_MMX
 
-# Set rendering backend to use. Currently only Imlib 1.x is properly
-# supported, so leave this alone. :-)
-#
-#BACKEND=IMLIB1
-BACKEND=GDK_PIXBUF
-# (An Imlib2 backend may be added eventually, but it would be
-# problematic as that uses RGBA rather than RGB.)
-
-
 # --------------------- Installation options ----------------------
 
 # Set BINDIR to directory for binaries,
