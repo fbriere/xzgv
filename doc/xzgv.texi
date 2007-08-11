@@ -2793,9 +2793,6 @@ description of how this type works.
 
 @cindex config variables
 @cindex variables, config
-@cindex inverting the logo
-@cindex logo, inverting the
-@c unfortunately, I don't think this is overkill :-/
 @cindex themes, adjusting for dark GTK+
 @cindex GTK+ themes, adjusting for dark
 @cindex dark GTK+ themes, adjusting for
@@ -2808,13 +2805,6 @@ in the section which discusses command-line options and the like
 (@pxref{Invoking xzgv}).
 
 However, there are some settings only available in the config file:
-
-@vtable @samp
-@item invert-logo
-If enabled, this causes the logo to appear with its colours inverted.
-This tends to look better with dark GTK+ themes. (I may eventually add
-an option to remove the logo entirely to avoid problems of this nature,
-but for now this is a nice-looking kludge. :-))
 
 @item click-for-next
 This is enabled by default, allowing you to click on the viewer to skip
