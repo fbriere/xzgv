@@ -83,18 +83,18 @@ gtk_widget_show(label);
 
 /* esc/n = no */
 gtk_widget_add_accelerator(no_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_Escape,0,0);
 gtk_widget_add_accelerator(no_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_n,0,0);
 
 /* enter/y = yes */
 gtk_widget_add_accelerator(yes_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_Return,0,0);
 gtk_widget_add_accelerator(yes_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_y,0,0);
 
 

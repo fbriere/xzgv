@@ -380,7 +380,7 @@ xzgv_image *load_image(char *file,int for_thumbnail,
 unsigned char *bmap;
 int w,h;
 xzgv_image *ret;
-unsigned char buf[4];
+char buf[4];
 FILE *in;
 int iret;
 int make_image=0;
@@ -436,7 +436,7 @@ if(memcmp(buf,"II*\0",4)==0 || memcmp(buf,"MM\0*",4)==0)	/* TIFF */
   make_image=1;
   }
 
-if(buf[0]==0xff && buf[1]==0xd8)	/* JPEG */
+if(buf[0]=='\xff' && buf[1]=='\xd8')	/* JPEG */
   {
   if(!read_jpeg_file(file,&bmap,&w,&h,&origw,&origh,for_thumbnail))
     return(NULL);
@@ -484,21 +484,22 @@ return(ret);
 }
 
 
+GtkAccelGroup *mainwin_accel_group;
+
 GtkItemFactory *make_menu(char *base,GtkItemFactoryEntry *menu_items,
                           int num_items)
 {
 GtkItemFactory *item_factory;
-GtkAccelGroup *accel_group;
 
-accel_group=gtk_accel_group_new();
+mainwin_accel_group=gtk_accel_group_new();
 
-item_factory=gtk_item_factory_new(GTK_TYPE_MENU,base,accel_group);
+item_factory=gtk_item_factory_new(GTK_TYPE_MENU,base,mainwin_accel_group);
 
 /* make menus */
 gtk_item_factory_create_items(item_factory,num_items,menu_items,NULL);
 
 /* add keys to window */
-gtk_accel_group_attach(accel_group,GTK_OBJECT(mainwin));
+gtk_window_add_accel_group(GTK_WINDOW(mainwin),mainwin_accel_group);
 
 return(item_factory);
 }
@@ -1267,7 +1268,7 @@ switch(event->keyval)
     return(TRUE);
   
   case GDK_bracketright:	/* ] */
-    maxpos=mainwin->allocation.width-GTK_PANED(pane)->gutter_size;
+    maxpos=mainwin->allocation.width;
     oldpos=pos;
     pos+=step;
     if(pos>maxpos) pos=maxpos;
@@ -3528,7 +3529,7 @@ gtk_widget_grab_focus(button);
 gtk_widget_show(button);
 
 /* also allow escs (even from main window!) */
-gtk_widget_add_accelerator(button,"clicked",gtk_accel_group_get_default(),
+gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
                            GDK_Escape,0,0);
 
 
@@ -4148,8 +4149,6 @@ set_window_pos_and_size();
 pane=gtk_hpaned_new();
 GTK_WIDGET_UNSET_FLAGS(pane,GTK_CAN_FOCUS);
 gtk_container_add(GTK_CONTAINER(mainwin),pane);
-gtk_paned_set_handle_size(GTK_PANED(pane),8);
-gtk_paned_set_gutter_size(GTK_PANED(pane),8);
 gtk_widget_show(pane);
 
 
@@ -4429,7 +4428,7 @@ if(hidden)
 gtk_widget_add_accelerator(
   gtk_item_factory_get_widget(selector_menu_factory,
                               "<main>/Exit xzgv"),
-  "activate",gtk_accel_group_get_default(),
+  "activate",mainwin_accel_group,
   GDK_q,0,0);
 
 

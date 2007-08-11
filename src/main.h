@@ -23,6 +23,7 @@ struct clist_data_tag
   };
 
 extern GtkWidget *clist,*mainwin;
+extern GtkAccelGroup *mainwin_accel_group;
 extern int numrows;
 extern int cmdline_files;
 

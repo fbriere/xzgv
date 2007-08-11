@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 
 /* we take an extremely generous outlook - anything other than a decimal
@@ -46,7 +47,7 @@ return(num);
 
 int main(void)
 {
-unsigned char buf[128];
+char buf[128];
 int w,h,x,y,c;
 
 fgets(buf,sizeof(buf),stdin);

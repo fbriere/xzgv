@@ -116,7 +116,8 @@ int read_prf_file(char *filename,unsigned char **theimageptr,int *wp,int *hp)
 {
 FILE *in;
 int f,n;
-unsigned char buf[13],*src[4],*src8,*dst,v;
+unsigned char *src[4],*src8,*dst,v;
+char buf[13];
 int bytepp,ypos;
 int x,y;
 int maxval;

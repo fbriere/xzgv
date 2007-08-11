@@ -9,7 +9,8 @@
 # This gets definitions for CC, CFLAGS, BINDIR etc.
 include ../config.mk
 
-CFLAGS+=-DBACKEND_$(BACKEND) `gtk-config --cflags`
+CFLAGS+=-DBACKEND_$(BACKEND) `pkg-config --cflags gtk+-2.0`
+LDFLAGS+=`pkg-config --cflags --libs gtk+-2.0`
 
 # I could do this less horribly if I made it GNU-make-specific,
 # but I decided not to. And here we are. :-(
@@ -19,11 +20,11 @@ CFLAGS+=-DBACKEND_$(BACKEND) `gtk-config --cflags`
 #
 BACKEND_CFLAGS=`case "$(BACKEND)" in \
 	IMLIB1) imlib-config --cflags-gdk ;; \
-	GDK_PIXBUF) gdk-pixbuf-config --cflags ;; \
+	GDK_PIXBUF) pkg-config --cflags gdk-pixbuf-2.0 ;; \
 	esac`
 BACKEND_LIBS=`case "$(BACKEND)" in \
 	IMLIB1) imlib-config --libs-gdk ;; \
-	GDK_PIXBUF) gdk-pixbuf-config --libs ;; \
+	GDK_PIXBUF) pkg-config --libs gdk-pixbuf-2.0 ;; \
 	esac`
 
 # `all' makes install-info too, as it's a bit weird to have something
@@ -43,7 +44,7 @@ OBJS=	main.o \
 	backend.o
 
 xzgv: $(OBJS)
-	$(CC) $(CFLAGS) -o xzgv $(OBJS) $(BACKEND_LIBS) -ljpeg -lpng -ltiff -lz
+	$(CC) $(LDFLAGS) -o xzgv $(OBJS) $(BACKEND_LIBS) -ljpeg -lpng -ltiff -lz
 
 backend.o:
 	$(CC) $(CFLAGS) $(BACKEND_CFLAGS) -c -o backend.o backend.c

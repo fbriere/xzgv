@@ -243,7 +243,7 @@ if(!got_dimensions)
 
 
 /* esc also acks it (even from main window!) */
-gtk_widget_add_accelerator(button,"clicked",gtk_accel_group_get_default(),
+gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
                            GDK_Escape,0,0);
 
 

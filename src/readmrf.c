@@ -66,7 +66,8 @@ int read_mrf_file(char *filename,unsigned char **bmap,int *wp,int *hp)
 {
 FILE *in;
 int w,h,w64,h64,x,y,val;
-unsigned char buf[13],*image;
+unsigned char *image;
+char buf[13];
 int totalsq;
 
 *bmap=NULL;

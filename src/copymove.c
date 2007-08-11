@@ -33,7 +33,7 @@ static int cm_do_move;
 /* ------ actual copy/move file code ------ */
 
 
-static int cm_isdir(char *filename)
+static int cm_isdir(const char *filename)
 {
 struct stat sbuf;
 
@@ -45,7 +45,7 @@ return(stat(filename,&sbuf)!=-1 && S_ISDIR(sbuf.st_mode));
  * src must be in the current directory (though this isn't checked)
  * and dstdir must be a directory (fails if it isn't)
  */
-int copyfile(char *src,char *dstdir)
+int copyfile(const char *src,const char *dstdir)
 {
 static unsigned char copybuf[TRANSFER_BUF_SIZE];
 FILE *in,*out;
@@ -109,7 +109,7 @@ return(1);
  * src must be in the current directory (though this isn't checked)
  * and dstdir must be a directory (fails if it isn't)
  */
-int movefile(char *src,char *dstdir)
+int movefile(const char *src,const char *dstdir)
 {
 struct stat sbuf;
 struct utimbuf utbuf;
@@ -264,7 +264,7 @@ gtk_widget_grab_focus(button);
 gtk_widget_show(button);
 
 /* esc also aborts (even from main window!) */
-gtk_widget_add_accelerator(button,"clicked",gtk_accel_group_get_default(),
+gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
                            GDK_Escape,0,0);
 
 
@@ -273,11 +273,11 @@ gtk_widget_show(progress_win);
 
 
 /* do the copy/moves, showing how far we've got. */
-void cm_copymove_gotdir(char *destdir)
+void cm_copymove_gotdir(const char *destdir)
 {
 static char buf[256];
 GtkWidget *progress_win,*progbar;
-int (*copy_or_move_ptr)(char *,char *);
+int (*copy_or_move_ptr)(const char *,const char *);
 int f,t,numtagged;
 int done;
 char *ptr;
@@ -374,7 +374,7 @@ if(progress_win)
 
 static void cb_ok_button(GtkWidget *button,GtkWidget *entry)
 {
-char *ptr=gtk_entry_get_text(GTK_ENTRY(entry));
+const char *ptr=gtk_entry_get_text(GTK_ENTRY(entry));
 int isdir;
 
 if(!ptr || *ptr==0 || strcmp(ptr,".")==0)
@@ -394,7 +394,7 @@ isdir=cm_isdir(ptr);
 if(isdir)
   cm_copymove_gotdir(ptr);
 
-free(ptr);
+free((void *)ptr);
 gtk_widget_destroy(dir_win);
 
 if(!isdir)
@@ -517,11 +517,11 @@ gtk_signal_connect(GTK_OBJECT(ok_button),"clicked",
 
 /* esc = cancel */
 gtk_widget_add_accelerator(cancel_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_Escape,0,0);
 
 gtk_widget_add_accelerator(ok_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_Return,0,0);
 
 

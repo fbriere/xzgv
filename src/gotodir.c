@@ -24,7 +24,7 @@ static GtkWidget *dir_win;
 
 static void cb_ok_button(GtkWidget *button,GtkWidget *entry)
 {
-char *ptr=gtk_entry_get_text(GTK_ENTRY(entry));
+const char *ptr=gtk_entry_get_text(GTK_ENTRY(entry));
 int ret;
 
 if(!ptr || *ptr==0 || strcmp(ptr,".")==0)
@@ -40,7 +40,7 @@ else
 
 ret=chdir(ptr);
 
-free(ptr);
+free((void *)ptr);
 gtk_widget_destroy(dir_win);
 
 if(ret==0)
@@ -142,11 +142,11 @@ gtk_signal_connect(GTK_OBJECT(ok_button),"clicked",
 
 /* esc = cancel */
 gtk_widget_add_accelerator(cancel_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_Escape,0,0);
 
 gtk_widget_add_accelerator(ok_button,"clicked",
-                           gtk_accel_group_get_default(),
+                           mainwin_accel_group,
                            GDK_Return,0,0);
 
 

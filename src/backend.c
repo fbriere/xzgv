@@ -112,7 +112,6 @@ void backend_flip_vert(xzgv_image *image)
 {
 gdk_imlib_flip_image_vertical(BACKEND_IMAGE(image));
 public_info_update(image);
-/* XXX does this need dirtying? if so, check other flip/rots */
 }
 
 
@@ -451,8 +450,10 @@ return(gdk_imlib_data_to_pixmap((char **)data,pixmap,mask)?1:0);
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 /* get backend image, casted to appropriate type */
-#define BACKEND_IMAGE(x)	((GdkPixbuf *)((x)->backend_image))
+#define BACKEND_IMAGE(x)	((x)->backend_image)
 
+/* Dithering type */
+GdkRgbDither dither_type;
 
 /* do any initialisation the backend needs. Should include any
  * visual/colormap change required.
@@ -460,10 +461,10 @@ return(gdk_imlib_data_to_pixmap((char **)data,pixmap,mask)?1:0);
  */
 int backend_init(void)
 {
-gdk_rgb_init();
-
 gtk_widget_set_default_colormap(gdk_rgb_get_cmap());
 gtk_widget_set_default_visual(gdk_rgb_get_visual());
+
+dither_type = GDK_RGB_DITHER_NORMAL;
 
 return(1);
 }
@@ -504,12 +505,12 @@ void backend_image_changed(xzgv_image *image)
 
 /* flip image vertically. Should `dirty' image if needed.
  * Should also update xzgv_image's rgb/w/h fields (use public_info_update()).
- * This shouldn't require extra memory and so shouldn't fail, but if it
- * does, the func shouls give error and exit itself.
  */
 void backend_flip_vert(xzgv_image *image)
 {
-/* XXX NYI */
+GdkPixbuf *new_img = gdk_pixbuf_flip(BACKEND_IMAGE(image), FALSE);
+g_object_unref(BACKEND_IMAGE(image));
+BACKEND_IMAGE(image) = new_img;
 public_info_update(image);
 }
 
@@ -517,29 +518,29 @@ public_info_update(image);
 /* flip image horizontally, similarly. */
 void backend_flip_horiz(xzgv_image *image)
 {
-/* XXX NYI */
+GdkPixbuf *new_img = gdk_pixbuf_flip(BACKEND_IMAGE(image), TRUE);
+g_object_unref(BACKEND_IMAGE(image));
+BACKEND_IMAGE(image) = new_img;
 public_info_update(image);
 }
 
 
-/* rotate image clockwise, similarly.
- * Of course, this probably *will* need extra memory; again, func should
- * give error and exit if it runs out.
- */
+/* rotate image clockwise, similarly. */
 void backend_rotate_cw(xzgv_image *image)
 {
-/* XXX NYI */
+GdkPixbuf *new_img = gdk_pixbuf_rotate_simple(BACKEND_IMAGE(image), GDK_PIXBUF_ROTATE_CLOCKWISE);
+g_object_unref(BACKEND_IMAGE(image));
+BACKEND_IMAGE(image) = new_img;
 public_info_update(image);
 }
 
 
-/* rotate image anti-clockwise, similarly.
- * If the backend doesn't have a native function for this, do it
- * with rotate/flip_v/flip_h.
- */
+/* rotate image anti-clockwise, similarly. */
 void backend_rotate_acw(xzgv_image *image)
 {
-/* XXX NYI */
+GdkPixbuf *new_img = gdk_pixbuf_rotate_simple(BACKEND_IMAGE(image), GDK_PIXBUF_ROTATE_COUNTERCLOCKWISE);
+g_object_unref(BACKEND_IMAGE(image));
+BACKEND_IMAGE(image) = new_img;
 public_info_update(image);
 }
 
@@ -616,12 +617,13 @@ xzgv_image *backend_create_image_from_file(char *filename)
 {
 GdkPixbuf *backim;
 xzgv_image *im;
+GError *gerror = NULL;
 
 if((im=malloc(sizeof(xzgv_image)))==NULL)
   return(NULL);
 
 /* XXX does this deal with the 32767 issue or not? */
-if((backim=gdk_pixbuf_new_from_file((const char *)filename))==NULL)
+if((backim=gdk_pixbuf_new_from_file((const char *)filename, &gerror))==NULL)
   {
   free(im);
   return(NULL);
@@ -649,9 +651,9 @@ static GdkGC *gc=NULL;
 if(!gc)
   gc=gdk_gc_new(win);
 
-gdk_pixbuf_render_to_drawable(BACKEND_IMAGE(image),win,gc,
-                              0,0,x,y,image->w,image->h,
-                              GDK_RGB_DITHER_NORMAL,x,y);
+gdk_draw_pixbuf(win,gc,BACKEND_IMAGE(image),
+                0,0,x,y,image->w,image->h,
+                dither_type,0,0);
 }
 
 
@@ -740,8 +742,7 @@ free(image);
  */
 int backend_get_hicol_dither(void)
 {
-/* XXX NYI */
-return(-1);
+return (dither_type == GDK_RGB_DITHER_MAX) ? TRUE : FALSE;
 }
 
 
@@ -750,7 +751,7 @@ return(-1);
  */
 void backend_set_hicol_dither(int on)
 {
-/* XXX NYI */
+dither_type = on ? GDK_RGB_DITHER_MAX : GDK_RGB_DITHER_NORMAL;
 }
 
 
@@ -783,7 +784,7 @@ return(gdk_rgb_get_visual());
  */
 void backend_set_value_mapping(xzgv_image *image,unsigned char *map)
 {
-/* XXX NYI - does it even have this!? */
+/* XXX GDK seems not to have this. */
 }
 
 
