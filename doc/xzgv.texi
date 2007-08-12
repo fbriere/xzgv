@@ -2806,6 +2806,7 @@ in the section which discusses command-line options and the like
 
 However, there are some settings only available in the config file:
 
+@vtable @samp
 @item click-for-next
 This is enabled by default, allowing you to click on the viewer to skip
 to the next image. If disabled, clicking on the viewer does nothing.
