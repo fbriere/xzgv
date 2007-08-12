@@ -17,18 +17,6 @@ CFLAGS=-O2 -Wall
 #
 AWK=awk
 
-# There's an optional optimisation for x86-based machines:
-#
-# xzgv can do its `scaling with interpolation' rather faster by taking
-# advantage of MMX ops in a hotspot. This has no impact on non-MMX
-# processors (it falls back to a conventional approach at runtime), so
-# it's safe to leave it enabled on any x86-based machine.
-#
-# On non-x86-based machines (e.g. Alpha, Sparc, PPC), you should
-# comment it out.
-#
-CFLAGS+=-DINTERP_MMX
-
 # --------------------- Installation options ----------------------
 
 # Set BINDIR to directory for binaries,
@@ -37,37 +25,9 @@ CFLAGS+=-DINTERP_MMX
 # Usually it will be simpler to just set PREFIX.
 #
 PREFIX=/usr/local
-
-# In theory it would be nice to put the info file and man page under
-# /usr/local/share. However, it's not clear if this is widely
-# supported yet, so for now the default is the traditional
-# /usr/local/info and /usr/local/man/man1.
-#
-# If you want, though, or if you're installing with PREFIX=/usr,
-# you can uncomment the following to get more FHS-like dirs such as
-# /usr/local/share/info and /usr/local/share/man/man1.
-#
-# If you don't know what to do, leave it as-is.
-#
-#SHARE_INFIX=/share
-
 BINDIR=$(PREFIX)/bin
-INFODIR=$(PREFIX)$(SHARE_INFIX)/info
-MANDIR=$(PREFIX)$(SHARE_INFIX)/man/man1
-
-# Normally `make install' will update your `dir' file (in INFODIR),
-# using a copy of texinfo's `install-info' bundled with xzgv.
-#
-# But if you have a different way of keeping `dir' up-to-date (for
-# example, perhaps your setup automatically handles this for you) you
-# should uncomment this to prevent `make install' doing that. However,
-# if you're installing in /usr/local, it's possible any automated
-# update deliberately doesn't mess with /usr/local/info/dir...
-#
-# If you don't know what to do, leave it as-is.
-#
-#INFO_DIR_UPDATE=no
-
+INFODIR=$(PREFIX)/share/info
+MANDIR=$(PREFIX)/share/man/man1
 
 # -------------------- Miscellaneous options -----------------------
 

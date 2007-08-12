@@ -9,17 +9,10 @@
 # This gets definitions for CC, CFLAGS, BINDIR etc.
 include ../config.mk
 
-CFLAGS+=`pkg-config --cflags gtk+-2.0`
-LDFLAGS+=`pkg-config --cflags --libs gtk+-2.0`
+CFLAGS+=`pkg-config --cflags gtk+-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
+LDFLAGS+=`pkg-config --libs gtk+-2.0` `pkg-config --libs gdk-pixbuf-2.0`
 
-GDK_PIXBUF_CFLAGS=`pkg-config --cflags gdk-pixbuf-2.0`
-GDB_PIXBUF_LIBS=`pkg-config --libs gdk-pixbuf-2.0`
-
-# `all' makes install-info too, as it's a bit weird to have something
-# compile when you do `make install'. :-)
-# (It would also be weird to have it made by the `doc' Makefile, IMHO.)
-
-all: xzgv install-info
+all: xzgv
 
 OBJS=	main.o \
 	filedetails.o gotodir.o updatetn.o confirm.o help.o \
@@ -30,13 +23,10 @@ OBJS=	main.o \
 	backend.o
 
 xzgv: $(OBJS)
-	$(CC) $(LDFLAGS) -o xzgv $(OBJS) $(GDK_PIXBUF_LIBS) -ljpeg -lpng -ltiff -lz
+	$(CC) $(LDFLAGS) -o xzgv $(OBJS)
 
 backend.o:
-	$(CC) $(CFLAGS) $(GDK_PIXBUF_CFLAGS) -c -o backend.o backend.c
-
-install-info: install-info.c getopt.o getopt1.o
-	$(CC) $(INFODIRDEF) -o install-info install-info.c getopt.o getopt1.o
+	$(CC) $(CFLAGS) -c -o backend.o backend.c
 
 installdirs:
 	/bin/sh ../mkinstalldirs $(BINDIR)
@@ -49,7 +39,7 @@ uninstall:
 	$(RM) $(BINDIR)/xzgv
 
 clean:
-	$(RM) *~ *.o xzgv install-info
+	$(RM) *~ *.o xzgv
 	$(RM) rcfile_opt.h rcfile_var.h rcfile_short.h
 
 
@@ -63,7 +53,6 @@ getopt.o: getopt.c
 getopt1.o: getopt1.c getopt.h
 gotodir.o: gotodir.c backend.h main.h gotodir.h
 help.o: help.c backend.h main.h rcfile.h help.h
-install-info.o: install-info.c getopt.h
 main.o: main.c backend.h resizepic.h rcfile.h filedetails.h gotodir.h \
  updatetn.h confirm.h misc.h copymove.h rename.h help.h dir_icon.xpm \
  dir_icon_small.xpm file_icon.xpm file_icon_small.xpm \

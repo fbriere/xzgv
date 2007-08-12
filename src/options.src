@@ -68,6 +68,3 @@
 
 # `one-offs', ones you can't enable in a config file
 "show-tagged"	'T'	1 0 OPT_ARG	get_bool	&show_tagged
-
-# config-file-only ones
-"invert-logo"	0	0 1 OPT_ARG	get_bool	&invert_logo

@@ -15,7 +15,7 @@ dvi: xzgv.dvi
 
 xzgv.gz: xzgv.texi
 	makeinfo xzgv.texi
-	gzip -f xzgv xzgv-?
+	gzip -f xzgv
 
 # `-c' removes the huge number of associated files created by TeX.
 # This saves doing a `make clean' from hell. :-)
@@ -36,33 +36,13 @@ xzgv.1: xzgv.texi makeman.awk
 installdirs:
 	/bin/sh ../mkinstalldirs $(INFODIR) $(MANDIR)
 
-install: ../src/install-info installdirs
+install: installdirs
 	install xzgv.1 $(MANDIR)
-	install xzgv.gz xzgv-?.gz $(INFODIR)
-	chmod 644 $(MANDIR)/xzgv.1 $(INFODIR)/xzgv*
-# Update info `dir' file.
-# Info always uses a dir file in preference to a dir.gz, so we don't use
-# dir.gz unless it's the only game in town.
-	if [ "$(INFO_DIR_UPDATE)" != no ]; then \
-	  gzip -d xzgv.gz; \
-	  if [ -f $(INFODIR)/dir.gz -a ! -f $(INFODIR)/dir ]; then \
-	    gzip -d $(INFODIR)/dir.gz; \
-	    ../src/install-info xzgv $(INFODIR)/dir; \
-	    gzip $(INFODIR)/dir; \
-	  else \
-	    ../src/install-info xzgv $(INFODIR)/dir; \
-	  fi; \
-	  chmod a+r $(INFODIR)/dir; \
-	  gzip xzgv; \
-	fi
+	install-info xzgv $(INFODIR)/dir
 
-../src/install-info: ../src/install-info.c
-	cd ../src && $(MAKE) install-info
-
-# can't easily fix dir :-/, but do remove the files.
 uninstall:
 	$(RM) $(MANDIR)/xzgv.1
-	$(RM) $(INFODIR)/{xzgv.gz,xzgv-?.gz}
+	install-info --remove xzgv
 
 # This *doesn't* remove the Info files, which should stick around to
 # be included in the distribution. Ditto for the man page, since

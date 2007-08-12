@@ -39,10 +39,6 @@
 #include <gdk/gdkx.h>		/* needed for iconify stuff */
 #include <X11/Xlib.h>		/* ditto */
 
-#ifdef INTERP_MMX
-#include "libmmx-990416/mmx.h"
-#endif
-
 #include "backend.h"
 #include "resizepic.h"
 #include "rcfile.h"		/* needed for config vars */
@@ -104,10 +100,6 @@
  */
 #define RECURSE_PROTECT_START	static int here=0; if(here) return; here=1
 #define RECURSE_PROTECT_END	here=0
-
-
-
-int have_mmx=0;
 
 
 GtkWidget *drawing_area,*align,*sw_for_pic;
@@ -635,7 +627,6 @@ unsigned char *src,*dst,*cdownsrc;
 GtkAdjustment *hadj,*vadj;
 xzgv_image *img;
 int width,height,swidth,sheight;
-int have_mmx_and_not_huge=0;
 int true_interp=interp;
 
 if(zoom || !SCALING_BY_HAND() || !theimage) return(FALSE);
@@ -697,13 +688,10 @@ else
     {
     int approx;
   
-    if(have_mmx)
-      have_mmx_and_not_huge=(xscaling<=128);
-  
     /* cutting back doesn't seem to lose us any `resolution', but
      * may as well only do it when needed. :-)
      */
-    approx=have_mmx_and_not_huge?16:256;
+    approx=256;
   
     sisize=0;
     while(sisize<approx) sisize+=xscaling;
@@ -712,7 +700,7 @@ else
     sis2=sisize*sisize;
     sis2pwr=0;
     if(sisize==approx)	/* must be power-of-2 */
-      sis2pwr=have_mmx_and_not_huge?8:16;
+      sis2pwr=16;
     }
 
   px=rx; py=ry;
@@ -769,116 +757,37 @@ else
         
         symulsiz=sisize*subpix_ypos;
         sxmulsiz=sisize*subpix_xpos;
-
-#ifdef INTERP_MMX
-        /* the test is further out than it really needs to be,
-         * to minimise impact of the test (i.e. to avoid doing it ten zillion
-         * times :-)). Does mean some dup'd code though...
-         */
-        if(have_mmx_and_not_huge)
-          {
-          /* MMX version */
-          static mmx_t tmp1,tmp2;
         
-          for(x=0,pxx=px;x<swidth-px && x<scrnwide;x++,pxx++)
-            {
-            a3=symulsiz-(a4=subpix_xpos*subpix_ypos);
-            a2=sxmulsiz-a4;
-            a1=sis2-sxmulsiz-symulsiz+a4;
-          
-            /* this is an MMX-happy equivalent of:
-             *   for(i=0;i<3;i++)
-             *    *dst++=(ptr1[i]*a1+ptr2[i]*a2+
-             *            ptr3[i]*a3+ptr4[i]*a4)/sis2;
-             */
-            tmp2.w[0]=a1;
-            tmp2.w[1]=a2;
-            tmp2.w[2]=a3;
-            tmp2.w[3]=a4;
-            /* put in mm0 */
-            movq_m2r(tmp2,mm0);
-            /* save in mm1 */
-            movq_r2r(mm0,mm1);
-          
-            for(i=0;i<3;i++)
-              {
-              if(i)
-                movq_r2r(mm1,mm0);
-            
-              tmp1.w[0]=ptr1[i];
-              tmp1.w[1]=ptr2[i];
-              tmp1.w[2]=ptr3[i];
-              tmp1.w[3]=ptr4[i];
-            
-              /* they have a nifty `mul-add'-type op which is great for this */
-              pmaddwd_m2r(tmp1,mm0);
-            
-              /* move to tmp2 */
-              movq_r2m(mm0,tmp2);
-            
-              /* use bitshift if sis2 is power-of-2; important, as with
-               * the sheer speed of the MMX op above the division becomes the
-               * new hotspot!
-               */
-              if(sis2pwr)
-                *dst++=(tmp2.d[0]+tmp2.d[1])>>sis2pwr;
-              else
-                *dst++=(tmp2.d[0]+tmp2.d[1])/sis2;
-              }
-          
-            subpix_xpos+=scaleincr;
-            sxmulsiz+=simulsiz;
-            if(subpix_xpos>=sisize)
-              {
-              subpix_xpos=sxmulsiz=0;
-              ptr1+=3; ptr3+=3;
-              if(ptr2<ptr2_end)
-                ptr2+=3;
-              if(ptr4<ptr4_end)
-                ptr4+=3;
-              }
-            }
-          }
-        else
-#endif
+        for(x=0,pxx=px;x<swidth-px && x<scrnwide;x++,pxx++)
           {
-          /* non-MMX version */
-          for(x=0,pxx=px;x<swidth-px && x<scrnwide;x++,pxx++)
-            {
             a3=symulsiz-(a4=subpix_xpos*subpix_ypos);
             a2=sxmulsiz-a4;
             a1=sis2-sxmulsiz-symulsiz+a4;
-          
+            
             for(i=0;i<3;i++)
               *dst++=(ptr1[i]*a1+ptr2[i]*a2+
                       ptr3[i]*a3+ptr4[i]*a4)/sis2;
-          
+            
             subpix_xpos+=scaleincr;
             sxmulsiz+=simulsiz;
             if(subpix_xpos>=sisize)
               {
-              subpix_xpos=sxmulsiz=0;
+                subpix_xpos=sxmulsiz=0;
               ptr1+=3; ptr3+=3;
               if(ptr2<ptr2_end)
                 ptr2+=3;
               if(ptr4<ptr4_end)
                 ptr4+=3;
               }
-            }
           }
         }
-    
-      cdown=(cdown==-1)?(yscaling-(py%yscaling)):yscaling;
       }
+    
+    cdown=(cdown==-1)?(yscaling-(py%yscaling)):yscaling;
+    }
   
     cdown--;
     }
-
-#ifdef INTERP_MMX
-  if(have_mmx_and_not_huge)
-    emms();		/* allow FP again */
-#endif
-  }
 
 img=backend_create_image_from_data_destructively(rect,rw,rh);
 /* so we don't free rect */
@@ -4431,17 +4340,7 @@ for(f=argc-argsleft;f<=argc-1;f++)
 /* there may be no valid files; quit if so */
 if(numrows==0)
   {
-  /* This is a fairly unlikely error given the earlier preliminary check,
-   * but it can still happen in race-condition-ish ways, and in some
-   * other weird cases (e.g. two dirs on cmdline). In fact, getting
-   * this is strange enough that it might be a puzzlingly misleading
-   * error, so maybe I should try and get it to give a more meaningful
-   * one. OTOH, the multi-file nature of things here makes that tricky
-   * to do sanely, given the combinations of things that could be wrong,
-   * and the way that only one problem file (which may or may not be the
-   * only one) need be fixed for it to be a valid invocation.
-   */
-  fprintf(stderr,"xzgv: no files on cmdline exist!\n");
+  fprintf(stderr,"xzgv: cannot open files given on command line!\n");
   exit(1);
   }
 }
@@ -4469,10 +4368,6 @@ int f,argsleft;
 int read_dir=1;
 int old_hidith;
 
-#ifdef INTERP_MMX
-have_mmx=mmx_ok();
-#endif
-
 gtk_set_locale();
 gtk_init(&argc,&argv);
 backend_init();
@@ -4485,7 +4380,6 @@ if(gdk_visual_get_best_depth()>16)
   hicol_dither=-1;
 
 old_hidith=hicol_dither;
-
 
 find_xvpic_cols();
 
@@ -4514,24 +4408,6 @@ else
     hidden=1;		/* hide selector (init_window() deals with this) */
     read_dir=0;		/* don't read dir on startup */
     cmdline_files=1;	/* needed for copymove.c to do the Right Thing */
-    
-    /* do a crude preliminary check to see if at least one file can be
-     * opened. This avoids the need to create the window only to find
-     * we can't continue and close it straight after (which is ugly) in
-     * most cases (but by no means all, so later checks are still required).
-     */
-    for(f=argc-argsleft;f<=argc-1;f++)
-      {
-      FILE *in=fopen(argv[f],"rb");
-      if(in!=NULL)
-        {
-        fclose(in);
-        break;
-        }
-      }
-    
-    if(f==argc)
-      fprintf(stderr,"xzgv: no files on cmdline can be opened.\n"),exit(1);
     }
   }
 
