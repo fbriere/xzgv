@@ -42,7 +42,6 @@ int show_tagged=0;		/* echo currently-tagged files on exit */
 int fast_recursive_update=0;	/* if 0, use blocking tn update (slow :-/) */
 int hicol_dither=-1;		/* 15/16-bit dither. 0=don't, 1=do, -1=n/a;
 				   default is whatever backend decides on */
-int invert_logo=0;		/* invert logo to look better w/dark themes */
 int skip_parent=0;		/* skip cursor past .. on initial dir */
 int click_nextpic=1;		/* click on viewer = next pic */
 int mouse_scale_x=0;		/* ctrl-click scales x if true, else y */

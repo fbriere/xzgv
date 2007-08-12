@@ -38,7 +38,6 @@ extern int fullscreen;
 extern int show_tagged;
 extern int fast_recursive_update;
 extern int hicol_dither;
-extern int invert_logo;
 extern int skip_parent;
 extern int click_nextpic;
 extern int mouse_scale_x;
