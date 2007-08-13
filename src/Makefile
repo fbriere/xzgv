@@ -25,9 +25,6 @@ OBJS=	main.o \
 xzgv: $(OBJS)
 	$(CC) $(LDFLAGS) -o xzgv $(OBJS)
 
-backend.o:
-	$(CC) $(CFLAGS) -c -o backend.o backend.c
-
 installdirs:
 	/bin/sh ../mkinstalldirs $(BINDIR)
 
