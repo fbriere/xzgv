@@ -66,41 +66,8 @@ function add_line_to_para(line)
   }
 
 
-# output para, splitting at LFs as we go.
-# This isn't actually required - we could just output the paragraph
-# as one huge line. But that would be a bit unpleasant.
-#
-# Doing it nicely does, however, mean makeman takes ~50% longer to
-# run, which is a pain. :-(
-#
 function output_para(	lhs)
   {
-  while(para ~ /\n/)
-    {
-    lhs=gensub(/^([^\n]*)\n.*/,  "\\1", "g", para)
-    para=gensub(/^[^\n]*\n(.*)/, "\\1", "g", para)
-    
-    # if it begins with .[^A-Z], escape the dot so troff ignores it.
-    # The assumption is that this catches things like ".xvpics",
-    # while leaving things like ".PP" alone.
-    # The \f. bit is so it catches them after a font-change too
-    # (curiously, dot-commands seem to count even after that!).
-    # We have to allow .br though, which complicates it. :-/
-    #
-    # We assume no lines start with ' (which isn't handled here).
-    #
-    if(lhs ~ /^(\\f.)?\.[^A-Z]/ && lhs !~ /^\.br/)
-      {
-      # it's such fun escaping a dot in troff :-(((
-      # @-cmds have been dealt with by now, so /^@/ should be unlikely.
-      print ".cc @\n" lhs "\n@cc ."
-      }
-    else
-      print lhs
-    }
-  
-  # XXX ugly duplication here, should restructure so I don't need this
-  #
   lhs=para
   if(lhs!="")
     {
