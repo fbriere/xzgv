@@ -8,8 +8,8 @@
 @c To make an Info file from this, do `make info'.
 @c To make a DVI file from this (usually for printing), do `make dvi'.
 
-@set VERSION 0.8
-@set UPDATED 16th September 2003
+@set VERSION 0.9
+@set UPDATED 14th August 2007
 
 
 @c XXX could do with a general discussion of the window layout
