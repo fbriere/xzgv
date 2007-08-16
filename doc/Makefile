@@ -31,7 +31,7 @@ xzgv.dvi: xzgv.texi
 man: xzgv.1
 xzgv.1: xzgv.texi makeman.awk
 	@echo 'Making man page from xzgv.texi...'
-	gawk -f makeman.awk <xzgv.texi >xzgv.1
+	LANG= gawk -f makeman.awk <xzgv.texi >xzgv.1
 
 installdirs:
 	/bin/sh ../mkinstalldirs $(INFODIR) $(MANDIR)
