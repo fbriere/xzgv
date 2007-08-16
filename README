@@ -1,5 +1,6 @@
-xzgv 0.8 - picture viewer for X, with thumbnail-based file selector.
+xzgv 0.9 - picture viewer for X, with thumbnail-based file selector.
 Copyright (C) 1999-2003 Russell Marks.
+Copyright (C) 2007 Reuben Thomas.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,8 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-Roadmap
--------
+Guide to documentation
+----------------------
 
 The COPYING file contains a copy of the GPL described above.
 

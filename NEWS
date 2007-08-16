@@ -4,6 +4,14 @@ This file (NEWS) documents the significant changes between all
 versions of xzgv, with the newest changes first.
 
 
+* Changes in xzgv 0.9
+
+** Other changes
+
+xzgv now uses GTK 2, with gdk-pixbuf as the image rendering back-end.
+imlib1 is no longer supported.
+
+
 * Changes in xzgv 0.8
 
 ** New features
@@ -49,7 +57,7 @@ Morten Bo Johansen for spotting it there.
 Added 9/0 keys as yet another way of doing file untag/tag. These are
 last-ditch alternatives for keyboards where -/= don't make sense (some
 non-US/UK keyboards), and where keypad -/+ aren't easily accessible
-(e.g. laptops). Thanks to Szabó, Balázs for inspiring this one.
+(e.g. laptops). Thanks to Balázs Szabó for inspiring this one.
 
 
 * Changes in xzgv 0.7

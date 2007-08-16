@@ -1,10 +1,10 @@
-/* xzgv 0.8 - picture viewer for X, with file selector.
+/* xzgv - picture viewer for X, with file selector.
  * Copyright (C) 1999-2003 Russell Marks. See main.c for license details.
  *
  * rcfile.h - protos for rcfile.c and config vars.
  */
 
-#define XZGV_VER	"0.8"
+#define XZGV_VER	"0.9"
 
 /* geometry bitmask for mainwin_flags */
 #define GEOM_BITS_X_SET		1

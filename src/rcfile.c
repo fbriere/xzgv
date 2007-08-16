@@ -1,4 +1,4 @@
-/* xzgv 0.8 - picture viewer for X, with file selector.
+/* xzgv - picture viewer for X, with file selector.
  * Copyright (C) 1999-2003 Russell Marks. See main.c for license details.
  *
  * rcfile.c - config file handling.

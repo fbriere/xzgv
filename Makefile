@@ -20,7 +20,7 @@
 
 # version number, needed for distrib-making stuff below.
 #
-VERS=0.8
+VERS=0.9
 
 
 
