@@ -1,4 +1,4 @@
-/* xzgv 0.7 - picture viewer for X, with file selector.
+/* xzgv - picture viewer for X, with file selector.
  * Copyright (C) 1999,2000 Russell Marks. See main.c for license details.
  *
  * backend.h

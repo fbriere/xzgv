@@ -1,4 +1,4 @@
-/* xzgv 0.6 - picture viewer for X, with file selector.
+/* xzgv - picture viewer for X, with file selector.
  * Copyright (C) 1999,2000 Russell Marks. See main.c for license details.
  *
  * main.h - header for main.c; there's plenty more I could list,
