@@ -38,7 +38,7 @@ installdirs:
 
 install: installdirs
 	install xzgv.1 $(MANDIR)
-	install-info xzgv $(INFODIR)/dir
+	install-info  --infodir=$(INFODIR) xzgv
 
 uninstall:
 	$(RM) $(MANDIR)/xzgv.1
