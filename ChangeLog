@@ -1,3 +1,5 @@
+Changes from 2007-08-01 onwards: see SourceForge Subversion repository.
+
 2005-12-21  Russell Marks  <russell.marks@ntlworld.com>
 
 	* src/main.c (do_logo_invert): fixed previous "*ptr++=255-*ptr",
