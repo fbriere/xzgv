@@ -163,7 +163,7 @@ files, you can create/update them by pressing @kbd{u}. @xref{Updating
 Thumbnails}.)
 
 When you've picked a file to view, you can view it by clicking on it, or
-pressing @kbd{Enter} or @kbd{Space}. This reads the picture and displays
+pressing @kbd{Enter}. This reads the picture and displays
 it in the right-hand part of the window, the viewer (@pxref{The
 Viewer}). You can then move around the picture (if it is larger than
 will fit) by dragging it with the mouse, or using the scrollbars, or the
@@ -1012,24 +1012,13 @@ effect.
 @cindex file selector, viewing a file from the
 @cindex picture, viewing a
 
-@c XXX this was:
-@c
-@c There are two ways to view files from the file selector. The usual way
-@c is to click on it, or press @kbd{Enter} or @kbd{Space} when you've moved
-@c the cursor to the file to view. However, you can also view tagged files
-@c as a `slideshow', which is described later (@pxref{Tagging}).
-@c
-@c but we don't have slideshows yet, so...
-
 To view a file from the selector, you can click on it, or press
-@kbd{Enter} or @kbd{Space} after moving the cursor to the relevant file,
+@kbd{Enter} after moving the cursor to the relevant file,
 or right-click on the file and choose `File' then `Open'.
 
 @table @kbd
 @kindex Enter (Selector)
 @item Enter
-@kindex Space (Selector)
-@itemx Space
 @itemx Left-click-on-file
 @itemx Selector menu, File, Open
 View the chosen picture file, or if a subdirectory is chosen, make that
@@ -1467,7 +1456,7 @@ currently no way to delete all tagged files.
 
 The easiest way to change the current directory in xzgv is usually to
 click on a directory entry in the file list (or move the cursor to it
-and press @kbd{Enter} or @kbd{Space}). Selecting the @code{..} entry
+and press @kbd{Enter}). Selecting the @code{..} entry
 moves to the parent directory of the current one.
 
 There is an alternative though:
@@ -2998,7 +2987,6 @@ One last point may be worth noting; I am not the first person to write
 texinfo files using one-space. At the time of writing, it is used in the
 texinfo documentation for BFD, gdbm, GTK/GDK, (Linux) IPC, and viper,
 and I expect there are instances I'm not aware of.
-
 
 @node  Bugs and Restrictions, Future Changes, Rationale, Top
 @comment  node-name,  next,  previous,  up
