@@ -1,5 +1,6 @@
 /* xzgv - picture viewer for X, with file selector.
  * Copyright (C) 1999-2003 Russell Marks.
+ * Copyright (C) 2007 Reuben Thomas.
  *
  * main.c - the guts of the program (selector, viewer, etc.).
  *
@@ -86,14 +87,6 @@
 /* limit on scaling down - entirely arbitrary */
 #define SCALING_DOWN_LIMIT	(-32)
 
-/* we scale `by hand' (in viewer_expose()) if either x or y (or both)
- * are scaled up *and* neither is scaled down. Or, if both scalings are
- * one and the picture is counted as too big to use a pixmap for.
- */
-#define SCALING_BY_HAND()	(((xscaling>1 || yscaling>1) && \
-				  (xscaling>=1 && yscaling>=1)) || \
-                                 (image_is_big && xscaling==1 && yscaling==1))
-
 /* for defence against render_pixmap recursive callbacks, etc.
  * Be sure to do RECURSE_PROTECT_END before *any* possible exit
  * (but as late as possible, of course).
@@ -144,7 +137,6 @@ int ignore_drag=1;		/* ignore image drags if true */
 int next_on_release=0;		/* if true, do next-pic on but1 release */
 int current_selection=-1;	/* needed for viewer's next/previous file */
 guint cb_selection_id;		/* id of cb_selection() handler */
-guint viewer_expose_id;		/* id of viewer_expose() handler */
 int ignore_selector_input=0;	/* awkward but necessary, for blocking input */
 int hide_saved_pos;		/* saved pane-split pos for auto-hide */
 int hidden=0;			/* selector hidden if true */
@@ -154,7 +146,6 @@ int jpeg_exif_orient=0;		/* orientation from Exif tag, for some JPEGs */
 int cmdline_files=0;		/* if true, started as `xzgv file(s)' */
 
 int xscaling=1,yscaling=1;
-int image_is_big=0;
 
 unsigned char bcg_mapping[256];	/* mapping curve (for bright/contrast/gamma) */
 double contrast=1.0;	     /* note that double contrast is in fact 2 :-) */
@@ -607,204 +598,6 @@ XIconifyWindow(GDK_WINDOW_XDISPLAY(mainwin->window),
                GDK_WINDOW_XWINDOW(mainwin->window),
                XScreenNumberOfScreen(XDefaultScreenOfDisplay(
                  GDK_WINDOW_XDISPLAY(mainwin->window))));
-}
-
-
-/* when scaling is enabled, draw scaled-up image.
- * Much of this is more-or-less straight from zgv, and is thus hairy. :-/
- */
-gint viewer_expose(GtkWidget *widget,GdkEventExpose *event)
-{
-int x,y;
-int rx,ry,rw,rh;
-unsigned char *rect;
-int cdown,i,pxx,pyy,pyym;
-int a1,a2,a3,a4,in_rg,in_dn,in_dr;
-int scaleincr=0,subpix_xpos,subpix_ypos,sxmulsiz,symulsiz,simulsiz=0;
-int sisize=0,sis2=0,sis2pwr=0;
-unsigned char *ptr1,*ptr2,*ptr3,*ptr4,*ptr2_end,*ptr4_end;
-unsigned char *src,*dst,*cdownsrc;
-GtkAdjustment *hadj,*vadj;
-xzgv_image *img;
-int width,height,swidth,sheight;
-int true_interp=interp;
-
-if(zoom || !SCALING_BY_HAND() || !theimage) return(FALSE);
-
-if(xscaling!=yscaling) true_interp=0;
-
-/* don't do any non-event calls when in 1:1 image-too-big mode */
-if(xscaling==1 && yscaling==1 && !event)
-  return(FALSE);
-
-if(event)
-  {
-  rx=event->area.x;
-  ry=event->area.y;
-  rw=event->area.width;
-  rh=event->area.height;
-  }
-else
-  {
-  /* get location/size of bit to draw */
-  hadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
-    GTK_SCROLLED_WINDOW(sw_for_pic)));
-  vadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
-    GTK_SCROLLED_WINDOW(sw_for_pic)));
-  rx=hadj->value;
-  ry=vadj->value;
-  rw=hadj->page_size;
-  rh=vadj->page_size;
-  }
-
-if((rect=malloc(rw*rh*3))==NULL)
-  return(FALSE);
-
-width=theimage->w; height=theimage->h;
-
-if(xscaling==1 && yscaling==1)
-  {
-  /* if we're really just displaying an image too big to be dealt with
-   * as a pixmap, just copy the data right into rect.
-   */
-  int len=rw*3;
-  
-  if(rx+rw>width) len=(width-rx)*3;
-  dst=rect;
-  
-  for(y=ry;y<height && y<ry+rh;y++)
-    {
-    src=theimage->rgb+(y*width+rx)*3;
-    memcpy(dst,src,len);
-    dst+=len;
-    }
-  }
-else
-  {
-  int px,py,scrnwide,scrnhigh;
-  
-  /* XXX interp currently only works when xscaling==yscaling */
-  if(true_interp)
-    {
-    int approx;
-  
-    /* cutting back doesn't seem to lose us any `resolution', but
-     * may as well only do it when needed. :-)
-     */
-    approx=256;
-  
-    sisize=0;
-    while(sisize<approx) sisize+=xscaling;
-    scaleincr=sisize/xscaling;
-    simulsiz=scaleincr*sisize;
-    sis2=sisize*sisize;
-    sis2pwr=0;
-    if(sisize==approx)	/* must be power-of-2 */
-      sis2pwr=16;
-    }
-
-  px=rx; py=ry;
-  scrnwide=rw; scrnhigh=rh;
-  swidth=width*xscaling; sheight=height*yscaling;
-  cdown=-1;
-  cdownsrc=NULL;
-
-  /* Better grab your Joo Janta 200 Super-Chromatic Peril Sensitive
-   * Sunglasses (both pairs) for this next bit...
-   */
-  for(y=0,pyy=py;y<sheight-py && y<scrnhigh;y++,pyy++)
-    {
-    /* this is horribly slow... :-( */
-    if(cdown>0 && !true_interp)
-      memcpy(rect+y*scrnwide*3,cdownsrc,scrnwide*3);
-    else
-      {
-      src=theimage->rgb+3*(pyy/yscaling)*width;
-      dst=cdownsrc=rect+y*scrnwide*3;
-      if(!true_interp)
-        {
-        /* normal */
-        for(x=0;x<swidth-px && x<scrnwide;x++)
-          {
-          ptr1=src+((px+x)/xscaling)*3;
-          *dst++=*ptr1++; *dst++=*ptr1++; *dst++=*ptr1;
-          }
-        }
-      else
-        {
-        /* interpolated */
-      
-        /* This has been hacked into unreadability in an attempt to get it
-         * as fast as possible.
-         * It's still really slow. :-(
-         */
-        in_rg=3;
-        in_dn=width*3;
-        in_dr=in_dn+in_rg;
-        pyym=pyy%yscaling;
-        subpix_ypos=(pyy%yscaling)*scaleincr;
-        subpix_xpos=(px%xscaling)*scaleincr;  /* yes px not pxx */
-      
-        ptr1=ptr3=src+(px/xscaling)*3;
-        ptr2=ptr4=ptr1+in_rg;
-        ptr2_end=ptr4_end=src+in_dn-3;
-        if(pyy<sheight-yscaling)
-          {
-          ptr3=ptr1+in_dn;
-          ptr4=ptr1+in_dr;
-          ptr4_end+=in_dn;
-          }
-        
-        symulsiz=sisize*subpix_ypos;
-        sxmulsiz=sisize*subpix_xpos;
-        
-        for(x=0,pxx=px;x<swidth-px && x<scrnwide;x++,pxx++)
-          {
-            a3=symulsiz-(a4=subpix_xpos*subpix_ypos);
-            a2=sxmulsiz-a4;
-            a1=sis2-sxmulsiz-symulsiz+a4;
-            
-            for(i=0;i<3;i++)
-              *dst++=(ptr1[i]*a1+ptr2[i]*a2+
-                      ptr3[i]*a3+ptr4[i]*a4)/sis2;
-            
-            subpix_xpos+=scaleincr;
-            sxmulsiz+=simulsiz;
-            if(subpix_xpos>=sisize)
-              {
-                subpix_xpos=sxmulsiz=0;
-              ptr1+=3; ptr3+=3;
-              if(ptr2<ptr2_end)
-                ptr2+=3;
-              if(ptr4<ptr4_end)
-                ptr4+=3;
-              }
-          }
-        }
-      }
-    
-    cdown=(cdown==-1)?(yscaling-(py%yscaling)):yscaling;
-    }
-  
-    cdown--;
-    }
-
-img=backend_create_image_from_data_destructively(rect,rw,rh);
-/* so we don't free rect */
-
-if(img==NULL)
-  return(FALSE);
-
-/* apply brightness/contrast to it */
-if((brightness!=0 || contrast!=1.0 || picgamma!=1.0))
-  backend_set_value_mapping(img,bcg_mapping);
-
-backend_render_image_into_window(img,drawing_area->window,rx,ry);
-backend_image_destroy(img);
-
-gdk_flush();
-
-return(TRUE);
 }
 
 
@@ -1305,7 +1098,6 @@ switch(event->keyval)
   bcg_end:
       make_bcg_mapping(theimage);
       render_pixmap(0);
-      if(SCALING_BY_HAND()) viewer_expose(NULL,NULL);
     break;
   
   
@@ -1662,9 +1454,6 @@ if(zoom)
 
 if(!zoom)
   {
-  if(SCALING_BY_HAND())		/* scaling up (n:1) */
-    sw*=xscaling,sh*=yscaling,scaling_up_enabled=1;
-  else
     if(xscaling!=1 || yscaling!=1)	/* other non-1:1 scales */
       {
       if(xscaling<-1) sw/=-xscaling; else sw*=xscaling;
@@ -1869,7 +1658,6 @@ void scaling_finish(int oldxsc,int oldysc)
 float x,y;
 
 /* fairly hairy... :-/ */
-gtk_signal_handler_block(GTK_OBJECT(drawing_area),viewer_expose_id);
 if(oldxsc!=xscaling || oldysc!=yscaling)
   get_new_centre(oldxsc,oldysc,xscaling,yscaling,&x,&y);
 render_pixmap(0);
@@ -1877,7 +1665,6 @@ gtk_widget_hide(drawing_area);
 if(oldxsc!=xscaling || oldysc!=yscaling)
   move_to_new_centre(x,y);
 gtk_widget_show(drawing_area);
-gtk_signal_handler_unblock(GTK_OBJECT(drawing_area),viewer_expose_id);
 /* making it smaller can look very nasty before it's redrawn,
  * but clearing the window looks fairly nasty too, so...
  */
@@ -1886,7 +1673,6 @@ if(xscaling<oldxsc || yscaling<oldysc)
   gdk_window_clear(drawing_area->window);
   gdk_flush();
   }
-viewer_expose(NULL,NULL);
 gdk_flush();
 }
 
@@ -2165,11 +1951,6 @@ if(!listen_to_toggles || in_nextprev) return;
 listen_to_toggles=0;
 
 interp=!interp;
-if(!zoom && SCALING_BY_HAND())	/* no point if not scaling up atm */
-  {
-  render_pixmap(0);
-  viewer_expose(NULL,NULL);	/* doesn't always seem to get it */
-  }
 
 listen_to_toggles=1;
 }
@@ -2197,7 +1978,6 @@ backend_set_hicol_dither(hicol_dither);
 if(theimage)
   backend_image_changed(theimage);
 render_pixmap(0);
-viewer_expose(NULL,NULL);	/* presume the same problem as above */
 
 listen_to_toggles=1;
 }
@@ -2367,15 +2147,12 @@ RECURSE_PROTECT_END;
 void cb_normal_orient(void)
 {
 RECURSE_PROTECT_START;
-if(orient_current_state==0)
+if(orient_current_state!=0)
   {
-  RECURSE_PROTECT_END;
-  return;
+    orient_change_state(orient_current_state,0);
+    orient_current_state=0;
+    render_pixmap(1);
   }
-
-orient_change_state(orient_current_state,0);
-orient_current_state=0;
-render_pixmap(1);
 RECURSE_PROTECT_END;
 }
 
@@ -3673,24 +3450,6 @@ if((theimage=load_image(ptr,0,NULL,NULL))==NULL)
 orient_lastpicexit_state=orient_current_state;
 orient_current_state=0;
 
-/* see if it's a `big' image or not.
- *
- * Non-big images are rendered as pixmaps when at actual size -
- * this is fantastically efficient/smooth when scrolling around the
- * thing, but takes a long time for big pics.
- *
- * Big images are rendered as if we were scaling them up, in that
- * they're drawn by hand - so the scrolling looks a bit nasty,
- * but you don't have dirty great pixmaps to push around.
- */
-image_is_big=0;
-/* if we could get into mathsy problems it's ALWAYS big :-),
- * but in practice load_image() would have dealt with that.
- */
-if(theimage->w>32767 || theimage->h>32767 ||
-   theimage->w*theimage->h>=image_bigness_threshold)
-  image_is_big=1;
-
 if(use_exif_orient)
   {
   /* apply Exif orientation correction, then pretend it's the normal pic */
@@ -3805,7 +3564,7 @@ static GtkItemFactoryEntry selector_menu_items[]=
   {"/_Recursive Update","<alt>u",	cb_update_tn_recursive,0,NULL},
   {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
   {"/_File",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_File/_Open",	"space",	view_focus_row_file, 0,	NULL},
+  {"/_File/_Open",	NULL,		view_focus_row_file, 0,	NULL},
   {"/_File/_Details...","colon",	cb_file_details,0,	NULL},
   {"/_File/Clo_se",	"<control>w",	cb_file_close,	0,	NULL},
   {"/_File/sep1",	NULL,		NULL,		0,	"<Separator>"},
@@ -3958,8 +3717,6 @@ gtk_signal_connect(GTK_OBJECT(drawing_area),"motion_notify_event",
                    GTK_SIGNAL_FUNC(viewer_motion),NULL);
 gtk_signal_connect(GTK_OBJECT(drawing_area),"key_press_event",
                    GTK_SIGNAL_FUNC(viewer_key_press),NULL);
-viewer_expose_id=gtk_signal_connect(GTK_OBJECT(drawing_area),"expose_event",
-                                    GTK_SIGNAL_FUNC(viewer_expose),NULL);
 
 /* need to ask for motion while button 1 is pressed (for drag),
  * keypresses, and (for scaling) expose.

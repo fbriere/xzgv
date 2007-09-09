@@ -1,6 +1,8 @@
 /* xzgv - picture viewer for X, with file selector.
- * Copyright (C) 1999,2000 Russell Marks. See main.c for license details.
- *
+ * Copyright (C) 1999,2000 Russell Marks.
+ * Copyright (C) 2007 Reuben Thomas.
+ * See main.c for license details.
+ * 
  * backend.c - picture rendering and (to a certain extent) loading.
  *
  * This is intended to be a reasonably generic wrapper for the library
@@ -258,10 +260,7 @@ gdk_draw_pixbuf(win,gc,BACKEND_IMAGE(image),
  *
  * returns 1 if this failed, else 0.
  *
- * (Use xzgv_image's `backend_ext' field to save the pixmap pointer
- * if the backend has no concept of associated pixmaps. And if there's
- * a direct 1:1 render function, use that when the width/height matches
- * the image's width/height.)
+ * (Use xzgv_image's `backend_ext' field to save the pixmap pointer.)
  */
 int backend_render_pixmap_for_image(xzgv_image *image,int x,int y)
 {
@@ -403,17 +402,6 @@ if(backim==NULL)
   return(0);
   }
 
-/* "As a convenience, gdk-pixbuf also provides the
- * gdk_pixbuf_render_pixmap_and_mask() function; this will create new
- * pixmap and mask drawables for a whole pixbuf and render the image
- * data onto them. Only trivially simple applications should find a
- * use for this function, since usually you want finer control of how
- * things are rendered."
- *	-- 0.9.0's porting-from-imlib.sgml
- *
- * *boggle* So anything which just wants a pixmap is "trivially simple"
- * now? Who died and put *you* in charge?
- */
 gdk_pixbuf_render_pixmap_and_mask(backim,pixmap,mask,128);
 
 gdk_pixbuf_unref(backim);
