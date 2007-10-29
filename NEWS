@@ -9,7 +9,8 @@ versions of xzgv, with the newest changes first.
 ** Other changes
 
 xzgv now uses GTK 2, with gdk-pixbuf as the image rendering back-end.
-imlib1 is no longer supported.
+imlib1 is no longer supported. Gamma, brightness and contrast are not
+currently supported.
 
 
 * Changes in xzgv 0.8
