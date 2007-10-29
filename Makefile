@@ -9,7 +9,6 @@
 # The main targets of interest are:
 #
 # all		the default; make everything except info
-#		(it warns if the info is out of date, though)
 # info		make info (requires texinfo's `makeinfo')
 # install	install everything
 # uninstall	can't imagine what use you could possibly have for this :^)
@@ -64,13 +63,12 @@ uninstall:
 
 # The stuff below makes the distribution tgz.
 
-dist: tgz
-tgz: ../xzgv-$(VERS).tar.gz
+dist: ../xzgv-$(VERS).tar.gz
 
 # Based on the example in ESR's Software Release Practice HOWTO.
 #
 ../xzgv-$(VERS).tar.gz: info man clean
 	$(RM) ../xzgv-$(VERS)
 	@cd ..;ln -s xzgv xzgv-$(VERS)
-	cd ..;tar zchvf xzgv-$(VERS).tar.gz xzgv-$(VERS)
+	cd ..;tar zchf xzgv-$(VERS).tar.gz --exclude=.svn xzgv-$(VERS)
 	@cd ..;$(RM) xzgv-$(VERS)
