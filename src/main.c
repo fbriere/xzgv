@@ -2589,41 +2589,6 @@ return(pixmap);
 }
 
 
-int is_picture(char *filename)
-{
-int l=strlen(filename);
-
-if(l<=4) return(0);
-
-/* at time of writing, imlib1 supports PPM/PGM/TIFF/PNG/XPM/JPEG
- * natively, and uses ImageMagick's `convert' for others.
- * But we have our own GIF/PNG/mrf readers.
- */
-if((!strcasecmp(filename+l-4,".gif")) ||
-   (!strcasecmp(filename+l-4,".jpg")) ||
-   (!strcasecmp(filename+l-5,".jpeg")) ||
-   (!strcasecmp(filename+l-4,".png")) ||
-   (!strcasecmp(filename+l-4,".mrf")) ||
-   (!strcasecmp(filename+l-4,".xbm")) ||
-   (!strcasecmp(filename+l-5,".icon")) ||	/* presumably an XBM */
-   (!strcasecmp(filename+l-4,".xpm")) ||
-   (!strcasecmp(filename+l-4,".pbm")) ||
-   (!strcasecmp(filename+l-4,".pgm")) ||
-   (!strcasecmp(filename+l-4,".ppm")) ||
-   (!strcasecmp(filename+l-4,".bmp")) ||
-   (!strcasecmp(filename+l-4,".tga")) ||
-   (!strcasecmp(filename+l-4,".pcx")) ||
-   (!strcasecmp(filename+l-4,".tif")) ||
-   (!strcasecmp(filename+l-5,".tiff")) ||
-   (!strcasecmp(filename+l-4,".prf")) ||
-   (!strcasecmp(filename+l-4,".tim")) ||
-   (!strcasecmp(filename+l-4,".xwd")))
-  return(1);
-else
-  return(0);
-}
-
-
 void idle_xvpic_load(int *entryp)
 {
 static char buf[1024];
@@ -2992,9 +2957,6 @@ while((dent=readdir(dirfile))!=NULL)
     sbuf.st_atime=0;
     }
   isdir=S_ISDIR(sbuf.st_mode);
-  
-  if(!isdir && !is_picture(dent->d_name))
-    continue;
   
   if(clist_add_new_row(dent->d_name,&sbuf))
     numrows++;

@@ -494,10 +494,7 @@ If started with @code{xzgv @var{files}}, xzgv hides the file selector
 and treats the file or files as if they were the sole contents of a
 directory. (It also automatically loads the first file.) As such, you
 can use the Next Image and Previous Image commands to navigate between
-the images, or do Exit to Selector and use the selector directly. (By
-the way, running like this also makes it possible to view files without
-the usual extensions such as @file{.gif}, etc. @xref{File Type
-Identification}.)
+the images, or do Exit to Selector and use the selector directly.
 
 If started with @code{xzgv @var{start-dir}}, xzgv starts up as usual,
 but with the selector starting on the directory specified (rather than
@@ -2554,19 +2551,13 @@ formats'. xzgv, via gdk, supports many.
 @cindex picture format, identification of 
 @cindex file format, identification of
 
-The format a file is in is identified in two different ways. The file
-selector picks filenames to display based on the `extension' --- for
-instance, if a filename ends in @file{.jpg} or @file{.jpeg}, xzgv assumes
-it is a JPEG. This way of working is not always right, but it's much
-faster than the alternative (reading part of every single file) and is
-usually sufficient.
-
-The file-reading code relies on libgdk to determine the file type and
-read the file correctly; generally this uses the format's `magic number'
-to determine file type --- e.g. a JPEG/JFIF file starts with the (hex)
-bytes @code{FF D8}. So if you start xzgv with @samp{xzgv foo}, and foo
-is in a supported format (such as JPEG), the format will be figured out
-and the file loaded even though the `extension' is absent.
+The format a file is in is identified by its content. The file-reading
+code relies on libgdk to determine the file type and read the file
+correctly; generally this uses the format's `magic number' to determine
+file type --- e.g. a JPEG/JFIF file starts with the (hex) bytes @code{FF
+D8}. So if you start xzgv with @samp{xzgv foo}, and foo is in a
+supported format (such as JPEG), the format will be figured out and the
+file loaded even though the `extension' is absent.
 
 @node  Configuring xzgv, Rationale, File Formats, Top
 @comment  node-name,  next,  previous,  up
@@ -2981,11 +2972,6 @@ Thumbnails are given an accurate width/height `IMGINFO' comment, but are
 always claimed to be "RGB".
 
 @item
-xzgv should have an option to treat all files as images, since it
-currently applies a zgv-like file extension filter. This is a bit
-inflexible, given that gdk supports most formats.
-
-@item
 xzgv @emph{doesn't} duplicate zgv's behaviour of generating thumbnails
 under @file{~/.xvpics/_foo_bar_baz} if it can't generate them in
 @file{/foo/bar/baz/.xvpics}. I doubt anything else supported it, and it
@@ -3002,9 +2988,6 @@ suboptimal, but as an incompatibility with zgv it merits mention.
 @cindex restrictions
 
 @itemize @minus
-@item
-GIF89a extension blocks are ignored.
-
 @item
 Only the first image of a multiple-image GIF is used. (These days,
 multiple-image GIFs are usually animations.)
