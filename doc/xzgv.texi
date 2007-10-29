@@ -9,7 +9,7 @@
 @c To make a DVI file from this (usually for printing), do `make dvi'.
 
 @set VERSION 0.9
-@set UPDATED 14th August 2007
+@set UPDATED 9th September 2007
 
 
 @c XXX could do with a general discussion of the window layout
@@ -102,7 +102,7 @@ approved by the Free Software Foundation.
 @top The xzgv manual
 
 xzgv is a reasonably full-featured picture viewer for X, with a
-thumbnail-based file selector. (xzgv uses the GTK+ and Imlib libraries.)
+thumbnail-based file selector. (xzgv uses the GTK+ libraries.)
 It can read most file formats.
 
 This documentation is for xzgv version @value{VERSION}, last updated
@@ -149,8 +149,7 @@ The thumbnails used (thumbnails being small `preview' versions of the
 pictures) are compatible with xv, zgv, and the Gimp. The kinds of
 pictures xzgv allows to be viewed are raster-format pictures (sometimes
 called `bitmaps' and/or `pixmaps'); things like GIF files, JPEG files,
-PNG files, and so on. (Details of file formats supported are given
-elsewhere. @xref{Supported File Formats}.)
+PNG files, and so on.
 
 Most of the time, you will probably want to use xzgv's file selector
 (@pxref{The File Selector}) to pick which file(s) to view. This is what
@@ -213,11 +212,9 @@ was written by Noah Friedman. (This is also used during installation.)
 @c now libraries etc.:
 
 Huge thanks go to the many people responsible for GTK+, without which
-xzgv would almost certainly not have happened. Thanks also to the
-Rasterman (Carsten Haiztler) for Imlib, without which xzgv would most
-likely have been a complete pain to write. (But no thanks for Electric
-Eyes, which was nearly nice enough for me not to bother with xzgv at
-all! :-))
+xzgv would almost certainly not have happened. (But no thanks for
+Electric Eyes, which was nearly nice enough for me not to bother with
+xzgv at all! :-))
 
 This program is based in part on the work of the Independent JPEG
 Group. (I don't think I actually need this line any more, but I like
@@ -300,11 +297,6 @@ Here's what the options do:
 Automatically hide selector when a picture is selected, allowing the
 viewer to use the whole window.
 
-@c I would never have defaulted to the fast/sloppy method if given
-@c a choice, but Imlib1 did it without my knowing, such that when
-@c I started reading JPEGs natively, I `had' to do it this way
-@c around to avoid apparently gratuitous slowdown. :-(
-@c
 @vindex careful-jpeg
 @item --careful-jpeg
 Enable libjpeg `fancy upsampling'. xzgv defaults to using the faster
@@ -322,10 +314,9 @@ override.)
 
 @vindex dither-hicol
 @item --dither-hicol
-Use dithering in 15/16-bit, whatever Imlib's default setting is.
+Use dithering in 15/16-bit, whatever the default setting is.
 @xref{Viewer Options}, for a discussion of benefits/drawbacks. You can
-also use @code{--dither-hicol=off} to disable this if Imlib normally has
-it enabled.
+also use @code{--dither-hicol=off} to disable this.
 
 @vindex exif-orient
 @item --exif-orient
@@ -351,9 +342,9 @@ possible.
 @item -G @var{val}
 @vindex gamma
 @itemx --gamma @var{val}
-Set the gamma adjustment used (@pxref{Gamma Adjustment}). The default is
-1.0. This also sets the `initial value' used when resetting the gamma
-adjustment.
+[Not supported in 0.9.] Set the gamma adjustment used (@pxref{Gamma
+Adjustment}). The default is 1.0. This also sets the `initial value'
+used when resetting the gamma adjustment.
 
 @item -g @var{geom}
 @vindex geometry
@@ -830,13 +821,13 @@ move around the list, but it reads them all in eventually.
 The thumbnails used in xzgv require 256 colours to display. This can be
 a problem if you're running X in 256 colours or less as, even if you're
 running an 8-bit (256 colour) server, there will almost inevitably be
-fewer colours available. Currently, xzgv just uses whatever Imlib
+fewer colours available. Currently, xzgv just uses whatever gdk
 reports as the closest match to each individual colour used in
 thumbnails. This gives a tolerable result on 8-bit servers, assuming
-Imlib was able to allocate a large number of colours; however, it gives
+gdk was able to allocate a large number of colours; however, it gives
 terrible results if it couldn't, or if running on 4-bit or 1-bit
 servers. Sorry about this --- it should be fixed in future (either by
-using Imlib to draw the thumbnail pixmaps, or by dithering them `by
+using gdk to draw the thumbnail pixmaps, or by dithering them `by
 hand' to suit the colours available).
 
 @item
@@ -2175,6 +2166,7 @@ rotated in the same way.
 @c don't have this yet...
 @c @cindex order, brightness/contrast
 
+[Brightness and contrast changing is not supported in xzgv 0.9.]
 xzgv provides support for changing brightness and contrast, though given
 the way it has to redraw the image to do so, it can be a little slow.
 
@@ -2229,6 +2221,7 @@ gamma adjustment is applied before both.
 @cindex bright images, fixing overly
 @cindex having fun, how to avoid
 
+[Gamma is not supported in xzgv 0.9.]
 Ah yes, gamma. What fun. The basic problem is this --- differing
 displays have differing intensity response curves. ``This has made a lot
 of people very angry and been widely regarded as a bad move.'' :-)
@@ -2546,14 +2539,13 @@ and see. (No keyboard shortcut --- see above.)
 @cindex pictures, file formats used by
 
 Picture files are stored in a variety of different forms, or `file
-formats'. xzgv, via Imlib, supports many.
+formats'. xzgv, via gdk, supports many.
 
 @menu
 * File Type Identification::    How xzgv identifies the type of a file.
-* Supported File Formats::      The file formats that xzgv supports.
 @end menu
 
-@node  File Type Identification, Supported File Formats, File Formats, File Formats
+@node  File Type Identification, Configuring xzgv, File Formats, File Formats
 @comment  node-name,  next,  previous,  up
 @section File Type Identification
 
@@ -2569,113 +2561,12 @@ it is a JPEG. This way of working is not always right, but it's much
 faster than the alternative (reading part of every single file) and is
 usually sufficient.
 
-The file-reading code relies on Imlib to determine the file type and
+The file-reading code relies on libgdk to determine the file type and
 read the file correctly; generally this uses the format's `magic number'
 to determine file type --- e.g. a JPEG/JFIF file starts with the (hex)
 bytes @code{FF D8}. So if you start xzgv with @samp{xzgv foo}, and foo
-is in a format supported by Imlib (such as JPEG), the format will be
-figured out and the file loaded even though the `extension' is absent.
-
-One extension to this is xzgv's built-in support for my relatively
-obscure `mrf' format. :-) Since there's probably not much interest in
-supporting this in Imlib, and it's really quite a simple format, it's
-not unreasonable for xzgv to support this directly. But xzgv acts as if
-Imlib supported mrf, so this distinction can be largely ignored.
-
-In fact, xzgv is gradually moving towards reading several of the more
-popular formats natively, as part of an attempt to avoid being tied to a
-single image rendering/loading backend; at the time of writing, GIF,
-JPEG, PNG, and TIFF are also read in this way.
-
-
-@node  Supported File Formats,  , File Type Identification, File Formats
-@comment  node-name,  next,  previous,  up
-@section Supported File Formats
-
-@cindex supported file formats
-@cindex file formats, supported
-@cindex types of picture supported
-@cindex GIF
-@cindex JPEG
-@cindex PNG
-@cindex PBM
-@cindex PGM
-@cindex PPM
-@cindex PNM
-@cindex TGA
-@cindex Targa
-@cindex PCX
-@cindex mrf
-@cindex PRF
-@cindex XBM
-@cindex bitmaps, X
-@cindex XPM
-@cindex pixmaps, X
-@cindex TIFF
-@cindex TIM
-@cindex XWD
-
-xzgv supports the following file formats:
-
-@itemize @bullet
-@item
-GIF.
-
-@item
-JPEG.
-
-@item
-PNG.
-
-@item
-PBM/PGM/PPM, collectively known as `PNM'. This is a nice simple format
-used by pbmplus and netpbm.
-
-@item
-BMP.
-
-@item
-TGA (Targa).
-
-@item
-PCX.
-
-@item
-mrf. Mrf files can be converted to/from PBM with mrftopbm/pbmtomrf, and
-the format is documented in the @cite{mrf(5)} man page.
-
-@item
-PRF. PRF is an extension of mrf, similarly converted with
-prftopnm/pnmtoprf, and documented in the @cite{prf(5)} man page.
-
-@item
-XBM (X bitmap files).
-
-@item
-XPM.
-
-@item
-TIFF.
-
-@item
-TIM. This is an image format used (on the Sony PlayStation) by some
-games (e.g. Wipeout) for storing 2D images.
-
-@item
-XWD (X window dumps, as produced by xwd).
-
-@c [XXX xzgv doesn't support these as files yet (will need yet more
-@c Imlib-bypassing code, sigh), and doesn't treat them as their own
-@c thumbnails]
-@c Xv format thumbnail files. Normally you won't want to view these other
-@c than in the file selector, but xzgv lets you view them as normal picture
-@c files if you want. Note that in the file selector, thumbnail files are
-@c indistinguishable from the files they represent (other than the
-@c @file{.xvpics} in the directory's filename) --- they have the same
-@c filenames, and thumbnails are their own thumbnails. :-)
-
-@end itemize
-
+is in a supported format (such as JPEG), the format will be figured out
+and the file loaded even though the `extension' is absent.
 
 @node  Configuring xzgv, Rationale, File Formats, Top
 @comment  node-name,  next,  previous,  up
@@ -3035,8 +2926,8 @@ hiding/showing selector or resizing from keyboard, but that's only 'cos
 I kludged it :-)).
 
 @item
-When scaling up and imlib is dithering, you end up with a crappy-looking
-picture if you drag the picture around slowly (since each exposed bit is
+When scaling up and dithering, you end up with a crappy-looking picture
+if you drag the picture around slowly (since each exposed bit is
 dithered independently, with no regard given to matching up to any
 previous error-diffusion).
 
@@ -3058,10 +2949,10 @@ window-splitting bit, but I'm not sure. Also, it jumps when moving
 across scrollbar sliders and the paned window splitter handle.
 
 @item
-It doesn't apply any tranparency mask returned by imlib. The practical
-result of this seems to be purple transparent bits in thumbnails and
-scaled-up images, and black transparent bits elsewhere. This doesn't
-affect PNG files, though.
+It doesn't apply any tranparency mask. The practical result of this
+seems to be purple transparent bits in thumbnails and scaled-up images,
+and black transparent bits elsewhere. This doesn't affect PNG files,
+though.
 
 @item
 If a GIF file is corrupted in such a way that the decompressed image
@@ -3087,13 +2978,12 @@ nature, see xzgv''. :-)
 @itemize @minus
 @item
 Thumbnails are given an accurate width/height `IMGINFO' comment, but are
-always claimed to be "RGB", as Imlib doesn't provide any way to find out
-what type they are.
+always claimed to be "RGB".
 
 @item
 xzgv should have an option to treat all files as images, since it
 currently applies a zgv-like file extension filter. This is a bit
-inflexible, given that Imlib supports `all' formats.
+inflexible, given that gdk supports most formats.
 
 @item
 xzgv @emph{doesn't} duplicate zgv's behaviour of generating thumbnails
@@ -3146,11 +3036,8 @@ Here are some details you should include:
 The version of xzgv you are running. @code{xzgv --version} reports this.
 
 @item
-The versions of GTK+ and Imlib you are using. @code{xzgv --version-gtk}
-reports the GTK+ version being used by xzgv, but Imlib is a little more
-tricky --- @code{imlib-config --version} should work if you have a full
-Imlib installation, but failing that, try @code{ls -l
-/usr/lib/libImlib*} or @code{ls -l /usr/X11R6/lib/libImlib*}.
+The versions of GTK+ you are using. @code{xzgv --version-gtk} reports
+the GTK+ version being used by xzgv.
 
 @item
 The bitdepth your X server is running in (common depths are 8-bit (256
@@ -3160,7 +3047,7 @@ depth you're running in, try @code{xdpyinfo|grep depth}.
 @item
 A description of the bug --- what effects it has, the circumstances it
 occurs in, and so on. Does it only happen for certain types of file?
-Only when in 8-bit modes? Only when dithering is enabled in Imlib? Even
+Only when in 8-bit modes? Only when dithering is enabled? Even
 `irrelevant' details can sometimes be useful.
 
 @item
