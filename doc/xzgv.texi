@@ -47,6 +47,7 @@ The xzgv manual, for version @value{VERSION}, last updated
 @value{UPDATED}.
 
 Copyright 1999-2001 Russell Marks.
+Copyright 2007 Reuben Thomas.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -74,12 +75,13 @@ approved by the Free Software Foundation.
 @title xzgv
 @subtitle A picture viewer for X, with thumbnail-based file selector
 @subtitle version @value{VERSION}
-@author Russell Marks
+@author Russell Marks and Reuben Thomas
 
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1999-2001 Russell Marks.
+Copyright @copyright{} 2007 Reuben Thomas.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -191,16 +193,10 @@ xzgv. xzgv can do a lot more; read on to find out what.
 @c first, direct (or direct-ish :-)) xzgv contributions:
 
 xzgv was primarily written by Russell Marks, also the author of this
-manual.
+manual. It is maintained by Reuben Thomas.
 
 Costa Sapuntzakis contributed code for much faster JPEG thumbnail
 generation (to zgv, which I adapted for xzgv).
-
-@c this isn't really `direct', but I think it belongs here.
-@code{install-info} is a (very) slightly modified version of the
-original (which is part of the @code{texinfo} package). This program is
-used during installation. I think it was mostly written by Karl Berry,
-but it's not terribly clear.
 
 The directory/file icons used were loosely based on gmc's
 @file{dir-close.xpm}. I think Tuomas Kuosmanen was responsible for
@@ -216,21 +212,7 @@ xzgv would almost certainly not have happened. (But no thanks for
 Electric Eyes, which was nearly nice enough for me not to bother with
 xzgv at all! :-))
 
-This program is based in part on the work of the Independent JPEG
-Group. (I don't think I actually need this line any more, but I like
-giving these guys a credit, it's a neat library. :-))
-
-xzgv uses (or rather it does if @code{INTERP_MMX} was defined when
-compiling, and if it's running on an MMX-capable CPU) MMX instructions
-for interpolation, with the help of libmmx, by Hank Dietz and Randy
-Fisher.
-
 @file{getopt*.[ch]} are from the GNU libc.
-
-``The Graphics Interchange Format(c) is the Copyright property of
-CompuServe Incorporated. GIF(sm) is a Service Mark property of
-CompuServe Incorporated.''
-
 
 @node  Invoking xzgv, A Note on Notation, Acknowledgements, Top
 @comment  node-name,  next,  previous,  up
@@ -3041,7 +3023,7 @@ the patch using @code{diff -c} or (preferably) @code{diff -u}.
 @end itemize
 
 So, if you think you've found a bug in xzgv, report it by emailing me at
-@email{rus@@svgalib.org}.
+@email{rrt@@sc3d.org}.
 
 
 @node  Reporting Documentation Bugs,  , Reporting Bugs, Bugs and Restrictions
