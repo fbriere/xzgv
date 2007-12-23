@@ -38,7 +38,7 @@ installdirs:
 
 install: installdirs
 	install xzgv.1 $(MANDIR)
-	install xzgv.info.gz $(INFODIR)
+	install -m 644 xzgv.info.gz $(INFODIR)
 	install-info --infodir=$(INFODIR) xzgv.info.gz
 
 uninstall:
