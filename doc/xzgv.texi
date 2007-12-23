@@ -2524,7 +2524,7 @@ formats'. xzgv, via gdk, supports many.
 * File Type Identification::    How xzgv identifies the type of a file.
 @end menu
 
-@node  File Type Identification, Configuring xzgv, File Formats, File Formats
+@node  File Type Identification,  , File Formats, File Formats
 @comment  node-name,  next,  previous,  up
 @section File Type Identification
 
