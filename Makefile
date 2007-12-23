@@ -52,6 +52,11 @@ clean:
 	cd doc && $(MAKE) clean
 	$(RM) *~
 
+realclean:
+	cd src && $(MAKE) realclean
+	cd doc && $(MAKE) realclean
+	$(RM) *~
+
 install: all
 	cd src && $(MAKE) install
 	cd doc && $(MAKE) install

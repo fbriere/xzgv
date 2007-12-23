@@ -51,3 +51,7 @@ uninstall:
 # building it requires gawk.
 clean:
 	$(RM) *~ xzgv.dvi
+
+realclean: clean
+	$(RM) xzgv.1 xzgv.info.gz
+

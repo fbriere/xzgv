@@ -39,6 +39,7 @@ clean:
 	$(RM) *~ *.o xzgv
 	$(RM) rcfile_opt.h rcfile_var.h rcfile_short.h
 
+realclean: clean
 
 # dependancies
 backend.o: backend.c backend.h
