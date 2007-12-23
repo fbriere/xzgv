@@ -42,9 +42,9 @@ doc/xzgv.1: doc/xzgv.texi doc/makeman.awk
 
 # Like in GNU stuff, info files aren't automatically remade,
 # as I don't want to assume everyone has texinfo's `makeinfo' handy.
-info: doc/xzgv.gz
+info: doc/xzgv.info.gz
 
-doc/xzgv.gz: doc/xzgv.texi
+doc/xzgv.info.gz: doc/xzgv.texi
 	cd doc && $(MAKE) info
 
 clean:

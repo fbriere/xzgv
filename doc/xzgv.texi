@@ -1,6 +1,6 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
-@setfilename xzgv
+@setfilename xzgv.info
 @settitle The xzgv manual
 @setchapternewpage odd
 @c %**end of header

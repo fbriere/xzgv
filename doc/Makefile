@@ -10,12 +10,12 @@ include ../config.mk
 
 all: info man
 
-info: xzgv.gz
+info: xzgv.info.gz
 dvi: xzgv.dvi
 
-xzgv.gz: xzgv.texi
-	makeinfo xzgv.texi
-	gzip -f xzgv
+xzgv.info.gz: xzgv.texi
+	makeinfo --no-split xzgv.texi
+	gzip -9f xzgv.info
 
 # `-c' removes the huge number of associated files created by TeX.
 # This saves doing a `make clean' from hell. :-)
@@ -38,13 +38,13 @@ installdirs:
 
 install: installdirs
 	install xzgv.1 $(MANDIR)
-	install xzgv.gz $(INFODIR)
-	install-info  --infodir=$(INFODIR) xzgv.gz
+	install xzgv.info.gz $(INFODIR)
+	install-info --infodir=$(INFODIR) xzgv.info.gz
 
 uninstall:
 	$(RM) $(MANDIR)/xzgv.1
 	$(RM) $(INFODIR)/xzgv.gz
-	install-info --remove xzgv
+	install-info --remove xzgv.info.gz
 
 # This *doesn't* remove the Info files, which should stick around to
 # be included in the distribution. Ditto for the man page, since
