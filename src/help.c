@@ -46,7 +46,8 @@ gtk_window_set_modal(GTK_WINDOW(about_win),TRUE);
 
 label=gtk_label_new("xzgv " XZGV_VER " - picture viewer for X with file selector\n"
                     "Copyright (C) 1999-2005 Russell Marks\n"
-                    "Homepage - http://rus.members.beeb.net/xzgv.html");
+                    "Copyright (C) 2007 Reuben Thomas\n"
+                    "Homepage - http://sourceforge.net/projects/xzgv");
 gtk_box_pack_start(GTK_BOX(vbox),label,TRUE,TRUE,2);
 gtk_widget_show(label);
 
