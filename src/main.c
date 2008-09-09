@@ -1705,6 +1705,9 @@ void xy_scaling_double(int do_x,int do_y)
 static int in_routine=0;
 int xtmp=xscaling,ytmp=yscaling,oldxsc=xscaling,oldysc=yscaling;
 
+/* if there's no image, don't do anything */
+if (!theimage) return;
+
 /* if recursed, don't bother */
 if(in_routine) return;
 in_routine=1;
@@ -1753,6 +1756,9 @@ void xy_scaling_add(int do_x,int do_y)
 static int in_routine=0;
 int xtmp=xscaling,ytmp=yscaling,oldxsc=xscaling,oldysc=yscaling;
 
+/* if there's no image, don't do anything */
+if (!theimage) return;
+
 /* if recursed, don't bother */
 if(in_routine) return;
 in_routine=1;
@@ -1800,6 +1806,9 @@ void xy_scaling_halve(int do_x,int do_y)
 {
 static int in_routine=0;
 int xtmp=xscaling,ytmp=yscaling,oldxsc=xscaling,oldysc=yscaling;
+
+/* if there's no image, don't do anything */
+if (!theimage) return;
 
 /* if recursed, don't bother */
 if(in_routine) return;
@@ -1851,6 +1860,9 @@ void xy_scaling_sub(int do_x,int do_y)
 {
 static int in_routine=0;
 int xtmp=xscaling,ytmp=yscaling,oldxsc=xscaling,oldysc=yscaling;
+
+/* if there's no image, don't do anything */
+if (!theimage) return;
 
 /* if recursed, don't bother */
 if(in_routine) return;
@@ -2102,6 +2114,7 @@ listen_to_toggles=1;
 
 void cb_flip(void)
 {
+if (!theimage) return;
 RECURSE_PROTECT_START;
 backend_flip_vert(theimage);
 orient_current_state=orient_state_flip[orient_current_state];
@@ -2112,6 +2125,7 @@ RECURSE_PROTECT_END;
 
 void cb_mirror(void)
 {
+if (!theimage) return;
 RECURSE_PROTECT_START;
 backend_flip_horiz(theimage);
 orient_current_state=orient_state_mirror[orient_current_state];
@@ -2122,6 +2136,7 @@ RECURSE_PROTECT_END;
 
 void cb_rot_cw(void)
 {
+if (!theimage) return;
 RECURSE_PROTECT_START;
 /* swap x and y scaling, since the effect if we don't do that
  * is of the image mysteriously changing. :-)
@@ -2136,6 +2151,7 @@ RECURSE_PROTECT_END;
 
 void cb_rot_acw(void)
 {
+if (!theimage) return;
 RECURSE_PROTECT_START;
 backend_rotate_acw(theimage);
 orient_current_state=orient_state_rot_acw[orient_current_state];
@@ -2147,6 +2163,7 @@ RECURSE_PROTECT_END;
 
 void cb_normal_orient(void)
 {
+if (!theimage) return;
 RECURSE_PROTECT_START;
 if(orient_current_state!=0)
   {
