@@ -72,11 +72,6 @@ work; RTFS job on GTK+, I think...]
 
 * Important in long-term
 
-Switch to GTK+ 2.x (unless that causes problems), and use some other
-rendering backend than Imlib 1.x by default. The problem with the
-latter is that the alternatives I've seen are all awkward and/or
-slower in one way or another. :-/
-
 Have thumbnails in the selector only read/rendered/stored-as-pixmap
 *when displayed*, like zgv. I think overall this would be a win, and
 it would be much less demanding of pixmap resources in the X server.
@@ -163,17 +158,6 @@ currently). (This suggested by Wolfram Kleff.)
   happens when `normal' and zoomed, but *not* when scaling up. You
   also get a GTK+ error of some kind IIRC.
 
-- Imlib problem. Same filename, different dirs, different images, both
-  recent - you don't get to see the 2nd image. :-( I'm not sure
-  there's much I can do about this, at least not when relying on Imlib
-  for picture-reading. Probably the best thing to do is add further
-  readers of my own, as I already have for e.g. GIF and PNG.
-
-- it doesn't apply any tranparency mask returned by Imlib. The
-  practical result of this seems to be purple transparent bits in
-  thumbnails and scaled-up pics, and black transparent bits elsewhere.
-  This doesn't affect GIF or PNG files, though.
-
 - in zoom mode, it copes with resizing the window as a whole, but
   *doesn't* when you change the size of the pane (apart from when
   hiding/showing selector or resizing from keyboard, but that's only
@@ -189,22 +173,10 @@ currently). (This suggested by Wolfram Kleff.)
 
 - 8-bit and/or dithering-related bugs:
 
-  - when scaling up and Imlib is dithering, you end up with a
-    crappy-looking picture if you drag the picture around slowly (since
-    each exposed bit is dithered independently, with no regard given to
-    matching up to any previous error-diffusion). But if I redrew the
-    whole thing each time, it would be *really* slow (this was the
-    approach I initially took in anticipation of this dithering problem,
-    but the slowness was astounding). Probably the best kludge is to
-    make sure it always redraws at least an NxN rectangle (N=20 might be
-    reasonable), but even this is a bit hairy, and would still be
-    somewhat ugly. [Though I've played about with xzgv in 8-bit mode a
-    bit more since writing this, and I think it might actually be ok.]
-  
   - thumbnails don't look so great in palette-based (e.g. 8-bit) modes.
     Should either dither them myself if depth<=8 (a bit painful but
-    probably the way to go), or load them as Imlib images (easy but may
-    prove very memory-hungry, and may possibly be slower).
+    probably the way to go), or load them as gdb-pixbuf images (easy
+    but may prove very memory-hungry, and may possibly be slower).
 
 - if you use Tab (or the cursor keys) to move around in dialogs, it
   acts like there's an invisible widget in addition to the ones you
@@ -224,14 +196,3 @@ currently). (This suggested by Wolfram Kleff.)
   width/height would be easier, but still kludgey, and I'd much rather
   be Gimp-friendly than xv-friendly.) May be worth returning valid
   image-type info for own-reader types like GIF and PNG, though.
-
-- it seems Imlib doesn't `dirty' or copy images when you use its own
-  image-modify functions (!), so sometimes (due to pixmap cacheing,
-  which isn't easily avoided without constructing an entire config
-  structure) a file you e.g. mirror, then came back to soon after, can
-  have that mirrored version presented as if it were the actual image.
-  Probably the only ways of avoiding this which wouldn't be crushingly
-  slow are to a) copy images the first time they're modified and drop
-  the original version, or b) put together a config structure :-( in
-  order to disable the pixmap cache. [update: uh, isn't there some way
-  to just dirty the image/pixmap instead?]
