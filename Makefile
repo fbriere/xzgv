@@ -72,7 +72,7 @@ dist: ../xzgv-$(VERS).tar.gz
 
 # Based on the example in ESR's Software Release Practice HOWTO.
 #
-../xzgv-$(VERS).tar.gz: info man clean
+../xzgv-$(VERS).tar.gz: info man realclean
 	$(RM) ../xzgv-$(VERS)
 	@cd ..;ln -s xzgv xzgv-$(VERS)
 	cd ..;tar zchf xzgv-$(VERS).tar.gz --exclude=.svn xzgv-$(VERS)
