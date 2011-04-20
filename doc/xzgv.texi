@@ -2530,7 +2530,7 @@ formats'. xzgv, via gdk, supports many.
 
 @cindex identifying files
 @cindex files, identification of
-@cindex picture format, identification of 
+@cindex picture format, identification of
 @cindex file format, identification of
 
 The format a file is in is identified by its content. The file-reading
@@ -3005,9 +3005,9 @@ The versions of GTK+ you are using. @code{xzgv --version-gtk} reports
 the GTK+ version being used by xzgv.
 
 @item
-The bitdepth your X server is running in (common depths are 8-bit (256
-colours), 15-bit, 16-bit, 24-bit, and 32-bit). If you don't know what
-depth you're running in, try @code{xdpyinfo|grep depth}.
+The bitdepth your X server is running in (common depths are 16-bit,
+24-bit, and 32-bit). If you don't know what depth you're running in, try
+@code{xdpyinfo|grep depth}.
 
 @item
 A description of the bug --- what effects it has, the circumstances it
@@ -3073,15 +3073,10 @@ A description of the problem.
 @cindex changes, possible future
 @cindex wish-list
 
-@c I don't refer to the reporting bugs node here, because I think that
-@c would be overly confusing.
-
 If you want to suggest a feature you'd like in xzgv, or a change to an
-existing feature, contact me at @email{rus@@svgalib.org}.
+existing feature, contact me; see @xref{Reporting Bugs} for the address.
 
-xzgv is rather a moving target at the moment, so for now future changes
-etc. are only listed in the @file{TODO} file. Normal service will be
-resumed once things settle down a bit. :-)
+Future changes etc. are listed in the @file{TODO} file.
 
 
 @node  Keyboard Commands Index, Menu Item Index, Future Changes, Top
