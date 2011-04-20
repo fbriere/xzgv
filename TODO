@@ -165,13 +165,6 @@ currently). (This suggested by Wolfram Kleff.)
   really see any other way of showing tagging which wouldn't look
   nasty or take up loads of room.
 
-- 8-bit and/or dithering-related bugs:
-
-  - thumbnails don't look so great in palette-based (e.g. 8-bit) modes.
-    Should either dither them myself if depth<=8 (a bit painful but
-    probably the way to go), or load them as gdb-pixbuf images (easy
-    but may prove very memory-hungry, and may possibly be slower).
-
 - if you use Tab (or the cursor keys) to move around in dialogs, it
   acts like there's an invisible widget in addition to the ones you
   can see. So in e.g. the file details (with only an Ok button) you
