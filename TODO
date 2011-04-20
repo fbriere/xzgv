@@ -126,12 +126,6 @@ main.c as a whole is a bit of a mess. :-)
 
 * Trivia
 
-[is this next one still the case?]
-Incredibly, texi2html doesn't support @email, so you end up with e.g.
-"you can email me at @email{rus@svgalib.org}" in the output HTML.
-Mmmm, classy. :-( Should I just use @code? IIRC the formatting is much
-the same.
-
 When you delete a file from the viewer (ctrl-d works there too), it
 works fine, but the deleted picture stays in the viewer. It might be
 better if it auto-closed the file (though this may be somewhat
