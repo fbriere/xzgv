@@ -86,15 +86,9 @@ don't work that well. Should take these over and tweak the hadj
 manually, if possible (but IIRC it may not be easy :-/). Should also
 add h/l equivalents if I do this.
 
-The goto-dir dialog (and copy/move) should have some graphical means
-of choosing a dir, in addition to the text-entry widget. The only
-thing I've seen which looks reasonable is xmms's `DIR+' dialog, which
-doesn't look like it'd be too hard to adapt (though it's hard to tell
-for sure who I should credit this to if I did nick it :-)), but it
-might be better to wait until GTK+ has some standard
-file-selection-like thing for doing this. Anyway, even if I do add
-some `pretty' dir chooser I *have* to ensure you can always just do
-`G', type in the name, then enter (like you can now).
+The goto-dir dialog (and copy/move) should use a GUI directory
+chooser, in addition to the text-entry widget; but ensure you can
+always just do `G', type in the name, then enter (like you can now).
 
 
 * Wishlist features (not too important)
@@ -165,15 +159,6 @@ currently). (This suggested by Wolfram Kleff.)
   really see any other way of showing tagging which wouldn't look
   nasty or take up loads of room.
 
-- if you use Tab (or the cursor keys) to move around in dialogs, it
-  acts like there's an invisible widget in addition to the ones you
-  can see. So in e.g. the file details (with only an Ok button) you
-  press Tab and the highlight disappears from Ok - press it again and
-  it returns. Investigation shows window->focus_widget is set to NULL
-  when on this `invisible widget', so it's hard to tell WTF is going
-  on, exactly. (A quick test of other GTK+ and Gnome programs seems to
-  suggest this is a GTK+ `feature'.)
-
 - Thumbnails are given an accurate width/height `IMGINFO' comment, but
   are always claimed to be "RGB", as Imlib doesn't provide any way for
   us to find out what type they are (other Gimp-style types are
@@ -181,5 +166,4 @@ currently). (This suggested by Wolfram Kleff.)
   common file types by reading the file's header, but this would be
   really ugly - is it worth it or not? (An xv-ish file type after the
   width/height would be easier, but still kludgey, and I'd much rather
-  be Gimp-friendly than xv-friendly.) May be worth returning valid
-  image-type info for own-reader types like GIF and PNG, though.
+  be Gimp-friendly than xv-friendly.)
