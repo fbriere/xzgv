@@ -9,8 +9,10 @@
 # This gets definitions for CC, CFLAGS, BINDIR etc.
 include ../config.mk
 
-CFLAGS+=`pkg-config --cflags gtk+-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
-LDFLAGS+=`pkg-config --libs gtk+-2.0` `pkg-config --libs gdk-pixbuf-2.0`
+CFLAGS+=`pkg-config --cflags gtk+-2.0` `pkg-config --cflags gdk-pixbuf-2.0` \
+	`pkg-config --cflags x11`
+LDFLAGS+=`pkg-config --libs gtk+-2.0` `pkg-config --libs gdk-pixbuf-2.0` \
+	`pkg-config --libs x11` -lm
 
 all: xzgv
 
@@ -23,7 +25,7 @@ OBJS=	main.o \
 	backend.o
 
 xzgv: $(OBJS)
-	$(CC) $(LDFLAGS) -o xzgv $(OBJS)
+	$(CC) -o xzgv $(OBJS) $(LDFLAGS)
 
 installdirs:
 	/bin/sh ../mkinstalldirs $(BINDIR)
