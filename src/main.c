@@ -2569,7 +2569,7 @@ if(small_h==0) small_h=1;
 
 if((small_pixmap=gdk_pixmap_new(mainwin->window,small_w,small_h,-1))==NULL)
 {
-    gdk_pixmap_unref(pixmap);
+    g_object_unref(pixmap);
     return(NULL);
 }
 
@@ -2577,8 +2577,8 @@ buffer = malloc (w * h * sizeof (guint8) * 3);
 
 if (NULL == buffer) {
     /* malloc failed */
-    gdk_pixmap_unref(pixmap);
-    gdk_pixmap_unref(small_pixmap);
+    g_object_unref(pixmap);
+    g_object_unref(small_pixmap);
     return NULL;
 }
 
@@ -2688,10 +2688,10 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     /* if it's a dir, use ref to dir_icon pixmap. */
     if(datptr->isdir)
       {
-      datptr->pm_norm=gdk_pixmap_ref(dir_icon);
-      datptr->pm_small=gdk_pixmap_ref(dir_icon_small);
-      datptr->pm_norm_mask=gdk_pixmap_ref(dir_icon_mask);
-      datptr->pm_small_mask=gdk_pixmap_ref(dir_icon_small_mask);
+      datptr->pm_norm=g_object_ref(dir_icon);
+      datptr->pm_small=g_object_ref(dir_icon_small);
+      datptr->pm_norm_mask=g_object_ref(dir_icon_mask);
+      datptr->pm_small_mask=g_object_ref(dir_icon_small_mask);
       gtk_clist_set_pixmap(GTK_CLIST(clist),*entryp,SELECTOR_TN_COL,
                            thin_rows?datptr->pm_small:datptr->pm_norm,
                            (thin_rows?datptr->pm_small_mask:
@@ -2713,10 +2713,10 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
       else
         {
         /* no thumbnail then, use ref to file_icon pixmap. */
-        datptr->pm_norm=gdk_pixmap_ref(file_icon);
-        datptr->pm_small=gdk_pixmap_ref(file_icon_small);
-        datptr->pm_norm_mask=gdk_pixmap_ref(file_icon_mask);
-        datptr->pm_small_mask=gdk_pixmap_ref(file_icon_small_mask);
+        datptr->pm_norm=g_object_ref(file_icon);
+        datptr->pm_small=g_object_ref(file_icon_small);
+        datptr->pm_norm_mask=g_object_ref(file_icon_mask);
+        datptr->pm_small_mask=g_object_ref(file_icon_small_mask);
         gtk_clist_set_pixmap(GTK_CLIST(clist),*entryp,SELECTOR_TN_COL,
                              thin_rows?datptr->pm_small:datptr->pm_norm,
                              (thin_rows?datptr->pm_small_mask:
@@ -2775,10 +2775,10 @@ for(f=0;f<numrows;f++)
   /* be careful - we may be halfway through thumbnail-read... */
   if(datptr)
     {
-    if(datptr->pm_norm) gdk_pixmap_unref(datptr->pm_norm);
-    if(datptr->pm_norm_mask) gdk_pixmap_unref(datptr->pm_norm_mask);
-    if(datptr->pm_small) gdk_pixmap_unref(datptr->pm_small);
-    if(datptr->pm_small_mask) gdk_pixmap_unref(datptr->pm_small_mask);
+    if(datptr->pm_norm) g_object_unref(datptr->pm_norm);
+    if(datptr->pm_norm_mask) g_object_unref(datptr->pm_norm_mask);
+    if(datptr->pm_small) g_object_unref(datptr->pm_small);
+    if(datptr->pm_small_mask) g_object_unref(datptr->pm_small_mask);
     free(datptr);
     }
   }

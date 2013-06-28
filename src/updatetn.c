@@ -203,10 +203,10 @@ if(stat(buf,&xvpic)==-1 || realpic.st_mtime>xvpic.st_mtime ||
     pixmap=xvpic2pixmap(xvpic_data,w,h,&small_pixmap);
     if(pixmap)
       {
-      if(datptr->pm_norm)  gdk_pixmap_unref(datptr->pm_norm);
-      if(datptr->pm_small) gdk_pixmap_unref(datptr->pm_small);
-      if(datptr->pm_norm_mask)  gdk_pixmap_unref(datptr->pm_norm_mask);
-      if(datptr->pm_small_mask) gdk_pixmap_unref(datptr->pm_small_mask);
+      if(datptr->pm_norm)  g_object_unref(datptr->pm_norm);
+      if(datptr->pm_small) g_object_unref(datptr->pm_small);
+      if(datptr->pm_norm_mask)  g_object_unref(datptr->pm_norm_mask);
+      if(datptr->pm_small_mask) g_object_unref(datptr->pm_small_mask);
       datptr->pm_norm=pixmap;
       datptr->pm_small=small_pixmap;
       datptr->pm_norm_mask=datptr->pm_small_mask=NULL;

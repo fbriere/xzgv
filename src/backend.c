@@ -313,7 +313,7 @@ return(ret);
  */
 void backend_pixmap_destroy(GdkPixmap *pixmap)
 {
-gdk_pixmap_unref(pixmap);
+g_object_unref(pixmap);
 }
 
 
