@@ -288,7 +288,7 @@ if(image->backend_ext)		/* not normally the case */
 image->backend_ext=(void *)pixmap;
 
 if(!same)
-  gdk_pixbuf_unref(backim);
+  g_object_unref(backim);
 
 return(1);
 }
@@ -324,7 +324,7 @@ if(image->backend_ext)
   backend_pixmap_destroy((GdkPixmap *)image->backend_ext);
 
 if(image->backend_image)
-  gdk_pixbuf_unref(BACKEND_IMAGE(image));
+  g_object_unref(BACKEND_IMAGE(image));
 
 free(image);
 }
@@ -404,7 +404,7 @@ if(backim==NULL)
 
 gdk_pixbuf_render_pixmap_and_mask(backim,pixmap,mask,128);
 
-gdk_pixbuf_unref(backim);
+g_object_unref(backim);
 
 return(1);
 }
