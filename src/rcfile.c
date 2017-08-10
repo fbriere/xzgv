@@ -30,6 +30,8 @@ int default_sel_width=200;	/* initial selector width (also used for ~) */
 
 int zoom=0;			/* fit picture to window */
 int zoom_reduce_only=0;		/* when zooming, shrink only (don't enlarge) */
+int zoom_panorama=0;		/* when zooming, adapt to the smallest size (panorama) */
+int zoom_panorama_sb=0;		/* when panorama zooming, hide only one scrollbar */
 int interp=0;			/* interpolate pixels when scaling */
 int have_statusbar=0;		/* show statusbar */
 int tn_msgs=0;			/* say when reading thumbnails (on sbar) */

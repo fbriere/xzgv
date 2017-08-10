@@ -1412,17 +1412,27 @@ int scrnhigh=sw_for_pic->allocation.height-SW_BORDER_WIDTH;
 int width=theimage->w;
 int height=theimage->h;
 
-/* try landscapey */
-*swp=scrnwide; *shp=(scrnwide*height)/width;
-if(*shp>scrnhigh)
-  /* no, oh well portraity then */
-  *shp=scrnhigh,*swp=(scrnhigh*width)/height;
-
-/* don't expand if it's shrink-only. */
-if(zoom_reduce_only && (*swp>width || *shp>height))
-  *swp=width,*shp=height;
+if (!zoom_panorama)
+  {
+    /* try landscapey */
+    *swp=scrnwide; *shp=(scrnwide*height)/width;
+    if(*shp>scrnhigh)
+      /* no, oh well portraity then */
+      *shp=scrnhigh,*swp=(scrnhigh*width)/height;
+  }
+else
+  {
+    if ((width/scrnwide)>(height/scrnhigh))
+      /* pan horizontally */
+      zoom_panorama_sb=0,*swp=(scrnhigh*width)/height,*shp=scrnhigh;
+    else
+      /* pan vertically */
+      zoom_panorama_sb=1,*swp=scrnwide,*shp=(scrnwide*height)/width;
+  }
+  /* don't expand if it's shrink-only. */
+  if(zoom_reduce_only && (*swp>width || *shp>height))
+    *swp=width,*shp=height;
 }
-
 
 /* render pixmap from image, resize drawing area to fit, and just
  * generally update things. Call this to update the image after pretty
@@ -1936,9 +1946,14 @@ if(!listen_to_toggles || in_nextprev) return;
 listen_to_toggles=0;
 
 zoom=!zoom;
-gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               zoom?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
-                               zoom?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
+if(zoom)
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
+                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
+                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
+else
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
+                                 GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
 xscaling=yscaling=1;
 render_pixmap(1);
 
@@ -1952,6 +1967,18 @@ if(!listen_to_toggles || in_nextprev) return;
 listen_to_toggles=0;
 
 zoom_reduce_only=!zoom_reduce_only;
+render_pixmap(1);
+
+listen_to_toggles=1;
+}
+
+
+void toggle_zoom_panorama(gpointer cb_data,guint cb_action,GtkWidget *widget)
+{
+if(!listen_to_toggles || in_nextprev) return;
+listen_to_toggles=0;
+
+zoom_panorama=!zoom_panorama;
 render_pixmap(1);
 
 listen_to_toggles=1;
@@ -3660,6 +3687,8 @@ static GtkItemFactoryEntry viewer_menu_items[]=
   {"/_Options/_Zoom (fit to window)","z",toggle_zoom,	1,     "<ToggleItem>"},
   {"/_Options/When Zooming _Reduce Only","<alt>r",
    toggle_zoom_reduce,1,  "<ToggleItem>"},
+  {"/_Options/When Zooming _Panorama","<alt>p",
+   toggle_zoom_panorama,1,  "<ToggleItem>"},
   {"/_Options/_Interpolate when Scaling","i",toggle_interp,1,  "<ToggleItem>"},
   {"/_Options/_Ctl+Click Scales X Axis","<alt>c",
    toggle_mouse_x,	1,	"<ToggleItem>"},
@@ -3736,9 +3765,14 @@ sw_for_pic=gtk_scrolled_window_new(NULL,NULL);
 GTK_WIDGET_UNSET_FLAGS(sw_for_pic,GTK_CAN_FOCUS);
 gtk_container_set_border_width(GTK_CONTAINER(sw_for_pic),0);
 /* first `POLICY' is horiz, second is vert */
-gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               zoom?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
-                               zoom?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
+if(zoom)
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
+                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
+                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
+else
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
+                                 GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
 gtk_paned_add2(GTK_PANED(pane),sw_for_pic);
 gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw_for_pic),
                                       align);
@@ -3895,6 +3929,12 @@ gtk_check_menu_item_set_active(
     gtk_item_factory_get_widget(viewer_menu_factory,
                                 "<main>/Options/When Zooming Reduce Only")),
   zoom_reduce_only);
+
+gtk_check_menu_item_set_active(
+  GTK_CHECK_MENU_ITEM(
+    gtk_item_factory_get_widget(viewer_menu_factory,
+                                "<main>/Options/When Zooming Panorama")),
+  zoom_panorama);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(

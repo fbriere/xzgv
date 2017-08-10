@@ -65,6 +65,7 @@
 "thin-rows"	't'	1 1 OPT_ARG	get_bool	&thin_rows
 "zoom"		'z'	1 1 OPT_ARG	get_bool	&zoom
 "zoom-reduce-only" 'r'	1 1 OPT_ARG	get_bool	&zoom_reduce_only
+"zoom-panorama" 'p'	1 1 OPT_ARG	get_bool	&zoom_panorama
 
 # `one-offs', ones you can't enable in a config file
 "show-tagged"	'T'	1 0 OPT_ARG	get_bool	&show_tagged

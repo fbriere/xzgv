@@ -4,7 +4,7 @@
  * rcfile.h - protos for rcfile.c and config vars.
  */
 
-#define XZGV_VER	"0.9.1"
+#define XZGV_VER	"0.9.2"
 
 /* geometry bitmask for mainwin_flags */
 #define GEOM_BITS_X_SET		1
@@ -27,6 +27,8 @@ extern int default_sel_width;
 /* config vars */
 extern int zoom;
 extern int zoom_reduce_only;
+extern int zoom_panorama;
+extern int zoom_panorama_sb;
 extern int interp;
 extern int have_statusbar;
 extern int tn_msgs;

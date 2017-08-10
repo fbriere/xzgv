@@ -9,7 +9,7 @@
 @c To make a DVI file from this (usually for printing), do `make dvi'.
 
 @set VERSION 0.9
-@set UPDATED 9th September 2007
+@set UPDATED 9th August 2017
 
 
 @c XXX could do with a general discussion of the window layout
@@ -470,6 +470,13 @@ Mode}).
 @itemx --zoom-reduce-only
 When in zoom mode, only @emph{reduce} pictures to fit; i.e. make big
 pictures viewable all-at-once while leaving small picures intact.
+
+@item -p
+@vindex zoom-panorama
+@itemx --zoom-panorama
+When in zoom mode, adjust only the most proportional dimension to fit,
+and allow scrolling on the other dimension; i.e. like a @emph{fit page width}
+option in PDF readers, but not limited to horizontal adjusting.
 @end table
 
 If started with @code{xzgv @var{files}}, xzgv hides the file selector
@@ -1840,6 +1847,7 @@ Move to the bottom-right of the picture.
 @cindex zooming big but not small pictures
 @cindex zoom mode, reduce-only in
 @cindex reduce-only in zoom mode
+@cindex use panorama view in zoom mode
 
 An alternative way of viewing the whole picture, one which lets you see
 the picture onscreen all at once no matter how big (or small) it is, is
@@ -1868,6 +1876,17 @@ When in zoom mode, only @emph{reduce} pictures to fit. This can be
 useful when going through a lot of unpredictably-sized pictures, as it
 means that you can see all of a big picture easily without also meaning
 that tiny little icons assume a scale of Biblical proportions. :-)
+
+@kindex Alt-p
+@item Alt-p
+@findex Viewer menu, Options, When Zooming Panorama
+@itemx Viewer menu, Options, When Zooming Panorama
+When in zoom mode, resize to make the most proportional dimension fit and
+allow scrolling on the other dimension. This can be useful when viewing
+iamges that do not adjust nicely to the window size but you want to see them
+as big as possible while using the most space available. The cause for this 
+function was to better read comics, so you can guess it works like a 
+'fit page width' option, but is not limited to horizontal adjustment.
 @end table
 
 The way zoom mode reduces a file to fit the window is (relatively) quick
@@ -2453,6 +2472,12 @@ Toggle zoom mode, discussed in more detail elsewhere (@pxref{Zoom Mode}).
 @item Alt-r
 @itemx Viewer menu, Options, When Zooming Reduce Only
 Toggle reduce-only in zoom mode, also covered elsewhere (@pxref{Zoom
+Mode}).
+
+@c and here...
+@item Alt-p
+@itemx Viewer menu, Options, When Zooming Panorama
+Toggle panorama view in zoom mode, also covered elsewhere (@pxref{Zoom
 Mode}).
 
 @c and here...
