@@ -2947,7 +2947,6 @@ void create_clist_from_dir(void)
 DIR *dirfile;
 struct dirent *dent;
 struct stat sbuf;
-int isdir;
 static char cdir[1024];
 
 if((dirfile=opendir("."))==NULL)
@@ -3013,7 +3012,6 @@ while((dent=readdir(dirfile))!=NULL)
     sbuf.st_ctime=0;
     sbuf.st_atime=0;
     }
-  isdir=S_ISDIR(sbuf.st_mode);
   
   if(clist_add_new_row(dent->d_name,&sbuf))
     numrows++;
