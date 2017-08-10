@@ -1,6 +1,6 @@
 xzgv - picture viewer for X, with thumbnail-based file selector.
 Copyright (C) 1999-2003 Russell Marks.
-Copyright (C) 2007-2009 Reuben Thomas.
+Copyright (C) 2007-2017 Reuben Thomas.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@ Description
 -----------
 
 xzgv is a picture viewer for X, with a thumbnail-based file selector.
-It uses GTK+ and Imlib. Most file formats are supported, and the
-thumbnails used are compatible with xv, zgv, and the Gimp. It can also
-be used with `xzgv file(s)', to effectively bypass the file selector.
+It uses GTK+. Most file formats are supported, and the thumbnails
+used are compatible with xv, zgv, and the Gimp. It can also be used
+with `xzgv file(s)', to effectively bypass the file selector.
 For more on how xzgv works and how to use it, do `info xzgv' or `man
 xzgv' once it's installed.
 
@@ -54,12 +54,12 @@ skimp on the mousey stuff, either.
 So anyway, it's just terribly great. :-)
 
 
-Contacting me
--------------
+Support and development
+-----------------------
 
-You can email me at rrt@sc3d.org.
+Please file bugs, patches etc. on the SourceForge page:
+
+https://sourceforge.net/p/xzgv/
 
 
 Share and enjoy! 
-
--Reuben.

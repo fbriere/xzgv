@@ -10,7 +10,12 @@ versions of xzgv, with the newest changes first.
 
 xzgv now uses GTK 2, with gdk-pixbuf as the image rendering back-end.
 imlib1 is no longer supported. Gamma, brightness and contrast control
-are not currently supported.
+are no longer supported.
+
+** New features
+
+Add ‚Äúzoom panorama‚Äù, which stretches to fit the most proportional
+dimension.
 
 
 * Changes in xzgv 0.8
@@ -45,7 +50,7 @@ Fixed long-standing bug with interpolation, which could have resulted
 in segfaults (though it's hard to say if it ever actually did).
 
 Stopped selector getting permanently hidden if two middle-button
-presses were too close together. Thanks to JosÈ Luis Gonz·lez Gonz·lez
+presses were too close together. Thanks to Jos√© Luis Gonz√°lez Gonz√°lez
 for spotting this.
 
 No longer sets background colour to black for mono PNG files, where
@@ -58,7 +63,7 @@ Morten Bo Johansen for spotting it there.
 Added 9/0 keys as yet another way of doing file untag/tag. These are
 last-ditch alternatives for keyboards where -/= don't make sense (some
 non-US/UK keyboards), and where keypad -/+ aren't easily accessible
-(e.g. laptops). Thanks to Bal·zs SzabÛ for inspiring this one.
+(e.g. laptops). Thanks to Bal√°zs Szab√≥ for inspiring this one.
 
 
 * Changes in xzgv 0.7

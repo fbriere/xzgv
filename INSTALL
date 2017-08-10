@@ -1,60 +1,22 @@
-INSTALL - information about compilation etc.
---------------------------------------------
+INSTALL
+-------
 
-You'll need gtk 2.0 or later installed. If you use Linux, your
-distribution is likely to come with it, but be sure to install any
-relevant `development' package too (e.g. SuSE's GTK+ package was
-called `gtkdev' and `imlibdev' last time I looked, and Debian's is
-`libgtk2.0-dev' at the time of writing), or you may not be able to
-*compile* a program using the libraries.
+To compile xzgv, you’ll need the following packages:
 
-(Also, the `pkg-config' program must be on your path - this shouldn't
-be a problem though, any valid installations should have those.)
+Gtk+ 2 development files (libgtk2.0-dev on Debian/Ubuntu; gtk2.0-dev on
+Fedora/SuSE)
+pkg-config
+make
 
-If you don't use Linux, or need more up-to-date copies than your
-distribution carries, check out http://www.gtk.org/.
+Check `config.mk' to see if there's anything there you want to change
+(most likely, the installation PREFIX).
 
-Anyway, once GTK+ is in place, you'll want to have a look at
-`config.mk' to see if there's anything there you want to change.
-
-(In particular, if you're compiling on a non-x86 machine, or with
-something other than gcc, you'll have to comment out the `INTERP_MMX'
-line. If you don't have the faintest idea what I'm on about, leave it
-alone. :-))
-
-After that, it's just `make' then (as root) `make install'. This
-compiles xzgv, then installs it and its documentation (both info files
-and man page).
+After that, run `make' then `make install'. This compiles xzgv, then
+installs it and its documentation (both info files and man page).
 
 
-Note that the only platform I'm usually sure xzgv compiles on is
-Linux/x86 - if you get it to compile OK on others I'd appreciate
-knowing about it. (There are good reasons why zgv is pretty
-non-portable, alas, but xzgv shouldn't have those problems.) I'd
-especially like to know how it plays on non-x86 non-Linux platforms.
-I've had these reports for previous xzgv versions (only the most
-recent report for any given platform is included):
+xzgv is regularly built for GNU/Linux; please report problems on other
+platforms.
 
-xzgv ver	OS (platform)		How it went
-
-0.7		Solaris 8 (UltraSparc)	compiled/installed ok
-0.7		IRIX 6.5.8		compiled/installed ok (with gcc)
-0.7		MacOS X 10.2		compiled ok; needed X, Fink, and
-                                         required libs (also `dlcompat'),
-                                         and "-I /sw/include" in CFLAGS
-0.6		Linux (PPC)		weird thumbnail problem [1]
-0.6		Linux (UltraSparc)	compiled/installed ok
-0.6		Linux (Alpha)		same problem as PPC, and an
-                                        even stranger window-width
-                                        oddity [1]
-0.5		FreeBSD (x86?)		compiled ok except install-info
-0.5		HP-UX 10.20 (PA-RISC)	compiled ok except install-info;
-                                         required gawk for man page and
-                                         GNU fileutils for install
 
 Good luck!
-
--Rus.
-
-[1] It seems there's a fair chance these may have been due to compiler
-bugs.
