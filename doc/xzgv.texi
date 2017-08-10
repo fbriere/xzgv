@@ -2877,8 +2877,8 @@ the patch using @code{diff -c} or (preferably) @code{diff -u}.
 
 @end itemize
 
-So, if you think you've found a bug in xzgv, report it by emailing me at
-@email{rrt@@sc3d.org}.
+Then, please file a bug report in the SourceForge bug tracker.
+See @url{https://sourceforge.net/p/xzgv}.
 
 
 @node  Reporting Documentation Bugs,  , Reporting Bugs, Bugs and Restrictions
