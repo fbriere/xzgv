@@ -1,17 +1,13 @@
 # Makefile for xzgv docs
-#
-# Only info version is made by default, do `make dvi' to make a .dvi
-# file.
-
 
 # This gets definitions for INFODIR, MANDIR, etc.
 include ../config.mk
 
 
-all: info man
+all: info man pdf
 
 info: xzgv.info.gz
-dvi: xzgv.dvi
+pdf: xzgv.pdf
 
 xzgv.info.gz: xzgv.texi
 	makeinfo --no-split xzgv.texi
@@ -19,9 +15,9 @@ xzgv.info.gz: xzgv.texi
 
 # `-c' removes the huge number of associated files created by TeX.
 # This saves doing a `make clean' from hell. :-)
-xzgv.dvi: xzgv.texi
+xzgv.pdf: xzgv.texi
 	@echo "=== NB: If you don't want A4 paper, edit config.mk! ==="
-	texi2dvi -c $(USE_A4_DEF) xzgv.texi
+	texi2pdf -c $(USE_A4_DEF) xzgv.texi
 
 # This explicitly mentions `gawk' because makeman requires it
 # (and can't easily be made not to, since it really does need gensub).
@@ -50,7 +46,7 @@ uninstall:
 # be included in the distribution. Ditto for the man page, since
 # building it requires gawk.
 clean:
-	$(RM) *~ xzgv.dvi
+	$(RM) *~ xzgv.pdf
 
 realclean: clean
 	$(RM) xzgv.1 xzgv.info.gz
