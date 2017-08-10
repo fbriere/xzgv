@@ -1358,10 +1358,8 @@ else
       cb_file_details();
       break;
 
-#ifdef GDK_KP_Add	/* shouldn't be a problem, but just in case... */
     case GDK_KP_Add:
-#endif
-    case GDK_plus:	/* may be preferable on some non-US/UK keyboards */
+    case GDK_plus:	/* may be preferable on some non-US/UK keyboards, and on laptops */
     case GDK_0:		/* last-ditch alternative for non-US/UK laptops */
       if(event->state&GDK_MOD1_MASK)
         cb_tag_all();
@@ -1369,9 +1367,7 @@ else
         cb_tag_file();
       break;
     
-#ifdef GDK_KP_Subtract
     case GDK_KP_Subtract:
-#endif
     case GDK_9:
       if(event->state&GDK_MOD1_MASK)
         cb_untag_all();
