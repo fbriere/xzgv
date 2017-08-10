@@ -1,0 +1,5 @@
+*.o
+/xzgv
+/rcfile_opt.h
+/rcfile_var.h
+/rcfile_short.h
