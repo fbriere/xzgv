@@ -41,24 +41,15 @@ return(stat(filename,&sbuf)!=-1 && S_ISDIR(sbuf.st_mode));
 }
 
 
-/* copy file, returns 0 if failed
- * src must be in the current directory (though this isn't checked)
- * and dstdir must be a directory (fails if it isn't)
+/* check dstdir is a directory, and append src to it
  */
-int copyfile(const char *src,const char *dstdir)
+char *make_dest(const char *src,const char *dstdir)
 {
-static unsigned char copybuf[TRANSFER_BUF_SIZE];
-FILE *in,*out;
 char *dst;
-int siz;
 
-if(!cm_isdir(dstdir)) return(0);
-
-if((in=fopen(src,"rb"))==NULL)
-  return(0);
-
-if((dst=malloc(strlen(dstdir)+strlen(src)+2))==NULL)	/* +2 for / and NUL */
-  return(0);
+if(!cm_isdir(dstdir) ||
+   (dst=malloc(strlen(dstdir)+strlen(src)+2))==NULL)	/* +2 for / and NUL */
+  return NULL;
 
 strcpy(dst,dstdir);
 strcat(dst,"/");
@@ -67,135 +58,20 @@ if(strrchr(src,'/'))
 else
   strcat(dst,src);
 
-/* check it doesn't already exist */
-if((out=fopen(dst,"rb"))!=NULL)
-  {
-  fclose(out);
-  fclose(in);
-  free(dst);
-  return(0);
-  }
-
-if((out=fopen(dst,"wb"))==NULL)
-  {
-  fclose(in);
-  free(dst);
-  return(0);
-  }
-
-free(dst);
-
-/* so now both files are open.
- * copy from file to file, up to TRANSFER_BUF_SIZE bytes at a time.
- */
-
-while((siz=fread(copybuf,1,TRANSFER_BUF_SIZE,in))>0)
-  {
-  if(fwrite(copybuf,1,siz,out)!=siz)
-    {
-    fclose(out);
-    fclose(in);
-    return(0);
-    }
-  }
-
-fclose(out);
-fclose(in);
-return(1);
+return dst;
 }
 
 
-/* move file, returns 0 if failed
+/* copy or move file, returns 0 if failed
  * src must be in the current directory (though this isn't checked)
  * and dstdir must be a directory (fails if it isn't)
  */
-int movefile(const char *src,const char *dstdir)
+int copy_or_move(const char *src,const char *dstdir,int do_move)
 {
-struct stat sbuf;
-struct utimbuf utbuf;
-char *dst;
-
-if(!cm_isdir(dstdir)) return(0);
-
-if((dst=malloc(strlen(dstdir)+strlen(src)+2))==NULL)	/* +2 for / and NUL */
-  return(0);
-
-strcpy(dst,dstdir);
-strcat(dst,"/");
-if(strrchr(src,'/'))
-  strcat(dst,strrchr(src,'/')+1);
-else
-  strcat(dst,src);
-
-/* fail if dest file already exists */
-if(stat(dst,&sbuf)==0)
-  {
-  free(dst);
-  return(0);
-  }
-
-/* first try a rename() */
-if(rename(src,dst)==0)
-  {
-  /* it worked */
-  free(dst);
-  return(1);
-  }
-
-if(errno!=EXDEV)
-  {
-  /* if the reason it failed wasn't because it couldn't `rename'
-   * between filesystems, we should fail too.
-   */
-  free(dst);
-  return(0);
-  }
-
-/* resort to copying then deleting */
-
-if(!copyfile(src,dstdir))
-  {
-  free(dst);
-  return(0);
-  }
-
-/* try to copy file times/owner/group/perms.
- * I don't consider this important enough to give an error if
- * it screws up (esp. 'cos setting owner might in some cases screw up
- * quite reasonably if we're not root :-)), but it's worth doing I
- * think - not least for consistency with the case where rename() works
- * (where everything is preserved).
- */
-if(stat(src,&sbuf)==0)
-  {
-  /* set times */
-  utbuf.actime=sbuf.st_atime;
-  utbuf.modtime=sbuf.st_mtime;
-  utime(dst,&utbuf);	/* don't much care if it fails */
-  
-  /* set owner/group and perms - these don't change the times set above */
-  chown(dst,sbuf.st_uid,sbuf.st_gid);
-  chmod(dst,sbuf.st_mode);
-  /* again, not too bothered if they fail */
-  }
-
-/* the copy worked, delete the original */
-if(remove(src)==0)
-  {
-  /* the delete worked, all done */
-  free(dst);
-  return(1);
-  }
-
-/* if we couldn't delete the original, delete the copy instead,
- * because the overall move failed and it would be messy to leave
- * it there. However, we're not really that bothered if *this*
- * delete fails. :-)
- */
-remove(dst);
-
-free(dst);
-return(0);
+char *dst = make_dest(src, dstdir);
+GFile *srcfile = g_file_new_for_path(src);
+GFile *dstfile = g_file_new_for_path(dst);
+return (do_move?g_file_move:g_file_copy)(srcfile, dstfile, 0, NULL, NULL, NULL, NULL);
 }
 
 
@@ -277,7 +153,6 @@ void cm_copymove_gotdir(const char *destdir)
 {
 static char buf[256];
 GtkWidget *progress_win,*progbar;
-int (*copy_or_move_ptr)(const char *,const char *);
 int f,t,numtagged;
 int done;
 char *ptr;
@@ -290,8 +165,6 @@ if(!numrows) return;
  */
 if(thumbnail_read_running())
   stop_thumbnail_read();
-
-copy_or_move_ptr=cm_do_move?movefile:copyfile;
 
 for(f=t=0;f<numrows;f++)
   if(get_tagged_state(f))
@@ -326,7 +199,7 @@ for(done=f=0;f<numrows;f++)
   
   gtk_clist_get_text(GTK_CLIST(clist),f,SELECTOR_NAME_COL,&ptr);
   
-  if(!(*copy_or_move_ptr)(ptr,destdir))
+  if(!copy_or_move(ptr,destdir,cm_do_move))
     {
     sprintf(buf,"Error %s ",cm_do_move?"moving":"copying");
     /* if it's a really big filename just say "file" :-) */
