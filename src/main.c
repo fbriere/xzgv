@@ -1434,6 +1434,7 @@ else
     *swp=width,*shp=height;
 }
 
+
 /* render pixmap from image, resize drawing area to fit, and just
  * generally update things. Call this to update the image after pretty
  * much any change at all. :-)

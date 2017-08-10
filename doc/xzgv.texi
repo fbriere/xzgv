@@ -1884,8 +1884,8 @@ that tiny little icons assume a scale of Biblical proportions. :-)
 When in zoom mode, resize to make the most proportional dimension fit and
 allow scrolling on the other dimension. This can be useful when viewing
 iamges that do not adjust nicely to the window size but you want to see them
-as big as possible while using the most space available. The cause for this 
-function was to better read comics, so you can guess it works like a 
+as big as possible while using the most space available. The cause for this
+function was to better read comics, so you can guess it works like a
 'fit page width' option, but is not limited to horizontal adjustment.
 @end table
 
