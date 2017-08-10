@@ -2878,7 +2878,7 @@ the patch using @code{diff -c} or (preferably) @code{diff -u}.
 @end itemize
 
 Then, please file a bug report in the SourceForge bug tracker.
-See @url{https://sourceforge.net/p/xzgv}.
+See @indicateurl{https://sourceforge.net/p/xzgv}.
 
 
 @node  Reporting Documentation Bugs,  , Reporting Bugs, Bugs and Restrictions

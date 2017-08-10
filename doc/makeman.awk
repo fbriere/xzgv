@@ -297,8 +297,8 @@ function output_para(	lhs)
     para=gensub(/@value\{([^}]+)\}/, var_value[valname], 1, para)
     }
   
-  # @{samp,file,var,cite,emph} -> italic
-  para=gensub(/@(samp|file|var|cite|emph)\{([^}]+)\}/,
+  # @{samp,file,var,cite,emph,indicateurl} -> italic
+  para=gensub(/@(samp|file|var|cite|emph|indicateurl)\{([^}]+)\}/,
   	"\\\\fI\\2\\\\fR", "g", para)
   
   # @email{foo@@bar} -> <foo@bar>
