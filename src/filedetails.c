@@ -255,7 +255,6 @@ return(details_win);
 
 void cb_file_details(void)
 {
-GtkWidget *details_win;
 char *ptr;
 int row;
 
@@ -266,7 +265,7 @@ if(row<0 || row>=numrows)
 
 /* make the window and fill with details */
 gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
-details_win=make_details_win(ptr);
+make_details_win(ptr);
 
 /* that's it then; it's modal so we can just leave GTK+ to deal with things. */
 }
