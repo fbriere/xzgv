@@ -193,7 +193,7 @@ xzgv. xzgv can do a lot more; read on to find out what.
 @c first, direct (or direct-ish :-)) xzgv contributions:
 
 xzgv was primarily written by Russell Marks, also the author of this
-manual. It is maintained by Reuben Thomas.
+manual. It is maintained by Reuben Thomas, who ported it to Gtk+ 2.
 
 Costa Sapuntzakis contributed code for much faster JPEG thumbnail
 generation (to zgv, which I adapted for xzgv).
@@ -320,13 +320,6 @@ if any updates are needed.
 Run fullscreen, using the entire screen for xzgv's window, without even
 any window-manager decorations (window frame, title bar, etc.) if
 possible.
-
-@item -G @var{val}
-@vindex gamma
-@itemx --gamma @var{val}
-[Not supported in 0.9.] Set the gamma adjustment used (@pxref{Gamma
-Adjustment}). The default is 1.0. This also sets the `initial value'
-used when resetting the gamma adjustment.
 
 @item -g @var{geom}
 @vindex geometry
@@ -1649,10 +1642,6 @@ similar help menu (@pxref{The Selector Menu}).
                                   selector to enlarge the viewer.
 * Scaling::                     Making the picture appear larger/smaller.
 * Mirror and Rotate::           Distorting your sense of reality on a budget.
-* Brightness and Contrast::     You can have xzgv alter the picture
-                                  to change the brightness or contrast.
-* Gamma Adjustment::            If a picture looks unexpectedly dark or
-                                  bright, chances are you need to tweak this.
 * Changing Picture::            You can change the currently-viewed
                                   picture without using the file
                                   selector.
@@ -2095,7 +2084,7 @@ Interpolation is not currently supported in situations where the x
 scaling does not match the y scaling.
 
 
-@node  Mirror and Rotate, Brightness and Contrast, Scaling, The Viewer
+@node  Mirror and Rotate, Changing Picture, Scaling, The Viewer
 @comment  node-name,  next,  previous,  up
 @section Mirror and Rotate
 
@@ -2154,162 +2143,7 @@ Options}), so that any new pictures are mirrored, flipped, and/or
 rotated in the same way.
 
 
-@node  Brightness and Contrast, Gamma Adjustment, Mirror and Rotate, The Viewer
-@comment  node-name,  next,  previous,  up
-@section Brightness and Contrast
-
-@cindex brightness and contrast
-@cindex contrast and brightness
-@cindex normal, setting brightness/contrast to
-@c don't have this yet...
-@c @cindex order, brightness/contrast
-
-[Brightness and contrast changing is not supported in xzgv 0.9.]
-xzgv provides support for changing brightness and contrast, though given
-the way it has to redraw the image to do so, it can be a little slow.
-
-Currently there is no way to do this with the mouse; this should be
-fixed soon.
-
-@table @kbd
-@kindex , (Viewer)
-@item ,
-Decrease contrast.
-
-@kindex . (Viewer)
-@item .
-Increase contrast.
-
-@kindex < (Viewer)
-@item <
-Decrease brightness.
-
-@kindex > (Viewer)
-@item >
-Increase brightness.
-
-@c Again, colons aren't allowed in index entries, so...
-@kindex colon (Viewer)
-@kindex ; (Viewer)
-@kindex * (Viewer)
-@item :
-@itemx ;
-Reset contrast and brightness to normal. (@kbd{*} is also supported, for
-hysterical raisins.) Note that this deliberately @emph{does not} affect
-the gamma adjustment.
-@end table
-
-@c I may add zgv's brightness/contrast order reversing at some point,
-@c but for now...
-
-Any contrast change is applied before any brightness change, and any
-gamma adjustment is applied before both.
-
-
-@node  Gamma Adjustment, Changing Picture, Brightness and Contrast, The Viewer
-@comment  node-name,  next,  previous,  up
-@section Gamma Adjustment
-
-@cindex gamma adjustment
-@cindex adjustment, gamma
-@cindex response curve
-@c the usual cause of these problems is borken gamma...
-@cindex dark images, fixing overly
-@cindex fixing overly dark/bright images
-@cindex bright images, fixing overly
-@cindex having fun, how to avoid
-
-[Gamma is not supported in xzgv 0.9.]
-Ah yes, gamma. What fun. The basic problem is this --- differing
-displays have differing intensity response curves. ``This has made a lot
-of people very angry and been widely regarded as a bad move.'' :-)
-
-It means that you need some way of adjusting how brightly you display
-the picture to compensate. But since we're dealing with response curves,
-this isn't just a matter of changing the brightness in a linear fashion.
-
-That doesn't seem so hard to deal with, right? All you need is to get
-the gamma (a number which specifies how much the curve bends) for the
-image, and for the screen, divide one by the other and adjust as
-appropriate. Joy.
-
-But, given that the problem has existed since we started displaying more
-than eight colours, you won't be surprised to find that it's already
-been fixed. And the fixes all tend to clash, and everybody has a
-different notion of how to fix it. The usual `fix' is to assume that
-whoever made the image made it with a gamma matching the gamma of your
-display, so you can just stuff the bits right on the screen. Since this
-is easy, it's the most widespread approach. But it's a bit stupid, so
-not everyone does it. Combine that with the lack of gamma specification
-in most image formats, and the often-bogus values specified by people in
-those that do, and hey presto --- the image gamma could be just about
-anything. And the screen's gamma also tends not to be easily determined.
-
-So how on earth do you deal with something like @emph{that} in a
-remotely sane fashion?
-
-The answer chosen in xzgv is to just live with the fact that the
-probability of automatically obtaining correct values for both the
-screen and image gamma is basically zero. Once you accept that, the
-sensible thing to do is to make it @emph{very} easy and fast to change
-gamma adjustment to commonly-required values. So here's how to do it:
-
-@table @kbd
-@kindex 1 (Viewer)
-@item 1
-Set gamma adjustment to 1.0, i.e. no adjustment. This is the default
-setting.
-
-@kindex 2 (Viewer)
-@item 2
-Set gamma adjustment to 2.2. This is useful for viewing linear-gamma
-files (one classic example being raytracer output) on an average PC
-monitor.
-
-@kindex 3 (Viewer)
-@item 3
-Set gamma adjustment to 1 divided by 2.2, i.e. roughly 0.45. This is
-useful for the reverse --- viewing average-PC-monitor-gamma files on a
-linear-gamma display. Historically I believe the classic example would
-have been viewing PC files on a Mac, but I don't know how true that is
-these days.
-
-@kindex 4 (Viewer)
-@item 4
-Set gamma adjustment to its initial value, as specified by a
-@code{--gamma} command-line option (@pxref{Invoking xzgv}) or equivalent
-config file setting (@pxref{Configuring xzgv}). The default value used
-if none was specified is 1.0.
-@end table
-
-A brief clarification is probably in order. The gamma adjustment value
-which you set in xzgv is actually inverted from (i.e. one divided by)
-the true adjustment value used. This is (believe it or not :-)) intended
-to avoid confusion by reflecting the fact that @emph{screen} gamma is
-the one most widely considered/well known.
-
-You can also tweak the adjustment more precisely, in a similar way to
-brightness/contrast:
-
-@table @kbd
-@kindex Alt-, (Viewer)
-@item Alt-,
-Decrease gamma adjustment (divide it by 1.05).
-
-@kindex Alt-. (Viewer)
-@item Alt-.
-Increase gamma adjustment (multiply it by 1.05).
-@end table
-
-Note that @kbd{:}, and the other keys which reset the
-brightness/contrast, deliberately avoid resetting the gamma adjustment.
-
-As with brightness/contrast, there is currently no way to adjust gamma
-with the mouse; this should be fixed soon. (But the 1/2/3/4
-keyboard-based method is likely to still be the faster method.)
-
-
-@node  Changing Picture, Hiding the Selector, Gamma Adjustment, The Viewer
+@node  Changing Picture, Hiding the Selector, Mirror and Rotate, The Viewer
 @comment  node-name,  next,  previous,  up
 @section Changing Picture
 
@@ -2650,12 +2484,8 @@ Boolean. These are on-or-off, yes-or-no variables. Most of xzgv's config
 file variables are of this type.
 
 @item
-Integer (currently unused). These are whole numbers. The meaning of the
+Integer. These are whole numbers. The meaning of the
 number depends on what the variable is used for.
-
-@item
-Real (floating-point). This can be a whole number or a decimal fraction.
-Only the @samp{gamma} variable is of this type.
 
 @item
 Geometry. This window size-and/or-position specification format is only

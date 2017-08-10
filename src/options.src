@@ -49,7 +49,6 @@
 "exif-orient"	0	1 1 OPT_ARG	get_bool	&use_exif_orient
 "fast-recursive-update" 0 1 1 OPT_ARG	get_bool	&fast_recursive_update
 "fullscreen"	'f'	1 1 OPT_ARG	get_bool	&fullscreen
-"gamma"		'G'	1 1 REQ_ARG	get_double	&picgamma
 "geometry"	'g'	1 1 REQ_ARG	get_geom	NULL
 "image-bigness-threshold" 0 1 1 REQ_ARG	get_int	       &image_bigness_threshold
 "interpolate"	0	1 1 OPT_ARG	get_bool	&interp

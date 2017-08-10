@@ -43,7 +43,6 @@ extern int hicol_dither;
 extern int skip_parent;
 extern int click_nextpic;
 extern int mouse_scale_x;
-extern double picgamma;
 extern int image_bigness_threshold;
 extern int delete_single_prompt;
 extern int careful_jpeg;

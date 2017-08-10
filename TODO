@@ -31,13 +31,7 @@ but have independent `history'.
 
 Add toolbar-ish thing (which should be disabled by default, but appear
 at top of viewer window when enabled; could use alt-t for the toggle,
-that's available) for general viewer stuff, but most importantly for
-mouse-based adjustment of gamma/brightness/contrast. These are all
-difficult to deal with in a scrollbar-friendly manner (especially
-gamma), so I'll have to think about how best to do this. Having
-up/down adjustment buttons is obviously the least painful approach,
-but that doesn't seem terribly friendly. OTOH, it wouldn't take up
-much room, which would be helpful.
+that's available) for general viewer stuff.
 
 [was going to do this for 0.6 but need to think about it a bit more]
 Look into sane ways to add shift-click behaviour for tagging multiple

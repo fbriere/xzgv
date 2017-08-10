@@ -47,7 +47,6 @@ int hicol_dither=-1;		/* 15/16-bit dither. 0=don't, 1=do, -1=n/a;
 int skip_parent=0;		/* skip cursor past .. on initial dir */
 int click_nextpic=1;		/* click on viewer = next pic */
 int mouse_scale_x=0;		/* ctrl-click scales x if true, else y */
-double picgamma=1.0;		/* `gamma' name already used :-/ */
 enum sorttypes filesel_sorttype=sort_name;	/* sort order */
 int image_bigness_threshold=2000000; /* images >= this num pixels are `big' */
 int delete_single_prompt=1;	/* prompt for deleting a single file */
@@ -70,7 +69,6 @@ void get_selwidth(char *arg,void *data);
 void get_sortorder(char *arg,void *data);
 void get_timetype(char *arg,void *data);
 void get_int(char *arg,void *data);
-void get_double(char *arg,void *data);
 void print_version(char *arg,void *dataptr);
 void print_gtk_ver(char *arg,void *dataptr);
 void usage_help(char *arg,void *dataptr);
@@ -467,21 +465,6 @@ if(arg==NULL)
 }
 
 
-void get_double(char *arg,void *data)
-{
-double *ptr=(double *)data;
-
-if(arg==NULL)
-  {
-  CONFIG_ERR_PREFIX();
-  fprintf(stderr,"missing arg.\n");
-  exit(1);
-  }
-
-*ptr=atof(arg);
-}
-
-
 int parse_options(int argc,char *argv[])
 {
 const char *name;	/* const needed because of struct option declaration */
@@ -610,9 +593,6 @@ puts(
 "			is left as an exercise for the reader. :-) The default\n"
 "			geometry is `92%x85%'.\n"
 "			(See info file or man page for more details.)\n"
-"   -G	--gamma val	set gamma adjustment to `val'. The default is 1.0, i.e.\n"
-"			no adjustment. (See info file or man page for details,\n"
-"			and a discussion of gamma issues.)\n"
 "   -h	--help		give this usage help.\n"
 "	--image-bigness-threshold numpix\n"
 "			set the boundary `numpix' above which images are\n"

@@ -148,12 +148,6 @@ int cmdline_files=0;		/* if true, started as `xzgv file(s)' */
 
 int xscaling=1,yscaling=1;
 
-unsigned char bcg_mapping[256];	/* mapping curve (for bright/contrast/gamma) */
-double contrast=1.0;	     /* note that double contrast is in fact 2 :-) */
-int brightness=0;
-/* `picgamma' is in rcfile.c, since it's configurable */
-double initial_picgamma=1.0;	/* value set by `4' */
-
 
 
 struct pastpos_tag
@@ -300,48 +294,6 @@ idle_xvpic_blocked=0;
 }
 
 
-int dimmer(int a)
-{
-a+=brightness;
-if(a<0) a=0;
-if(a>255) a=255;
-return(a);
-}
-
-
-int contrastup(int cp)
-{
-float g;
-
-g=(float)(cp);
-g=128.+(g-128.)*contrast;
-if(g<0.) g=0.;
-if(g>255.) g=255.;
-return((int)g);
-}
-
-
-int apply_gamma(int val)
-{
-if(picgamma==1.0)
-  return(val);
-
-return((int)(pow(val/255., 1./picgamma)*255.+0.5));
-}
-
-
-void make_bcg_mapping(xzgv_image *image)
-{
-int f;
-
-/* XXX it's debatable where gamma should be applied... */
-for(f=0;f<256;f++)
-  bcg_mapping[f]=dimmer(contrastup(apply_gamma(f)));
-
-backend_set_value_mapping(image,bcg_mapping);
-}
-
-
 /* small wrapper function for backend_create_image_from_file() which
  * deals with mrf files and other oddities (currently GIF/PNG).
  *
@@ -368,9 +320,6 @@ if(ret)
 
 if(origwp) *origwp=origw;
 if(orighp) *orighp=origh;
-
-if(ret!=NULL && !for_thumbnail)
-  make_bcg_mapping(ret);		/* do brightness/contrast/gamma */
 
 return(ret);
 }
@@ -1055,52 +1004,6 @@ switch(event->keyval)
   case GDK_Tab:		/* also treat tab as esc */
     cb_back_to_clist();
     break;
-  
-  
-    /* brightness/contrast/gamma */
-  case GDK_comma:
-    if(event->state&GDK_MOD1_MASK)
-      picgamma/=1.05;
-    else
-      contrast-=0.05;
-    goto bcg_end;
-  
-  case GDK_period:
-    if(event->state&GDK_MOD1_MASK)
-      picgamma*=1.05;
-    else
-      contrast+=0.05;
-    goto bcg_end;
-  
-  case GDK_less:
-    brightness-=10; goto bcg_end;
-  
-  case GDK_greater:
-    brightness+=10; goto bcg_end;
-  
-  case GDK_1:
-    picgamma=1.0; goto bcg_end;
-  
-  case GDK_2:
-    picgamma=2.2; goto bcg_end;
-  
-  case GDK_3:
-    picgamma=(1.0/2.2); goto bcg_end;
-  
-  case GDK_4:
-    picgamma=initial_picgamma; goto bcg_end;
-
-  case GDK_semicolon:
-  case GDK_colon:
-  case GDK_asterisk:
-    brightness=0; contrast=1.0;
-    /* deliberately *doesn't* reset gamma */
-    
-  bcg_end:
-      make_bcg_mapping(theimage);
-      render_pixmap(0);
-    break;
-  
   
   case GDK_F10: case GDK_Menu:
     /* pop-up menu on F10 (Emacs-like) or Menu */
@@ -4180,8 +4083,6 @@ for(f=0;f<MAX_PASTPOS;f++)
 
 get_config();				/* read config file if any */
 argsleft=parse_options(argc,argv);	/* and command-line options */
-
-initial_picgamma=picgamma;
 
 /* they may have changed hicol_dither, so tell backend */
 if(old_hidith!=-1)
