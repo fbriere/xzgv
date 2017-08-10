@@ -38,7 +38,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkx.h>		/* needed for iconify stuff */
-#include <gdk/gdkrgb.h>     /* http://bugs.debian.org/457252 */
+#include <gdk/gdkrgb.h>
 #include <X11/Xlib.h>		/* needed for iconify stuff */
 
 #include "backend.h"
