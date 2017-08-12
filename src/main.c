@@ -2426,8 +2426,10 @@ if((in=fopen(filename,"rb"))==NULL)
   return(0);
 
 fgets(buf,sizeof(buf),in);
-if(strcmp(buf,"P7 332\n")!=0)
+if(strcmp(buf,"P7 332\n")!=0) {
+  fclose(in);
   return(0);
+}
 
 /* we're not worried about any comments */
 w=read_next_number(in);
@@ -2435,18 +2437,24 @@ h=read_next_number(in);
 
 *width=w; *height=h;
 
-if(w==0 || h==0 || w>80 || h>60)
+if(w==0 || h==0 || w>80 || h>60) {
+  fclose(in);
   return(0);
+}
 
 /* for some reason, they have a maxval...!?
  * we complain if it's not 255.
  */
-if((maxval=read_next_number(in))!=255)
+if((maxval=read_next_number(in))!=255) {
+  fclose(in);
   return(0);
+}
 
 count=fread(bmap,1,w*h,in);
-if(count!=w*h)
+if(count!=w*h) {
+  fclose(in);
   return(0);
+}
 
 fclose(in);
 return(1);
