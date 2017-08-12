@@ -195,7 +195,7 @@ int orient_state_flip[8]   ={2,3,0,1,6,7,4,5};
 /* required prototypes */
 void render_pixmap(int reset_pos);
 void cb_nextprev_tagged_image(int next,int view);
-void idle_xvpic_load(int *entryp);
+gint idle_xvpic_load(int *entryp);
 gint pic_win_resized(GtkWidget *widget,GdkEventConfigure *event);
 void cb_scaling_double(void);
 void cb_xscaling_double(void);
@@ -2557,7 +2557,7 @@ return(pixmap);
 }
 
 
-void idle_xvpic_load(int *entryp)
+gint idle_xvpic_load(int *entryp)
 {
 static char buf[1024];
 struct clist_data_tag *datptr;
@@ -2573,7 +2573,7 @@ idle_xvpic_called=1;
 
 /* don't do it if it would be a bad time */
 if(idle_xvpic_blocked)
-  return;
+  return 0;
 
 /* freeze/thaw actually *cause* flickering for this, rather than
  * preventing it (!), so I've not used those here.
@@ -2681,6 +2681,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     *entryp=-1;
     }
   }
+return 1;
 }
 
 
