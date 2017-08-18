@@ -33,9 +33,18 @@ installdirs:
 install: xzgv installdirs
 	install xzgv $(BINDIR)
 	chmod 755 $(BINDIR)/xzgv
+	install xzgv.desktop $(DESKTOPDIR1)
+	install xzgv.desktop $(DESKTOPDIR2)
+	install icon-64.xpm $(PIXMAPDIR)/xzgv.xpm
+	chmod 644 $(DESKTOPDIR1)/xzgv.desktop
+	chmod 644 $(DESKTOPDIR2)/xzgv.desktop
+	chmod 644 $(PIXMAPDIR)/xzgv.xpm
 
 uninstall:
 	$(RM) $(BINDIR)/xzgv
+	$(RM) $(DESKTOPDIR1)/xzgv.desktop
+	$(RM) $(DESKTOPDIR2)/xzgv.desktop
+	$(RM) $(PIXMAPDIR)/xzgv.xpm
 
 clean:
 	$(RM) *~ *.o xzgv
@@ -56,7 +65,7 @@ help.o: help.c backend.h main.h rcfile.h help.h
 main.o: main.c backend.h resizepic.h rcfile.h filedetails.h gotodir.h \
  updatetn.h confirm.h misc.h copymove.h rename.h help.h dir_icon.xpm \
  dir_icon_small.xpm file_icon.xpm file_icon_small.xpm \
- icon-48.xpm main.h
+ icon-48.xpm xzgv.desktop main.h
 misc.o: misc.c misc.h
 rcfile.o: rcfile.c getopt.h rcfile.h rcfile_opt.h rcfile_var.h \
  rcfile_short.h

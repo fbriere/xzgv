@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=xzgv Picture Viewer
+GenericName=xzgv Picture viewer
+Comment=A fast, keyboard-controllable picture viewer
+Exec=xzgv
+Categories=Graphics;2DGraphics;RasterGraphics;GTK;
+TryExec=xzgv
+Icon=xzgv
+Terminal=false
+StartupNotify=true

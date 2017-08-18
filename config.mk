@@ -28,6 +28,9 @@ PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 INFODIR=$(PREFIX)/share/info
 MANDIR=$(PREFIX)/share/man/man1
+DESKTOPDIR1=$(PREFIX)/share/applications
+DESKTOPDIR2=$(PREFIX)/share/app-install/desktop
+PIXMAPDIR=$(PREFIX)/share/pixmaps
 
 # -------------------- Miscellaneous options -----------------------
 
