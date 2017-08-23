@@ -3065,7 +3065,10 @@ current_selection=-1;
 cb_back_to_clist();		/* enable selector */
 
 if(theimage)
+{
   backend_image_destroy(theimage);
+  theimage=NULL;
+}
 
 /* ignore revert/revert_orient for this */
 xscaling=yscaling=1;
