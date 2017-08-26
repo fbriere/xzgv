@@ -3424,7 +3424,7 @@ if(!zoom || !auto_hide || hidden)
  * will now no longer be onscreen).
  */
 if(oldimage)
-  backend_image_destroy(oldimage);
+  backend_image_destroy(oldimage),oldimage=NULL;
 
 gtk_statusbar_pop(GTK_STATUSBAR(statusbar),sel_id);
 
