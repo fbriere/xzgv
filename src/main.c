@@ -1052,6 +1052,7 @@ if(row>=0 && row<numrows)
   gtk_clist_unselect_all(GTK_CLIST(clist));
   /* this sets current_selection and zeroes in_nextprev too */
   gtk_clist_select_row(GTK_CLIST(clist),row,0);
+  in_nextprev=0;
   }
 else
   in_nextprev=0;
@@ -2294,6 +2295,7 @@ make_visible_if_not(row);
  */
 set_focus_row(row);
 gtk_clist_select_row(GTK_CLIST(clist),row,0);	/* sets current_selection */
+in_nextprev=0;
 }
 
 
@@ -2325,6 +2327,7 @@ make_visible_if_not(row);
  */
 set_focus_row(row);
 gtk_clist_select_row(GTK_CLIST(clist),row,0);	/* sets current_selection */
+in_nextprev=0;
 }
 
 
