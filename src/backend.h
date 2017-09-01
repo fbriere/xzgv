@@ -30,6 +30,7 @@ extern xzgv_image *backend_create_image_from_data(unsigned char *rgb,
 extern xzgv_image *backend_create_image_from_data_destructively(
   unsigned char *rgb,int w,int h);
 extern xzgv_image *backend_create_image_from_file(char *filename);
+extern int backend_get_orientation_from_file(char *filename);
 extern void backend_render_image_into_window(xzgv_image *image,GdkWindow *win,
                                              int x,int y);
 extern int backend_render_pixmap_for_image(xzgv_image *image,int x,int y);

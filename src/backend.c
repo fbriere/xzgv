@@ -31,6 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include <gtk/gtk.h>
+#include <libexif/exif-data.h>
 
 #include "backend.h"
 
@@ -199,6 +200,27 @@ public_info_update(im);
 return(im);
 }
 
+int backend_get_orientation_from_file(char *filename)
+{
+GdkPixbufFormat *imform;
+gchar *format;
+ExifData *ed;
+ExifEntry *entry;
+ExifShort orient;
+static const ExifShort xzgv_orient[]={0,0,1,3,2,7,4,6,5};
+
+if((imform=gdk_pixbuf_get_file_info(filename,NULL,NULL))==NULL) return 0;
+if((format=gdk_pixbuf_format_get_name(imform))==NULL) return 0;
+if(!strcmp(format, "jpeg") || !strcmp(format, "tiff"))
+  {
+  if((ed=exif_data_new_from_file(filename))==NULL) return 0;
+  if((entry=exif_data_get_entry(ed,EXIF_TAG_ORIENTATION))==NULL) return 0;
+  if((orient=exif_get_short(entry->data,exif_data_get_byte_order(ed)))>sizeof(xzgv_orient)-1) return 0;
+  orient=xzgv_orient[orient];
+  return (int)orient;
+  }
+return 0;
+}
 
 /* create an image from a given picture file.
  * The most important formats should eventually be dealt with by xzgv

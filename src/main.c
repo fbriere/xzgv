@@ -311,6 +311,8 @@ int origw,origh;
 jpeg_exif_orient=0;
 
 ret=backend_create_image_from_file(file);	/* use backend's loader */
+if((ret != NULL) && use_exif_orient) jpeg_exif_orient=backend_get_orientation_from_file(file);
+
 origw=0; origh=0;
 if(ret)
   {
