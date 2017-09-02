@@ -48,6 +48,7 @@ extern int delete_single_prompt;
 extern int careful_jpeg;
 extern int sort_timestamp_type;
 extern int use_exif_orient;
+extern int show_images_only;
 
 extern void get_config(void);
 extern int parse_options(int argc,char *argv[]);

@@ -2042,6 +2042,18 @@ listen_to_toggles=1;
 }
 
 
+void cb_show_images(gpointer cb_data,guint cb_action,GtkWidget *widget)
+{
+if(!listen_to_toggles || in_nextprev) return;
+listen_to_toggles=0;
+
+show_images_only = !show_images_only;
+reinit_dir(0,1);
+
+listen_to_toggles=1;
+}
+
+
 void cb_flip(void)
 {
 if (!theimage) return;
@@ -2815,6 +2827,27 @@ struct clist_data_tag *datptr;
 gchar *textarr[2];
 char *ptr;
 int row;
+static char* extensions[] ={".GIF", ".JPEG", ".JPG", ".PNG", ".PBM", ".PGM", ".PPM",
+                            ".PNM", ".BMP",  ".TGA", ".PCX", ".MRF", ".PRF", ".XBM",
+                            ".XPM", ".TIFF", ".TIF", ".TIM", ".XWD"};
+
+if (!S_ISDIR(sbuf->st_mode) && show_images_only)
+    {
+    int isImage = 0;
+    int i;
+    gchar* nameUpper = g_ascii_strup(filename, -1);
+    for(i = 0; i < 19; ++i)
+      {
+      if(g_str_has_suffix(nameUpper, extensions[i]))
+        {
+        isImage = 1;
+        break;
+        }
+      }
+    g_free(nameUpper);
+    if (!isImage)
+      return(0);
+    }
 
 /* allocate data-pointer struct for row */
 if((datptr=malloc(sizeof(struct clist_data_tag)))==NULL)
@@ -3526,6 +3559,8 @@ static GtkItemFactoryEntry selector_menu_items[]=
   {"/_Directory/_Change...","<shift>g",	cb_goto_dir,	0,	NULL},
   {"/_Directory/_Rescan","<control>r",	cb_reread_dir,	0,	NULL},
   {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
+  {"/_Directory/Images Only","<alt>i",	cb_show_images,	0,	"<ToggleItem>"},
+  {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
   {"/_Directory/Sort by _Name","<alt>n",cb_name_order,	0,	"<RadioItem>"},
   {"/_Directory/Sort by _Extension","<alt>e",cb_ext_order,
    0,"/Directory/Sort by Name"},
@@ -3838,6 +3873,12 @@ gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
     gtk_item_factory_get_widget(selector_menu_factory,
                                 "<main>/Options/Thin Rows")),thin_rows);
+
+gtk_check_menu_item_set_active(
+  GTK_CHECK_MENU_ITEM(
+    gtk_item_factory_get_widget(selector_menu_factory,
+                                "<main>/Directory/Images Only")),
+  show_images_only);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(

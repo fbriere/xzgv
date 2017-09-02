@@ -370,6 +370,12 @@ scrolling, but is harder on memory and can be slow for big images) but
 are instead rendered piece-by-piece. Units are number of pixels in image
 (i.e. width times height), and the default is 2000000 pixels.
 
+@item -i
+@vindex images-only
+@itemx --images-only
+Shows only directories and image file types in the selector, identified
+by their extensions.
+
 @vindex interpolate
 @item --interpolate
 Interpolate between the picture's pixels when scaling up
@@ -1608,6 +1614,16 @@ Toggle `thin rows' mode (off by default), in which thumbnails are shown
 at a third their normal size so that many more files can be shown at
 once. (The odd keyboard shortcut for this is inherited from zgv's
 `visual' mode toggle, which had a roughly similar effect.)
+
+@kindex Alt-i
+@item Alt-i
+@findex Selector menu, Directory, Images Only
+@itemx Selector menu, Directory, Images Only
+Toggle the option to show only directories and image files in the
+selector (off by default). This is handy in directories where images
+and other file types are intermingled and you want to avoid the
+'Couldn't load image' error on those other files. Images are identified
+by their extensions.
 @end table
 
 

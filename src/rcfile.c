@@ -53,7 +53,8 @@ int delete_single_prompt=1;	/* prompt for deleting a single file */
 int careful_jpeg=0;		/* enable (don't disable) fancy upsampling */
 int sort_timestamp_type=0;	/* 0=mtime, 1=ctime, 2=atime */
 int use_exif_orient=0;		/* use Exif orientation tag for JPEGs */
-
+int show_images_only=0;         /* file selector shows only image files */
+ 
 
 /* now non-config vars :-) */
 
