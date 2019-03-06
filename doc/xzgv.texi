@@ -1622,7 +1622,7 @@ once. (The odd keyboard shortcut for this is inherited from zgv's
 Toggle the option to show only directories and image files in the
 selector (off by default). This is handy in directories where images
 and other file types are intermingled and you want to avoid the
-'Couldn't load image' error on those other files. Images are identified
+`Couldn't load image' error on those other files. Images are identified
 by their extensions.
 @end table
 
@@ -1891,7 +1891,7 @@ allow scrolling on the other dimension. This can be useful when viewing
 iamges that do not adjust nicely to the window size but you want to see them
 as big as possible while using the most space available. The cause for this
 function was to better read comics, so you can guess it works like a
-'fit page width' option, but is not limited to horizontal adjustment.
+`fit page width' option, but is not limited to horizontal adjustment.
 @end table
 
 The way zoom mode reduces a file to fit the window is (relatively) quick
