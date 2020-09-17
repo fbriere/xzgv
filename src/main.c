@@ -124,6 +124,7 @@ float idle_xvpic_lastadjval;
 int idle_xvpic_jumped=0;	/* true if xvpic load jumped ahead */
 int idle_xvpic_blocked=0;	/* disables idle_xvpic_load() temporarily */
 int idle_xvpic_called=0;	/* set when idle_xvpic_load is called */
+int idle_xvpic_entry_idle;	/* entry placeholder when using gtk_idle_add() */
 
 int numrows=0;			/* number of rows in clist */
 
@@ -291,6 +292,9 @@ while(!idle_xvpic_called && gtk_events_pending())
   gtk_main_iteration();
 
 idle_xvpic_blocked=0;
+
+if(idle_xvpic_called)
+  tn_idle_tag=gtk_idle_add((GtkFunction)idle_xvpic_load,&idle_xvpic_entry_idle);
 }
 
 
@@ -2132,8 +2136,6 @@ return(tn_idle_tag!=-1);
 
 void start_thumbnail_read(void)
 {
-static int entry;
-
 if(thumbnail_read_running()) return;	/* don't if it's already running */
 
 if(!numrows) return;		/* this is surely impossible, but WTF :-) */
@@ -2144,8 +2146,8 @@ if(!numrows) return;		/* this is surely impossible, but WTF :-) */
  */
 idle_xvpic_lastadjval=gtk_clist_get_vadjustment(GTK_CLIST(clist))->value;
 idle_xvpic_jumped=0;
-entry=0;
-tn_idle_tag=gtk_idle_add((GtkFunction)idle_xvpic_load,&entry);
+idle_xvpic_entry_idle=0;
+tn_idle_tag=gtk_idle_add((GtkFunction)idle_xvpic_load,&idle_xvpic_entry_idle);
 
 /* the "" is a crappy way to disable it, but it's hairy otherwise */
 gtk_statusbar_push(GTK_STATUSBAR(statusbar),tn_id,
