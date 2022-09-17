@@ -67,9 +67,9 @@ for(lx=0;lx<width;lx++)
   actual1=(terr1>>5)*255/7;
   actual2=(terr2>>6)*255/3;
   
-  if(actual0<0) actual0=0; if(actual0>255) actual0=255;
-  if(actual1<0) actual1=0; if(actual1>255) actual1=255;
-  if(actual2<0) actual2=0; if(actual2>255) actual2=255;
+  if(actual0<0) actual0=0; else if(actual0>255) actual0=255;
+  if(actual1<0) actual1=0; else if(actual1>255) actual1=255;
+  if(actual2<0) actual2=0; else if(actual2>255) actual2=255;
   
   c0=terr0-actual0;
   c1=terr1-actual1;
