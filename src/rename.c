@@ -111,7 +111,7 @@ gtk_clist_get_text(GTK_CLIST(clist),current_row,SELECTOR_NAME_COL,&oldname);
 rename_win=gtk_dialog_new();
 
 gtk_window_set_title(GTK_WINDOW(rename_win),"Rename file");
-gtk_window_set_policy(GTK_WINDOW(rename_win),FALSE,TRUE,FALSE);
+gtk_window_set_resizable(GTK_WINDOW(rename_win), TRUE);
 gtk_window_set_position(GTK_WINDOW(rename_win),GTK_WIN_POS_CENTER);
 /* must be modal */
 gtk_window_set_modal(GTK_WINDOW(rename_win),TRUE);
