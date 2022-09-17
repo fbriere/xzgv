@@ -69,7 +69,7 @@ xzgv_getcwd(cdir,sizeof(cdir)-1);
 dir_win=gtk_dialog_new();
 
 gtk_window_set_title(GTK_WINDOW(dir_win),"Go to directory");
-gtk_window_set_policy(GTK_WINDOW(dir_win),FALSE,TRUE,FALSE);
+gtk_window_set_resizable(GTK_WINDOW(dir_win),TRUE);
 gtk_window_set_position(GTK_WINDOW(dir_win),GTK_WIN_POS_CENTER);
 /* seems reasonable to have this as modal */
 gtk_window_set_modal(GTK_WINDOW(dir_win),TRUE);

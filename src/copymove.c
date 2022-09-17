@@ -121,7 +121,7 @@ gtk_container_set_border_width(
 
 gtk_window_set_title(GTK_WINDOW(progress_win),
                      cm_do_move?"Moving":"Copying");
-gtk_window_set_policy(GTK_WINDOW(progress_win),FALSE,TRUE,FALSE);
+gtk_window_set_resizable(GTK_WINDOW(progress_win),TRUE);
 gtk_widget_set_usize(progress_win,250,55);
 gtk_window_set_position(GTK_WINDOW(progress_win),GTK_WIN_POS_CENTER);
 gtk_window_set_modal(GTK_WINDOW(progress_win),TRUE);
@@ -312,7 +312,7 @@ dir_win=gtk_dialog_new();
 
 gtk_window_set_title(GTK_WINDOW(dir_win),
                      do_move?"Move file(s) to dir":"Copy file(s) to dir");
-gtk_window_set_policy(GTK_WINDOW(dir_win),FALSE,TRUE,FALSE);
+gtk_window_set_resizable(GTK_WINDOW(dir_win),TRUE);
 gtk_window_set_position(GTK_WINDOW(dir_win),GTK_WIN_POS_CENTER);
 
 /* must be modal given the way we save static data like cm_do_move */

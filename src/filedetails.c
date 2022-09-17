@@ -104,7 +104,7 @@ if((tn=fopen(buf,"rb"))!=NULL)
 details_win=gtk_dialog_new();
 
 gtk_window_set_title(GTK_WINDOW(details_win),"File Details");
-gtk_window_set_policy(GTK_WINDOW(details_win),FALSE,TRUE,FALSE);
+gtk_window_set_resizable(GTK_WINDOW(details_win),TRUE);
 gtk_window_set_position(GTK_WINDOW(details_win),GTK_WIN_POS_CENTER);
 /* it's kludgey making it modal, but it does simplify things... */
 gtk_window_set_modal(GTK_WINDOW(details_win),TRUE);

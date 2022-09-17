@@ -41,7 +41,7 @@ GtkWidget *label;
 yesno_win=gtk_dialog_new();
 
 gtk_window_set_title(GTK_WINDOW(yesno_win),title);
-gtk_window_set_policy(GTK_WINDOW(yesno_win),FALSE,TRUE,FALSE);
+gtk_window_set_resizable(GTK_WINDOW(yesno_win),TRUE);
 gtk_window_set_position(GTK_WINDOW(yesno_win),GTK_WIN_POS_CENTER);
 /* seems reasonable to have this as modal */
 gtk_window_set_modal(GTK_WINDOW(yesno_win),TRUE);

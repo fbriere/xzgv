@@ -3048,7 +3048,7 @@ gtk_container_set_border_width(
   GTK_CONTAINER(GTK_DIALOG(error_win)->action_area),2);
 
 gtk_window_set_title(GTK_WINDOW(error_win),title);
-gtk_window_set_policy(GTK_WINDOW(error_win),FALSE,TRUE,TRUE);
+gtk_window_set_resizable(GTK_WINDOW(error_win),TRUE);
 gtk_window_set_position(GTK_WINDOW(error_win),GTK_WIN_POS_CENTER);
 gtk_window_set_modal(GTK_WINDOW(error_win),TRUE);
 
