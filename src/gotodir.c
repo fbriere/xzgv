@@ -129,7 +129,8 @@ tbl_row++;
 
 DO_TBL_LEFT(table,tbl_row,"New dir:");
 
-entry=gtk_entry_new_with_max_length(sizeof(buf)-1);
+entry=gtk_entry_new();
+gtk_entry_set_max_length(GTK_ENTRY(entry),sizeof(buf)-1);
 gtk_table_attach_defaults(GTK_TABLE(table),entry, 1,3, tbl_row,tbl_row+1);
 gtk_widget_grab_focus(entry);
 gtk_widget_show(entry);
