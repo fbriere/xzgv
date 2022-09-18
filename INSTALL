@@ -3,11 +3,11 @@ INSTALL
 
 To compile xzgv, you’ll need the following packages:
 
-Gtk+ 2 development files (libgtk2.0-dev on Debian/Ubuntu; gtk2.0-dev on
+* Gtk+ 2 development files (libgtk2.0-dev on Debian/Ubuntu; gtk2.0-dev on
 Fedora/SuSE)
-pkg-config
-make
-LibEXIF development files (libexif-dev on Debian/Ubuntu; libexif-devel
+* pkg-config
+* GNU Make
+* LibEXIF development files (libexif-dev on Debian/Ubuntu; libexif-devel
 on Fedora/SuSE)
 
 Check `config.mk' to see if there's anything there you want to change
