@@ -1895,6 +1895,13 @@ listen_to_toggles=0;
 
 interp=!interp;
 
+backend_set_interp(interp);
+
+/* dirty the image so it'll definitely redraw */
+if(theimage)
+  backend_image_changed(theimage);
+render_pixmap(0);
+
 listen_to_toggles=1;
 }
 
@@ -4147,6 +4154,8 @@ if(old_hidith!=-1)
   backend_set_hicol_dither(hicol_dither);
 else
   hicol_dither=-1;	/* if it was n/a before, it should be n/a now :-) */
+
+backend_set_interp(interp);
 
 if(argsleft==1 && isdir(argv[optind]))
   chdir(argv[optind]);	/* change to start directory */

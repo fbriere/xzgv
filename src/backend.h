@@ -42,6 +42,9 @@ extern void backend_image_destroy(xzgv_image *image);
 extern int backend_get_hicol_dither(void);
 extern void backend_set_hicol_dither(int on);
 
+extern int backend_get_interp(void);
+extern void backend_set_interp(int on);
+
 extern void backend_get_closest_colour(GdkColor *col);
 extern GdkVisual *backend_get_visual(void);
 

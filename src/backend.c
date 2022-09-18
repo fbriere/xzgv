@@ -54,6 +54,9 @@
 /* Dithering type */
 GdkRgbDither dither_type;
 
+/* Interpolation type */
+GdkInterpType interp_type;
+
 /* do any initialisation the backend needs. Should include any
  * visual/colormap change required.
  * returns 1 if ok, else 0. (If 0, should output descriptive error msg.)
@@ -64,6 +67,8 @@ gtk_widget_set_default_colormap(gdk_rgb_get_cmap());
 gtk_widget_set_default_visual(gdk_rgb_get_visual());
 
 dither_type = GDK_RGB_DITHER_NORMAL;
+
+interp_type = GDK_INTERP_NEAREST;
 
 return(1);
 }
@@ -298,7 +303,7 @@ if(x==image->w && y==image->h)
 else
   {
   if((backim=gdk_pixbuf_scale_simple(BACKEND_IMAGE(image),x,y,
-                                     GDK_INTERP_NEAREST))==NULL)
+                                     interp_type))==NULL)
     return(0);
   }
 
@@ -369,6 +374,18 @@ return (dither_type == GDK_RGB_DITHER_MAX) ? TRUE : FALSE;
 void backend_set_hicol_dither(int on)
 {
 dither_type = on ? GDK_RGB_DITHER_MAX : GDK_RGB_DITHER_NORMAL;
+}
+
+
+int backend_get_interp(void)
+{
+return (interp_type == GDK_INTERP_BILINEAR) ? TRUE : FALSE;
+}
+
+
+void backend_set_interp(int on)
+{
+interp_type = on ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST;
 }
 
 
