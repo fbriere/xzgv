@@ -17,6 +17,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "backend.h"
+#include "misc.h"
 #include "main.h"
 
 #include "copymove.h"
@@ -308,7 +309,7 @@ if(!ok_for_copymove())
 
 cm_do_move=do_move;		/* save for later */
 
-getcwd(cdir,sizeof(cdir)-1);
+xzgv_getcwd(cdir,sizeof(cdir)-1);
 
 dir_win=gtk_dialog_new();
 

@@ -2918,7 +2918,7 @@ if((dirfile=opendir("."))==NULL)
   /* be sure to mention what we're doing first... :-) */
   if(getenv("HOME")==NULL)
     goto badhome;
-  chdir(getenv("HOME"));
+  xzgv_chdir(getenv("HOME"));
   if((dirfile=opendir("."))==NULL)
     {
     badhome:
@@ -2937,7 +2937,7 @@ if((dirfile=opendir("."))==NULL)
 
 current_selection=-1;
 
-getcwd(cdir,sizeof(cdir)-1);
+xzgv_getcwd(cdir,sizeof(cdir)-1);
 
 /* originally had a `reading directory' msg here, but it's so fast
  * even for big dirs that it hardly seems worth it.
@@ -3002,7 +3002,7 @@ strcpy(buf,"xzgv");
 if(include_dir)
   {
   strcat(buf,": ");
-  getcwd(buf+strlen(buf),sizeof(buf)-strlen(buf)-2);
+  xzgv_getcwd(buf+strlen(buf),sizeof(buf)-strlen(buf)-2);
   }
 
 gtk_window_set_title(GTK_WINDOW(mainwin),buf);
@@ -3387,7 +3387,7 @@ if(datptr->isdir)
   /* if it's a dir, chdir to it and read files there instead. */
   cb_back_to_clist();	/* in case of mouse click, to show pastpos action */
   new_pastpos(row);
-  chdir(ptr);
+  xzgv_chdir(ptr);
   reinit_dir(1,0);	/* reinit and do pastpos */
 
   selector_unblock();
@@ -4160,7 +4160,7 @@ else
 backend_set_interp(interp);
 
 if(argsleft==1 && isdir(argv[optind]))
-  chdir(argv[optind]);	/* change to start directory */
+  xzgv_chdir(argv[optind]);	/* change to start directory */
 else
   {
   if(argsleft>=1)

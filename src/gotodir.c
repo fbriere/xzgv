@@ -13,6 +13,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "backend.h"
+#include "misc.h"
 #include "main.h"
 
 #include "gotodir.h"
@@ -38,7 +39,7 @@ if(*ptr=='~' && getenv("HOME"))		/* kludge for home dir */
 else
   ptr=g_strdup(ptr);	/* not needed but easier this way :-) */
 
-ret=chdir(ptr);
+ret=xzgv_chdir(ptr);
 
 free((void *)ptr);
 gtk_widget_destroy(dir_win);
@@ -63,7 +64,7 @@ GtkWidget *label,*entry;
 static char cdir[1024],buf[1024];
 int tbl_row;
 
-getcwd(cdir,sizeof(cdir)-1);
+xzgv_getcwd(cdir,sizeof(cdir)-1);
 
 dir_win=gtk_dialog_new();
 

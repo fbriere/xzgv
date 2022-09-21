@@ -12,7 +12,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <glib.h>
+
 #include "misc.h"
+
+
+static gchar *current_dir;
 
 
 /* a crude quit for when malloc and the like fails */
@@ -20,6 +25,40 @@ void quit_no_mem(void)
 {
 fprintf(stderr,"xzgv: out of memory\n");
 exit(1);
+}
+
+
+void init_current_dir(void)
+{
+if (!current_dir)
+  current_dir = g_get_current_dir();
+}
+
+
+char *xzgv_getcwd(char *buf,size_t size)
+{
+init_current_dir();
+if (g_strlcpy(buf,current_dir,size) >= size)
+  return NULL;
+else
+  return buf;
+}
+
+
+int xzgv_chdir(const char *path)
+{
+int retval;
+
+init_current_dir();
+gchar *target_dir = g_canonicalize_filename(path,current_dir);
+retval = chdir(target_dir);
+
+if (retval == 0) {
+  g_free(current_dir);
+  current_dir = target_dir;
+}
+
+return retval;
 }
 
 
@@ -32,7 +71,7 @@ int incr=1024;
 int size=incr;
 char *buf=malloc(size);
 
-while(buf!=NULL && getcwd(buf,size-1)==NULL)
+while(buf!=NULL && xzgv_getcwd(buf,size-1)==NULL)
   {
   free(buf);
   size+=incr;

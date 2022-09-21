@@ -386,7 +386,7 @@ if(!mainwin || !*update_tn_win_ptr)
 /* save old cwd to avoid depending on chdir("..") to be sane :-) */
 old_cwd=getcwd_allocated();
 
-if(stat(dirname,&sbuf)==-1 || chdir(dirname)==-1)
+if(stat(dirname,&sbuf)==-1 || xzgv_chdir(dirname)==-1)
   {
   free(old_cwd);
   return;
@@ -398,7 +398,7 @@ if(stat(dirname,&sbuf)==-1 || chdir(dirname)==-1)
 for(f=0;f<num_olddirs;f++)
   if(sbuf.st_dev==olddirs[f].device && sbuf.st_ino==olddirs[f].inode)
     {
-    chdir(old_cwd);
+    xzgv_chdir(old_cwd);
     free(old_cwd);
     return;
     }
@@ -413,7 +413,7 @@ olddirs[ent].inode=sbuf.st_ino;
 /* open the dir */
 if((dir=opendir("."))==NULL)
   {
-  chdir(old_cwd);
+  xzgv_chdir(old_cwd);
   free(old_cwd);
   return;
   }
@@ -448,7 +448,7 @@ if(*update_tn_win_ptr && mainwin)
   }
 
 /* return to previous dir */
-chdir(old_cwd);
+xzgv_chdir(old_cwd);
 free(old_cwd);
 }
 
@@ -496,7 +496,7 @@ olddir_uninit();
 if(!mainwin)
   {
   /* probably unnecessary in practice, but WTF */
-  chdir(origdir);
+  xzgv_chdir(origdir);
   free(origdir);
   return;
   }
@@ -506,7 +506,7 @@ if(update_tn_win)
   gtk_widget_destroy(update_tn_win);
 
 /* return to original dir and rescan it */
-chdir(origdir);
+xzgv_chdir(origdir);
 free(origdir);
 reinit_dir(1,0);	/* init with pastpos */
 
