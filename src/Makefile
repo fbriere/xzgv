@@ -12,7 +12,7 @@ include ../config.mk
 override CFLAGS+=`pkg-config --cflags gtk+-2.0` `pkg-config --cflags gdk-pixbuf-2.0` \
 	`pkg-config --cflags x11` `pkg-config --cflags libexif`
 override LDFLAGS+=`pkg-config --libs gtk+-2.0` `pkg-config --libs gdk-pixbuf-2.0` \
-	`pkg-config --libs x11` `pkg-config --libs libexif` -lm
+	`pkg-config --libs x11` `pkg-config --libs libexif`
 
 all: xzgv
 
