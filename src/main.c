@@ -4092,7 +4092,6 @@ int main(int argc,char *argv[])
 int f,argsleft;
 int read_dir=1;
 
-gtk_set_locale();
 gtk_init(&argc,&argv);
 backend_init();
 
