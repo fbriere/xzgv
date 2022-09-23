@@ -1392,8 +1392,8 @@ if(!scaling_up_enabled)
   thepixmap=backend_get_and_detach_pixmap(theimage);
 
 /* set drawing area to size of pixmap (also generates expose event) */
-gtk_widget_set_usize(align,sw,sh);
-gtk_widget_set_usize(drawing_area,sw,sh);
+gtk_widget_set_size_request(align,sw,sh);
+gtk_widget_set_size_request(drawing_area,sw,sh);
 
 /* go back to top-left */
 if(reset_pos)
@@ -3976,7 +3976,7 @@ gtk_widget_set_events(mainwin,
 hide_saved_pos=default_sel_width;
 gtk_paned_set_position(GTK_PANED(pane),hidden?1:hide_saved_pos);
 
-gtk_widget_set_usize(mainwin,100,50);
+gtk_widget_set_size_request(mainwin,100,50);
 
 /* initially focus clist */
 gtk_widget_grab_focus(clist);
