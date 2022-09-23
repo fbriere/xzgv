@@ -1325,7 +1325,7 @@ if (!zoom_panorama)
   }
 else
   {
-    if ((width/scrnwide)>(height/scrnhigh))
+    if (((float)width/scrnwide)>((float)height/scrnhigh))
       /* pan horizontally */
       zoom_panorama_sb=0,*swp=(scrnhigh*width)/height,*shp=scrnhigh;
     else
