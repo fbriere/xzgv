@@ -113,12 +113,12 @@ GdkBitmap *dir_icon_mask,*file_icon_mask;
 GdkBitmap *dir_icon_small_mask,*file_icon_small_mask;
 
 /* stuff for the idle-func thumbnail loading */
-gint tn_idle_tag=-1;		/* tag returned by gtk_idle_add() */
+gint tn_idle_tag=-1;		/* tag returned by g_idle_add() */
 float idle_xvpic_lastadjval;
 int idle_xvpic_jumped=0;	/* true if xvpic load jumped ahead */
 int idle_xvpic_blocked=0;	/* disables idle_xvpic_load() temporarily */
 int idle_xvpic_called=0;	/* set when idle_xvpic_load is called */
-int idle_xvpic_entry_idle;	/* entry placeholder when using gtk_idle_add() */
+int idle_xvpic_entry_idle;	/* entry placeholder when using g_idle_add() */
 
 int numrows=0;			/* number of rows in clist */
 
@@ -291,7 +291,7 @@ while(!idle_xvpic_called && gtk_events_pending())
 idle_xvpic_blocked=0;
 
 if(idle_xvpic_called)
-  tn_idle_tag=gtk_idle_add((GtkFunction)idle_xvpic_load,&idle_xvpic_entry_idle);
+  tn_idle_tag=g_idle_add((GSourceFunc)idle_xvpic_load,&idle_xvpic_entry_idle);
 }
 
 
@@ -1428,7 +1428,7 @@ in_render=0;
 void idle_zoom_resize(void)
 {
 /* make sure we won't be called again */
-gtk_idle_remove(zoom_resize_idle_tag);
+g_source_remove(zoom_resize_idle_tag);
 zoom_resize_idle_tag=-1;
 
 if(zoom)
@@ -1458,13 +1458,13 @@ gint pic_win_resized(GtkWidget *widget,GdkEventConfigure *event)
 gdk_window_set_back_pixmap(drawing_area->window,NULL,FALSE);
 
 if(zoom_resize_idle_tag!=-1)
-  gtk_idle_remove(zoom_resize_idle_tag);
+  g_source_remove(zoom_resize_idle_tag);
 
 /* using resize priority gives better results if using `opaque resize',
  * but seems to break `normal' resizing. Not a good tradeoff. :-(
  */
-zoom_resize_idle_tag=gtk_idle_add_priority(GTK_PRIORITY_DEFAULT/*RESIZE*/,
-                                           (GtkFunction)idle_zoom_resize,NULL);
+zoom_resize_idle_tag=g_idle_add_full(G_PRIORITY_DEFAULT_IDLE /*GTK_PRIORITY_RESIZE*/,
+                                           (GSourceFunc)idle_zoom_resize,NULL,NULL);
 return(FALSE);
 }
 
@@ -2118,7 +2118,7 @@ if(!numrows) return;		/* this is surely impossible, but WTF :-) */
 idle_xvpic_lastadjval=gtk_clist_get_vadjustment(GTK_CLIST(clist))->value;
 idle_xvpic_jumped=0;
 idle_xvpic_entry_idle=0;
-tn_idle_tag=gtk_idle_add((GtkFunction)idle_xvpic_load,&idle_xvpic_entry_idle);
+tn_idle_tag=g_idle_add((GSourceFunc)idle_xvpic_load,&idle_xvpic_entry_idle);
 
 /* the "" is a crappy way to disable it, but it's hairy otherwise */
 gtk_statusbar_push(GTK_STATUSBAR(statusbar),tn_id,
@@ -2132,7 +2132,7 @@ void stop_thumbnail_read(void)
 if(thumbnail_read_running())
   {
   gtk_statusbar_pop(GTK_STATUSBAR(statusbar),tn_id);	/* remove msg */
-  gtk_idle_remove(tn_idle_tag);
+  g_source_remove(tn_idle_tag);
   tn_idle_tag=-1;
   }
 }
