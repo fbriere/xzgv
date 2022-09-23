@@ -280,7 +280,7 @@ gtk_container_set_border_width(
 
 gtk_window_set_title(GTK_WINDOW(update_tn_win),"Updating Thumbnails");
 gtk_window_set_resizable(GTK_WINDOW(update_tn_win),TRUE);
-gtk_widget_set_usize(update_tn_win,250,55);
+gtk_widget_set_size_request(update_tn_win,250,55);
 gtk_window_set_position(GTK_WINDOW(update_tn_win),GTK_WIN_POS_CENTER);
 gtk_window_set_modal(GTK_WINDOW(update_tn_win),TRUE);
 
