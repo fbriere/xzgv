@@ -234,9 +234,6 @@ void update_common(GtkWidget **update_tn_win_ptr,GtkWidget *progbar,
 {
 int f;
 
-if(*update_tn_win_ptr && mainwin)
-  gtk_progress_configure(GTK_PROGRESS(progbar),0.,0.,(float)numrows);
-
 /* do GTK+ update early, in case we're running on a slow machine
  * (where the first `file' (almost certainly a dir) will take a
  * noticeable time to `update').
@@ -252,7 +249,7 @@ for(f=0;f<numrows;f++)
   /* update progress bar, and give it a chance to draw */
   if(*update_tn_win_ptr && mainwin)
     {
-    gtk_progress_set_value(GTK_PROGRESS(progbar),(float)(f+1));
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progbar),(float)(f+1)/numrows);
     do_gtk_stuff();
     }
   
