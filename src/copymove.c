@@ -176,9 +176,6 @@ if(t==0) numtagged=1;	/* used for progress bar, so fake it :-) */
 
 make_progress_win(&progress_win,&progbar);
 
-if(progress_win && mainwin)
-  gtk_progress_configure(GTK_PROGRESS(progbar),0.,0.,(float)numtagged);
-
 /* do GTK+ update early */
 if(progress_win && mainwin)
   do_gtk_stuff();
@@ -222,7 +219,7 @@ for(done=f=0;f<numrows;f++)
   /* update progress bar, and give it a chance to draw */
   if(progress_win && mainwin)
     {
-    gtk_progress_set_value(GTK_PROGRESS(progbar),(float)done);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progbar), (float)done / numtagged);
     do_gtk_stuff();
     }
   
