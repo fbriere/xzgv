@@ -506,7 +506,7 @@ if(hidden)
   hidden=0;
   }
 
-GTK_WIDGET_SET_FLAGS(clist,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(clist, TRUE);
 gtk_widget_grab_focus(clist);
 
 /* XXX kludge: make sure pic is fixed in zoom mode */
@@ -3450,7 +3450,7 @@ gtk_statusbar_pop(GTK_STATUSBAR(statusbar),sel_id);
 gtk_widget_grab_focus(drawing_area);
 
 /* stop us allowing kybd focus (until esc/tab) */
-GTK_WIDGET_UNSET_FLAGS(clist,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(clist, FALSE);
 
 /* hide us if auto hide is on */
 if(auto_hide && !hidden)
@@ -3643,7 +3643,7 @@ static GtkItemFactoryEntry viewer_menu_items[]=
 gtk_widget_push_colormap(gdk_rgb_get_cmap());
 mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 gtk_widget_pop_colormap();
-GTK_WIDGET_UNSET_FLAGS(mainwin,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(mainwin, TRUE);
 g_signal_connect(mainwin, "destroy",
                    G_CALLBACK(cb_quit), NULL);
 /* don't include dir if selector initially hidden (loading from cmdline) */
@@ -3653,7 +3653,7 @@ set_window_pos_and_size();
 
 
 pane=gtk_hpaned_new();
-GTK_WIDGET_UNSET_FLAGS(pane,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(pane, TRUE);
 gtk_container_add(GTK_CONTAINER(mainwin),pane);
 gtk_widget_show(pane);
 
@@ -3662,7 +3662,7 @@ gtk_widget_show(pane);
 
 /* the drawing area used for the pic */
 drawing_area=gtk_drawing_area_new();
-GTK_WIDGET_SET_FLAGS(drawing_area,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(drawing_area, TRUE);
 viewer_menu_factory=make_menu("<main>",viewer_menu_items,
                               sizeof(viewer_menu_items)/sizeof(
                                 viewer_menu_items[0]));
@@ -3689,7 +3689,7 @@ gtk_widget_show(align);
 
 /* scrolled window DA goes into (`inside' alignment) */
 sw_for_pic=gtk_scrolled_window_new(NULL,NULL);
-GTK_WIDGET_UNSET_FLAGS(sw_for_pic,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(sw_for_pic, FALSE);
 gtk_container_set_border_width(GTK_CONTAINER(sw_for_pic),0);
 /* first `POLICY' is horiz, second is vert */
 if(zoom)
@@ -3708,7 +3708,7 @@ gtk_widget_show(sw_for_pic);
 
 /* left-hand side */
 vboxl=gtk_vbox_new(FALSE,0);
-GTK_WIDGET_UNSET_FLAGS(vboxl,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(vboxl, FALSE);
 gtk_paned_add1(GTK_PANED(pane),vboxl);
 gtk_widget_show(vboxl);
 
@@ -3737,7 +3737,7 @@ gtk_widget_show(clist_sw_ebox);
 
 /* now the scrolled window for clist, and the clist which goes into it. */
 sw_for_clist=gtk_scrolled_window_new(NULL,NULL);
-GTK_WIDGET_UNSET_FLAGS(sw_for_clist,GTK_CAN_FOCUS);
+gtk_widget_set_can_focus(sw_for_clist, FALSE);
 gtk_container_set_border_width(GTK_CONTAINER(sw_for_clist),0);
 
 /* first `POLICY' is horiz, second is vert */
