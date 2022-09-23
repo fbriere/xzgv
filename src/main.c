@@ -74,11 +74,6 @@
 #define ROW_HEIGHT_DIV		3
 #define ROW_HEIGHT_THIN		(20+2)
 
-/* GTK+ border width in scrolled window (not counting scrollbars).
- * very kludgey, but needed for calculating size to zoom to.
- */
-#define SW_BORDER_WIDTH		4
-
 /* maximum no. of `past positions' in dirs to save.
  * if it runs out of space the oldest entries are lost.
  */
@@ -147,6 +142,9 @@ int jpeg_exif_orient=0;		/* orientation from Exif tag, for some JPEGs */
 int cmdline_files=0;		/* if true, started as `xzgv file(s)' */
 
 int xscaling=1,yscaling=1;
+
+/* GTK+ border thickness in scrolled window (not counting scrollbars). */
+int sw_border_width,sw_border_height;
 
 
 
@@ -1312,8 +1310,8 @@ return(TRUE);
 
 void get_zoomed_size(int *swp,int *shp)
 {
-int scrnwide=sw_for_pic->allocation.width-SW_BORDER_WIDTH;
-int scrnhigh=sw_for_pic->allocation.height-SW_BORDER_WIDTH;
+int scrnwide=sw_for_pic->allocation.width-sw_border_width;
+int scrnhigh=sw_for_pic->allocation.height-sw_border_height;
 int width=theimage->w;
 int height=theimage->h;
 
@@ -4029,6 +4027,9 @@ listen_to_toggles=1;
 
 gtk_widget_show(mainwin);
 
+/*  now that the window is visible, we can finally determine its border size */
+sw_border_width=sw_for_pic->allocation.width-align->allocation.width;
+sw_border_height=sw_for_pic->allocation.height-align->allocation.height;
 
 /* set icon (XXX size should be configurable) */
 icon=gdk_pixmap_create_from_xpm_d(mainwin->window,&icon_mask,NULL,icon_48_xpm);
