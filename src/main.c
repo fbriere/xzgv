@@ -3473,7 +3473,8 @@ void set_window_pos_and_size(void)
 if(fullscreen)
   {
   /* go to top-left and use full screen */
-  gtk_widget_set_uposition(mainwin,0,0);
+  /* Note: This is *not* identical to gtk_window_fullscreen() */
+  gtk_window_move(GTK_WINDOW(mainwin),0,0);
   gtk_window_set_default_size(GTK_WINDOW(mainwin),
                               gdk_screen_width(),gdk_screen_height());
   }
@@ -3481,7 +3482,7 @@ else	/* normal */
   {
   if((mainwin_flags&GEOM_BITS_X_SET) &&
      (mainwin_flags&GEOM_BITS_Y_SET))
-    gtk_widget_set_uposition(mainwin,mainwin_x,mainwin_y);
+    gtk_window_move(GTK_WINDOW(mainwin),mainwin_x,mainwin_y);
   /* we always have width/height set */
   gtk_window_set_default_size(GTK_WINDOW(mainwin),mainwin_w,mainwin_h);
   }
