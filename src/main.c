@@ -375,7 +375,7 @@ if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
  */
 void set_focus_row(int new_row)
 {
-int had_focus=GTK_WIDGET_HAS_FOCUS(clist);
+int had_focus=gtk_widget_has_focus(clist);
 
 if(had_focus)
   gtk_widget_grab_focus(drawing_area);
