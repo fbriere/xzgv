@@ -148,7 +148,7 @@ This documentation is for xzgv version @value{VERSION}, last updated
 
 xzgv is a picture viewer for X, with a thumbnail-based file selector.
 The thumbnails used (thumbnails being small `preview' versions of the
-pictures) are compatible with xv, zgv, and the Gimp. The kinds of
+pictures) are compatible with xv and zgv. The kinds of
 pictures xzgv allows to be viewed are raster-format pictures (sometimes
 called `bitmaps' and/or `pixmaps'); things like GIF files, JPEG files,
 PNG files, and so on.
@@ -685,7 +685,6 @@ menu.)
 @cindex picture thumbnails
 @cindex file thumbnails
 @cindex xv-compatible thumbnails
-@cindex Gimp-compatible thumbnails
 
 (This section is deliberately early on in the manual, as thumbnails are
 probably the most important feature of the file selector, so it's best
@@ -694,8 +693,7 @@ that you know how to create/update them sooner rather than later.)
 Thumbnails are small versions of the pictures they represent, and are
 displayed by the file selector if they exist. xzgv uses xv-compatible
 thumbnails --- if you create thumbnails with xv they will work with xzgv,
-and vice versa. xzgv's thumbnails are also compatible with the Gimp, and
-zgv.
+and vice versa. xzgv's thumbnails are also compatible with zgv.
 
 If no thumbnail exists for a file, a small `document' icon appears
 instead (similar to the `folder' icon used for directories).
@@ -1184,7 +1182,7 @@ though, it's just zgv which had this problem.) Worse yet, versions 5.0
 and 5.1 generated them with incorrect sizes for most JPEGs. To fix
 either problem for a given directory, do @code{rm -fr .xvpics} in that
 dir from a shell prompt and recreate the thumbnails with zgv 5.2 or
-later, or xzgv/xv/Gimp.)
+later, or xzgv/xv.)
 
 
 @node  Tagging, Renaming a File, File Details, The File Selector
