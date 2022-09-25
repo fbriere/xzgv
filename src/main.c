@@ -203,6 +203,7 @@ void cb_xscaling_halve(void);
 void cb_yscaling_halve(void);
 void cb_next_image(void);
 void cb_tag_then_next(void);
+void cb_parent_dir(void);
 void set_title(int include_dir);
 void set_window_pos_and_size(void);
 
@@ -3310,6 +3311,28 @@ ignore_selector_input=0;
 }
 
 
+void cb_parent_dir(void)
+{
+  char cdir[1024];
+
+  xzgv_getcwd(cdir, sizeof(cdir) - 1);
+  if (strcmp(cdir, "/") == 0)
+    return;
+
+  RECURSE_PROTECT_START;
+  /* block mouse click/release and keys on selector while loading. */
+  selector_block();
+
+  cb_back_to_clist();	/* show selector and switch to it */
+  new_pastpos(0);
+  xzgv_chdir("..");
+  reinit_dir(1, 0);	/* reinit and do pastpos */
+
+  selector_unblock();
+  RECURSE_PROTECT_END;
+}
+
+
 void cb_selection(GtkWidget *clist,gint row,gint column,
                   GdkEventButton *event,GtkScrolledWindow *sw)
 {
@@ -3563,6 +3586,7 @@ static GtkItemFactoryEntry selector_menu_items[]=
   {"/_Tagging/T_oggle All","<alt>o",	cb_toggle_all,	0,	NULL},
   {"/_Directory",	NULL,		NULL,		0,	"<Branch>"},
   {"/_Directory/_Change...","<shift>g",	cb_goto_dir,	0,	NULL},
+  {"/_Directory/_Parent Directory", "<alt>Up",	cb_parent_dir,	0,	NULL},
   {"/_Directory/_Rescan","<control>r",	cb_reread_dir,	0,	NULL},
   {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
   {"/_Directory/_Images Only","<alt>i",	cb_show_images,	0,	"<ToggleItem>"},
@@ -3606,6 +3630,8 @@ static GtkItemFactoryEntry viewer_menu_items[]=
   /* menu path		key		callback     cb args	item type */
   {"/_Next Image",	"space",	cb_next_image,	0,	NULL},
   {"/_Previous Image",	"b",		cb_prev_image,	0,	NULL},
+  {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
+  {"/Parent _Directory", "<alt>Up",	cb_parent_dir,	0,	NULL},
   {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
   {"/_Tagging/_Tag then Next","<control>space",cb_tag_then_next,0,	NULL},
   {"/_Tagging/sep1",	NULL,		NULL,		0,	"<Separator>"},
@@ -3965,6 +3991,9 @@ if(hidden)
                                 "<main>/Directory/Change..."),FALSE);
   gtk_widget_set_sensitive(
     gtk_item_factory_get_widget(selector_menu_factory,
+                                "<main>/Directory/Parent Directory"),FALSE);
+  gtk_widget_set_sensitive(
+    gtk_item_factory_get_widget(selector_menu_factory,
                                 "<main>/Directory/Rescan"),FALSE);
   gtk_widget_set_sensitive(
     gtk_item_factory_get_widget(selector_menu_factory,
@@ -3972,6 +4001,10 @@ if(hidden)
   gtk_widget_set_sensitive(
     gtk_item_factory_get_widget(selector_menu_factory,
                                 "<main>/Options/Thin Rows"),FALSE);
+
+  gtk_widget_set_sensitive(
+    gtk_item_factory_get_widget(viewer_menu_factory,
+                                "<main>/Parent Directory"),FALSE);
   }
 
 /* hook up an alternative quit key (q) */
