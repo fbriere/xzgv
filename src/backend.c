@@ -142,44 +142,6 @@ public_info_update(image);
 }
 
 
-/* create an image from RGB data, *destructively*.
- * This takes over the rgb data passed to it, such that a) the caller
- * should NOT free it, and b) the data may change (probably not now,
- * but perhaps later if we do a flip or something).
- *
- * *On error, the rgb data must be freed.* This is, after all, meant
- * to be destructive, such that the caller need not care about the
- * rgb data after. It also means that the rgb data MUST have been
- * malloced... :-)
- *
- * Obviously this version should be faster if the backend supports it;
- * if not, call backend_create_image_from_data() then free().
- */
-xzgv_image *backend_create_image_from_data_destructively(unsigned char *rgb,
-                                                         int w,int h)
-{
-GdkPixbuf *backim;
-xzgv_image *im;
-
-if((im=malloc(sizeof(xzgv_image)))==NULL)
-  return(NULL);
-
-if((backim=gdk_pixbuf_new_from_data(rgb,GDK_COLORSPACE_RGB,FALSE,8,
-                                    w,h,w*3,
-                                    (GdkPixbufDestroyNotify)free,NULL))==NULL)
-  {
-  free(im);
-  free(rgb);	/* since it failed */
-  return(NULL);
-  }
-
-backend_image_init(im);
-im->backend_image=backim;
-public_info_update(im);
-
-return(im);
-}
-
 int backend_get_orientation_from_file(char *filename)
 {
 GdkPixbufFormat *imform;

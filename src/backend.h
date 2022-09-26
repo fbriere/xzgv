@@ -24,8 +24,6 @@ extern void backend_rotate_cw(xzgv_image *image);
 extern void backend_rotate_cw(xzgv_image *image);
 extern void backend_rotate_acw(xzgv_image *image);
 
-extern xzgv_image *backend_create_image_from_data_destructively(
-  unsigned char *rgb,int w,int h);
 extern xzgv_image *backend_create_image_from_file(char *filename);
 extern int backend_get_orientation_from_file(char *filename);
 extern void backend_render_image_into_window(xzgv_image *image,GdkWindow *win,
