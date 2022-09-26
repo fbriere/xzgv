@@ -199,26 +199,6 @@ return(im);
 }
 
 
-/* render image at (x,y) in window (at actual size).
- * This is a fairly high-level one, but most backends will probably
- * support it, and xzgv does need it.
- * It should not leave any random pixmaps lying around. :-)
- */
-void backend_render_image_into_window(xzgv_image *image,GdkWindow *win,
-                                      int x,int y)
-{
-/* XXX this assumes only one window is rendered into */
-static GdkGC *gc=NULL;
-
-if(!gc)
-  gc=gdk_gc_new(win);
-
-gdk_draw_pixbuf(win,gc,BACKEND_IMAGE(image),
-                0,0,x,y,image->w,image->h,
-                dither_type,0,0);
-}
-
-
 /* render a pixmap from the image (at the given size), which is then
  * associated with it.
  *
