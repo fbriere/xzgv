@@ -319,17 +319,6 @@ return(gdk_rgb_get_visual());
 }
 
 
-/* set value mapping to apply to all three colour channels when
- * rendering. While image *is* an arg here, a global setting would
- * be sufficient as long as it doesn't mangle already-rendered
- * pixmaps.
- */
-void backend_set_value_mapping(xzgv_image *image,unsigned char *map)
-{
-/* XXX GDK seems not to have this. */
-}
-
-
 /* a fairly high-level one, which is unfortunately required:
  *
  * read XPM data from string array and render into pixmap, also returning
