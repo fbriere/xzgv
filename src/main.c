@@ -4151,6 +4151,9 @@ for(f=0;f<MAX_PASTPOS;f++)
 get_config();				/* read config file if any */
 argsleft=parse_options(argc,argv);	/* and command-line options */
 
+if(careful_jpeg>=0)
+  fprintf(stderr,"Notice: The `careful-jpeg' option is deprecated and has no effect.\n");
+
 if(image_bigness_threshold>=0)
   fprintf(stderr,"Notice: The `image-bigness-threshold' option is deprecated and has no effect.\n");
 

@@ -281,9 +281,7 @@ viewer to use the whole window.
 
 @vindex careful-jpeg
 @item --careful-jpeg
-Enable libjpeg `fancy upsampling'. xzgv defaults to using the faster
-method; as the libjpeg documentation puts it, ``The visual impact of the
-sloppier method is often very small.''
+@strong{Deprecated.}  This option no longer has any effect.
 
 @vindex delete-single-prompt
 @item --delete-single-prompt

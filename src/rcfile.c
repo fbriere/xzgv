@@ -50,7 +50,7 @@ int mouse_scale_x=0;		/* ctrl-click scales x if true, else y */
 enum sorttypes filesel_sorttype=sort_name;	/* sort order */
 int image_bigness_threshold=-1; /* (deprecated) */
 int delete_single_prompt=1;	/* prompt for deleting a single file */
-int careful_jpeg=0;		/* enable (don't disable) fancy upsampling */
+int careful_jpeg=-1;		/* (deprecated) */
 int sort_timestamp_type=0;	/* 0=mtime, 1=ctime, 2=atime */
 int use_exif_orient=0;		/* use Exif orientation tag for JPEGs */
 int show_images_only=0;         /* file selector shows only image files */
@@ -566,8 +566,6 @@ puts(
 "usage: xzgv [options] [dir | file ...]\n"
 "\n"
 "   -a	--auto-hide	automatically hide selector on selecting a picture.\n"
-"	--careful-jpeg	enable JPEG `fancy upsampling' (see info file\n"
-"			or man page).\n"
 "	--delete-single-prompt\n"
 "			(normally enabled, use --delete-single-prompt=off to\n"
 "			disable) if *disabled*, don't prompt for confirmation\n"
