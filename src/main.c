@@ -4151,6 +4151,9 @@ for(f=0;f<MAX_PASTPOS;f++)
 get_config();				/* read config file if any */
 argsleft=parse_options(argc,argv);	/* and command-line options */
 
+if(image_bigness_threshold>=0)
+  fprintf(stderr,"Notice: The `image-bigness-threshold' option is deprecated and has no effect.\n");
+
 /* they may have changed hicol_dither, so tell backend */
 if(old_hidith!=-1)
   backend_set_hicol_dither(hicol_dither);

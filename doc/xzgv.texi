@@ -364,11 +364,7 @@ do.
 
 @vindex image-bigness-threshold
 @item --image-bigness-threshold @var{numpix}
-Set the boundary @var{numpix} after which images are considered `big',
-and are no longer rendered all-at-once (which gives much nicer
-scrolling, but is harder on memory and can be slow for big images) but
-are instead rendered piece-by-piece. Units are number of pixels in image
-(i.e. width times height), and the default is 2000000 pixels.
+@strong{Deprecated.}  This option no longer has any effect.
 
 @item -i
 @vindex images-only

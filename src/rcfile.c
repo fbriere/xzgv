@@ -48,7 +48,7 @@ int skip_parent=0;		/* skip cursor past .. on initial dir */
 int click_nextpic=1;		/* click on viewer = next pic */
 int mouse_scale_x=0;		/* ctrl-click scales x if true, else y */
 enum sorttypes filesel_sorttype=sort_name;	/* sort order */
-int image_bigness_threshold=2000000; /* images >= this num pixels are `big' */
+int image_bigness_threshold=-1; /* (deprecated) */
 int delete_single_prompt=1;	/* prompt for deleting a single file */
 int careful_jpeg=0;		/* enable (don't disable) fancy upsampling */
 int sort_timestamp_type=0;	/* 0=mtime, 1=ctime, 2=atime */
@@ -595,12 +595,6 @@ puts(
 "			geometry is `92%x85%'.\n"
 "			(See info file or man page for more details.)\n"
 "   -h	--help		give this usage help.\n"
-"	--image-bigness-threshold numpix\n"
-"			set the boundary `numpix' above which images are\n"
-"			considered `big', and rendered piece-by-piece rather\n"
-"			than all-at-once (which is nicer, but harder on\n"
-"			memory). Units are number of pixels in image (i.e.\n"
-"			width times height), and the default is 2000000 pixels.\n"
 "	--interpolate	interpolate between the picture's pixels when\n"
 "			scaling up. Usually looks nicer, but it's slow.\n"
 "	--mouse-scale-x	if enabled, control-click scales only the X axis -\n"
