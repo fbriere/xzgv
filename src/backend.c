@@ -293,19 +293,11 @@ int backend_render_pixmap_for_image(xzgv_image *image,int x,int y)
 {
 GdkPixbuf *backim;
 GdkPixmap *pixmap;
-int same=0;
 
-if(x==image->w && y==image->h)
-  {
-  same=1;
-  backim=BACKEND_IMAGE(image);
-  }
-else
-  {
-  if((backim=gdk_pixbuf_scale_simple(BACKEND_IMAGE(image),x,y,
-                                     interp_type))==NULL)
-    return(0);
-  }
+backim=gdk_pixbuf_composite_color_simple(BACKEND_IMAGE(image),x,y,interp_type,
+				255,1,0x000000,0xffffff);
+if(backim==NULL)
+  return(0);
 
 gdk_pixbuf_render_pixmap_and_mask(backim,&pixmap,NULL,128);
 
@@ -314,8 +306,7 @@ if(image->backend_ext)		/* not normally the case */
 
 image->backend_ext=(void *)pixmap;
 
-if(!same)
-  g_object_unref(backim);
+g_object_unref(backim);
 
 return(1);
 }
