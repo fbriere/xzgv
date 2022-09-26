@@ -142,24 +142,6 @@ public_info_update(image);
 }
 
 
-/* create an image from RGB data, given width and height.
- * This version should do so *non-destructively*, by making a copy of
- * the data - the data passed to it should be left intact (and if it was
- * malloced, will need to later be freed by the caller).
- */
-xzgv_image *backend_create_image_from_data(unsigned char *rgb,int w,int h)
-{
-unsigned char *rgbcopy;
-
-/* no non-destructive version, so copy and use destructive one */
-if((rgbcopy=malloc(w*h*3))==NULL)
-  return(NULL);
-
-memcpy(rgbcopy,rgb,w*h*3);
-return(backend_create_image_from_data_destructively(rgbcopy,w,h));
-}
-
-
 /* create an image from RGB data, *destructively*.
  * This takes over the rgb data passed to it, such that a) the caller
  * should NOT free it, and b) the data may change (probably not now,
