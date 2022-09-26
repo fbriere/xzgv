@@ -100,13 +100,6 @@ image->h=gdk_pixbuf_get_height(BACKEND_IMAGE(image));
 }
 
 
-/* mark an image as `changed', i.e. `dirty' it. */
-void backend_image_changed(xzgv_image *image)
-{
-/* XXX */
-}
-
-
 /* flip image vertically. Should `dirty' image if needed.
  * Should also update xzgv_image's rgb/w/h fields (use public_info_update()).
  */

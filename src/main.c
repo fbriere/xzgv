@@ -1898,9 +1898,6 @@ interp=!interp;
 
 backend_set_interp(interp);
 
-/* dirty the image so it'll definitely redraw */
-if(theimage)
-  backend_image_changed(theimage);
 render_pixmap(0);
 
 listen_to_toggles=1;
@@ -1925,9 +1922,6 @@ hicol_dither=!hicol_dither;
 /* if hicol_dither!=-1, we must be in 15/16-bit, so set accordingly. */
 backend_set_hicol_dither(hicol_dither);
 
-/* dirty the image so it'll definitely redraw */
-if(theimage)
-  backend_image_changed(theimage);
 render_pixmap(0);
 
 listen_to_toggles=1;
