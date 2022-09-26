@@ -3565,7 +3565,7 @@ static GtkItemFactoryEntry selector_menu_items[]=
   {"/_Directory/_Change...","<shift>g",	cb_goto_dir,	0,	NULL},
   {"/_Directory/_Rescan","<control>r",	cb_reread_dir,	0,	NULL},
   {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Directory/Images Only","<alt>i",	cb_show_images,	0,	"<ToggleItem>"},
+  {"/_Directory/_Images Only","<alt>i",	cb_show_images,	0,	"<ToggleItem>"},
   {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
   {"/_Directory/Sort by _Name","<alt>n",cb_name_order,	0,	"<RadioItem>"},
   {"/_Directory/Sort by _Extension","<alt>e",cb_ext_order,
