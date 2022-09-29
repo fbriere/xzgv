@@ -416,6 +416,10 @@ For the first directory shown, skip the cursor past @file{..} (the
 parent dir). This can be useful when you'd like to immediately use space
 to `page' through the dir.
 
+@vindex sort-name-icase
+@item --sort-name-icase
+Ignore case when comparing file and directory names during sorting.
+
 @item -o @var{order}
 @vindex sort-order
 @itemx --sort-order @var{order}
@@ -1549,6 +1553,17 @@ Use the last-accessed time (`mtime'). The selector order is not
 automatically updated when xzgv reads files, since this would probably
 be annoying; do a manual rescan if need be.
 
+@end table
+
+You can also toggle whether or not file and directory names should be compared
+case-insensitively:
+
+@table @kbd
+@kindex Alt-Shift-i
+@item Alt-Shift-i
+@findex Selector menu, Directory, Ignore case when comparing names
+@itemx Selector menu, Directory, Ignore case when comparing names
+Ignore case when comparing file and directory names during sorting.
 @end table
 
 

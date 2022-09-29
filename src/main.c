@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -2291,6 +2292,17 @@ void cb_atime_type(void)
 sort_timestamp_type=2; resort_finish();
 }
 
+void cb_name_icase_toggle(void)
+{
+  if (!listen_to_toggles || in_nextprev) return;
+  listen_to_toggles = 0;
+
+  sort_name_icase = !sort_name_icase;
+  resort_finish();
+
+  listen_to_toggles = 1;
+}
+
 
 void cb_next_image(void)
 {
@@ -2750,6 +2762,8 @@ gtk_clist_thaw(GTK_CLIST(clist));
 }
 
 
+#define STRCMP_FILENAME(s1, s2) \
+  (sort_name_icase ? strcasecmp((s1), (s2)) : strcmp((s1), (s2)))
 gint sort_cmp(GtkCList *clist,gconstpointer ptr1,gconstpointer ptr2)
 {
 GtkCListRow *row1=(GtkCListRow *)ptr1;
@@ -2768,7 +2782,7 @@ dat2=row2->data;
  * otherwise it's one file and one dir, and the dir is always `less'.
  */
 if(dat1->isdir && dat2->isdir)
-  return(strcmp(txt1,txt2));  /* both directories, use strcmp. */
+  return(STRCMP_FILENAME(txt1,txt2));  /* both directories, use strcmp. */
 
 if(!dat1->isdir && !dat2->isdir)
   {
@@ -2778,7 +2792,7 @@ if(!dat1->isdir && !dat2->isdir)
   switch(filesel_sorttype)
     {
     case sort_name:
-      ret=strcmp(txt1,txt2);
+      ret=STRCMP_FILENAME(txt1,txt2);
       break;
     
     case sort_ext:
@@ -2815,7 +2829,7 @@ if(!dat1->isdir && !dat2->isdir)
   
   /* for all equal matches on primary key, use name as secondary */
   if(ret==0)
-    ret=strcmp(txt1,txt2);
+    ret=STRCMP_FILENAME(txt1,txt2);
   
   return(ret);
   }	/* end of if */
@@ -3584,6 +3598,10 @@ static GtkItemFactoryEntry selector_menu_items[]=
   {"/_Directory/Time & Date _Type/_Access Time (atime)",
    "<alt><shift>a",
    cb_atime_type,0,"/Directory/Time & Date Type/Modification Time (mtime)"},
+  {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
+  {"/_Directory/Ign_ore case when comparing names",
+   "<alt><shift>i",
+   cb_name_icase_toggle, 0, "<ToggleItem>"},
   {"/_Options",		NULL,		NULL,		0,	"<Branch>"},
   {"/_Options/_Auto Hide", "<alt>a",	toggle_auto_hide,1,    "<ToggleItem>"},
   {"/_Options/_Status Bar", "<alt>b",	toggle_status,	1,     "<ToggleItem>"},
@@ -3859,6 +3877,12 @@ switch(sort_timestamp_type)
 gtk_check_menu_item_set_active(
   &(GTK_RADIO_MENU_ITEM(gtk_item_factory_get_widget(
     selector_menu_factory,ptr))->check_menu_item),TRUE);
+
+gtk_check_menu_item_set_active(
+  GTK_CHECK_MENU_ITEM(
+    gtk_item_factory_get_widget(selector_menu_factory,
+                                "<main>/Directory/Ignore case when comparing names")),
+  sort_name_icase);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(

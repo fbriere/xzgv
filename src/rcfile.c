@@ -52,6 +52,7 @@ int image_bigness_threshold=-1; /* (deprecated) */
 int delete_single_prompt=1;	/* prompt for deleting a single file */
 int careful_jpeg=-1;		/* (deprecated) */
 int sort_timestamp_type=0;	/* 0=mtime, 1=ctime, 2=atime */
+int sort_name_icase=0;		/* sort file/dir names case-insensitively */
 int use_exif_orient=0;		/* use Exif orientation tag for JPEGs */
 int show_images_only=0;         /* file selector shows only image files */
  
@@ -614,6 +615,9 @@ puts(
 "   -k	--skip-parent	for the first directory shown, skip the cursor past\n"
 "			`..' (the parent dir). Can be useful when you'd like\n"
 "			to immediately use space to `page' through the dir.\n"
+"	--sort-name-icase\n"
+"			Ignore case when comparing file and directory names\n"
+"			during sorting.\n"
 "   -o	--sort-order	set initial sorting order used in the selector.\n"
 "			Types are `name', `ext', `size', `date' (or `time');\n"
 "			only the first char (n/e/s/d/t) need be given.\n"
