@@ -42,4 +42,3 @@ extern GdkPixmap *xvpic2pixmap(unsigned char *xvpic,
 extern void new_pastpos(int row);
 extern void error_dialog(char *title,char *msg);
 extern void reinit_dir(int do_pastpos,int try_to_save_cursor_pos);
-extern gint generic_win_destroy(GtkWidget *widget,int *destroyed_flag);
