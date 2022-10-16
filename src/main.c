@@ -2762,6 +2762,12 @@ txt2=GTK_CELL_TEXT(row2->cell[SELECTOR_NAME_COL])->text;
 dat1=row1->data;
 dat2=row2->data;
 
+/* "..", if present, should always be sorted at the top */
+if (strcmp(txt1, "..") == 0)
+  return(-1);
+if (strcmp(txt2, "..") == 0)
+  return(1);
+
 /* directories always come first.
  * so, if comparing two files, use a normal comparison;
  * otherwise if it's two dirs, use a strcmp on the names;
