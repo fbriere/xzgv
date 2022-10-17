@@ -28,6 +28,22 @@ exit(1);
 }
 
 
+gchar *canonicalize_filename(const gchar *filename)
+{
+  gchar *retval;
+
+#if GLIB_CHECK_VERSION(2,57,1)
+  retval = g_canonicalize_filename(filename, current_dir);
+#else
+  char *path = realpath(filename, NULL);
+  retval = g_strdup(path);
+  free(path);
+#endif
+
+  return retval;
+}
+
+
 void init_current_dir(void)
 {
 if (!current_dir)
@@ -50,7 +66,11 @@ int xzgv_chdir(const char *path)
 int retval;
 
 init_current_dir();
-gchar *target_dir = g_canonicalize_filename(path,current_dir);
+
+gchar *target_dir = canonicalize_filename(path);
+if (target_dir == NULL)
+  return -1;
+
 retval = chdir(target_dir);
 
 if (retval == 0) {
