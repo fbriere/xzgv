@@ -1182,6 +1182,8 @@ else
   int oldrow,incdec,up;
   int row=GTK_CLIST(clist)->focus_row;
   float vpage;
+  GtkAdjustment *adj;
+  float adj_value;
   
   /* if not a goto-next-char char... */
   switch(event->keyval)
@@ -1289,6 +1291,19 @@ else
                      3,event->time);
       break;
     
+    case GDK_Left:
+    case GDK_Right:
+      adj = gtk_scrolled_window_get_hadjustment(GTK_SCROLLED_WINDOW(sw_for_clist));
+      adj_value = adj->value;
+      adj_value +=
+          (event->keyval == GDK_Right ? 1 : -1) *
+          (event->state & GDK_CONTROL_MASK ? adj->page_increment : adj->step_increment);
+      /* retrain the value to the scrollbar's range */
+      adj_value = MAX(adj_value, adj->lower);
+      adj_value = MIN(adj_value, adj->upper - adj->page_size);
+      gtk_adjustment_set_value(adj, adj_value);
+      break;
+
     default:
       /* check for non-menu-item keys common to selector and viewer */
       if(!common_key_press(event))
