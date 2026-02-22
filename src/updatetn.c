@@ -274,9 +274,9 @@ g_signal_connect(update_tn_win, "destroy",
                    update_tn_win_ret);
 
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(update_tn_win)->vbox),2);
+  GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(update_tn_win))),2);
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(update_tn_win)->action_area),0);
+  GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(update_tn_win))),0);
 
 gtk_window_set_title(GTK_WINDOW(update_tn_win),"Updating Thumbnails");
 gtk_window_set_resizable(GTK_WINDOW(update_tn_win), TRUE);
@@ -285,12 +285,12 @@ gtk_window_set_position(GTK_WINDOW(update_tn_win),GTK_WIN_POS_CENTER);
 gtk_window_set_modal(GTK_WINDOW(update_tn_win),TRUE);
 
 progbar=*progbar_ret=gtk_progress_bar_new();
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(update_tn_win)->vbox),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(update_tn_win))),
                    progbar,TRUE,TRUE,2);
 gtk_widget_show(progbar);
 
 button=gtk_button_new_with_label("Cancel");
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(update_tn_win)->action_area),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(update_tn_win))),
                    button,TRUE,TRUE,2);
 g_signal_connect_swapped(button, "clicked",
                           G_CALLBACK(gtk_widget_destroy),
@@ -322,7 +322,7 @@ if(!numrows) return;
 
 /* save vertical position in clist */
 clist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
-prev_vadj_value=clist_vadj->value;
+prev_vadj_value=gtk_adjustment_get_value(clist_vadj);
 
 /* remove any running thumbnail read. We'll restart it after we're done.
  * (This makes sure we pick up any not updated by this routine.)
@@ -467,7 +467,7 @@ origdir=getcwd_allocated();
  * bounds-tested, so that doesn't really matter)
  */
 clist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
-prev_vadj_value=clist_vadj->value;
+prev_vadj_value=gtk_adjustment_get_value(clist_vadj);
 
 /* also save focus row, via pastpos. */
 new_pastpos(GTK_CLIST(clist)->focus_row);
