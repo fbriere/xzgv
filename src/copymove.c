@@ -142,7 +142,7 @@ gtk_widget_show(button);
 
 /* esc also aborts (even from main window!) */
 gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
-                           GDK_Escape,0,0);
+                           GDK_KEY_Escape,0,0);
 
 
 gtk_widget_show(progress_win);
@@ -390,11 +390,11 @@ g_signal_connect(ok_button,"clicked",
 /* esc = cancel */
 gtk_widget_add_accelerator(cancel_button,"clicked",
                            mainwin_accel_group,
-                           GDK_Escape,0,0);
+                           GDK_KEY_Escape,0,0);
 
 gtk_widget_add_accelerator(ok_button,"clicked",
                            mainwin_accel_group,
-                           GDK_Return,0,0);
+                           GDK_KEY_Return,0,0);
 
 
 gtk_widget_show(dir_win);

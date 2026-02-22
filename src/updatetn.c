@@ -300,7 +300,7 @@ gtk_widget_show(button);
 
 /* esc also aborts (even from main window!) */
 gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
-                           GDK_Escape,0,0);
+                           GDK_KEY_Escape,0,0);
 
 
 gtk_widget_show(update_tn_win);
