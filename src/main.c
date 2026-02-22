@@ -518,6 +518,7 @@ RECURSE_PROTECT_END;
 
 void cb_hide_selector(void)
 {
+GtkAllocation allocation;
 RECURSE_PROTECT_START;
 
 /* this is really a toggle, so show it if it's hidden. */
@@ -529,7 +530,8 @@ if(hidden)
 else
   {
   do_gtk_stuff();   /* in case it's being done immediately after an unhide */
-  hide_saved_pos=sw_for_clist->allocation.width;
+  gtk_widget_get_allocation(sw_for_clist, &allocation);
+  hide_saved_pos=allocation.width;
   gtk_paned_set_position(GTK_PANED(pane),1);
   hidden=1;
   }
@@ -543,10 +545,12 @@ RECURSE_PROTECT_END;
 
 void cb_iconify(void)
 {
-XIconifyWindow(GDK_WINDOW_XDISPLAY(mainwin->window),
-               GDK_WINDOW_XID(mainwin->window),
+GdkWindow *main_gdk_window = gtk_widget_get_window(mainwin);
+
+XIconifyWindow(GDK_WINDOW_XDISPLAY(main_gdk_window),
+               GDK_WINDOW_XID(main_gdk_window),
                XScreenNumberOfScreen(XDefaultScreenOfDisplay(
-                 GDK_WINDOW_XDISPLAY(mainwin->window))));
+                 GDK_WINDOW_XDISPLAY(main_gdk_window))));
 }
 
 
@@ -748,17 +752,17 @@ vadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
 
 if(xadd)
   {
-  new_x=hadj->value+xadd;
-  if(new_x<hadj->lower) new_x=hadj->lower;
-  if(new_x>hadj->upper-hadj->page_size) new_x=hadj->upper-hadj->page_size;
+  new_x=gtk_adjustment_get_value(hadj)+xadd;
+  if(new_x<gtk_adjustment_get_lower(hadj)) new_x=gtk_adjustment_get_lower(hadj);
+  if(new_x>gtk_adjustment_get_upper(hadj)-gtk_adjustment_get_page_size(hadj)) new_x=gtk_adjustment_get_upper(hadj)-gtk_adjustment_get_page_size(hadj);
   gtk_adjustment_set_value(hadj,new_x);
   }
 
 if(yadd)
   {
-  new_y=vadj->value+yadd;
-  if(new_y<vadj->lower) new_y=vadj->lower;
-  if(new_y>vadj->upper-vadj->page_size) new_y=vadj->upper-vadj->page_size;
+  new_y=gtk_adjustment_get_value(vadj)+yadd;
+  if(new_y<gtk_adjustment_get_lower(vadj)) new_y=gtk_adjustment_get_lower(vadj);
+  if(new_y>gtk_adjustment_get_upper(vadj)-gtk_adjustment_get_page_size(vadj)) new_y=gtk_adjustment_get_upper(vadj)-gtk_adjustment_get_page_size(vadj);
   gtk_adjustment_set_value(vadj,new_y);
   }
 }
@@ -774,8 +778,8 @@ if(ignore_drag) return(FALSE);
 next_on_release=0;
 
 /* ignore it if neither scrollbar is onscreen */
-if(!GTK_SCROLLED_WINDOW(sw_for_pic)->hscrollbar_visible &&
-   !GTK_SCROLLED_WINDOW(sw_for_pic)->vscrollbar_visible)
+if(!gtk_widget_get_visible(gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic))) &&
+   !gtk_widget_get_visible(gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic))))
   return(TRUE);
 
 /* XXX! should absorb all pending motion-notify events somehow, and
@@ -796,9 +800,12 @@ return(TRUE);
 /* used by gtk_menu_popup() calls invoked from keyboard */
 void keyboard_menu_pos(GtkMenu *menu,gint *xp,gint *yp,GtkWidget *data)
 {
-gdk_window_get_position(mainwin->window,xp,yp);
-*xp+=data->allocation.x;
-*yp+=data->allocation.y;
+GtkAllocation allocation;
+
+gtk_widget_get_allocation(data, &allocation);
+gdk_window_get_position(gtk_widget_get_window(mainwin),xp,yp);
+*xp+=allocation.x;
+*yp+=allocation.y;
 }
 
 
@@ -807,7 +814,10 @@ gdk_window_get_position(mainwin->window,xp,yp);
  */
 int common_key_press(GdkEventKey *event)
 {
-int maxpos,oldpos,pos=sw_for_clist->allocation.width;
+GtkAllocation allocation;
+
+gtk_widget_get_allocation(sw_for_clist, &allocation);
+int maxpos,oldpos,pos=allocation.width;
 int step=20;
 
 if(event->state&GDK_CONTROL_MASK)
@@ -827,7 +837,8 @@ switch(event->keyval)
     return(TRUE);
   
   case GDK_KEY_bracketright:	/* ] */
-    maxpos=mainwin->allocation.width;
+    gtk_widget_get_allocation(mainwin, &allocation);
+    maxpos=allocation.width;
     oldpos=pos;
     pos+=step;
     if(pos>maxpos) pos=maxpos;
@@ -951,8 +962,8 @@ switch(event->keyval)
   case GDK_KEY_Page_Up: case GDK_KEY_u:
   page_up:
     if(event->keyval!=GDK_KEY_u || (event->state&GDK_CONTROL_MASK))
-      move_pic(0.,-0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
-        GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size);
+      move_pic(0.,-0.9*gtk_adjustment_get_page_size(GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
+        GTK_SCROLLED_WINDOW(sw_for_pic)))));
     else
       {
       RECURSE_PROTECT_END;
@@ -962,8 +973,8 @@ switch(event->keyval)
   case GDK_KEY_Page_Down: case GDK_KEY_v:
   page_down:
     if(event->keyval!=GDK_KEY_v || (event->state&GDK_CONTROL_MASK))
-      move_pic(0.,+0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
-        GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size);
+      move_pic(0.,+0.9*gtk_adjustment_get_page_size(GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
+        GTK_SCROLLED_WINDOW(sw_for_pic)))));
     else
       {
       RECURSE_PROTECT_END;
@@ -972,13 +983,13 @@ switch(event->keyval)
     break;
   case GDK_KEY_minus:
   page_left:
-    move_pic(-0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
-      GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size, 0.);
+    move_pic(-0.9*gtk_adjustment_get_page_size(GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
+      GTK_SCROLLED_WINDOW(sw_for_pic)))), 0.);
     break;
   case GDK_KEY_equal:
   page_right:
-    move_pic(+0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
-      GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size, 0.);
+    move_pic(+0.9*gtk_adjustment_get_page_size(GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
+      GTK_SCROLLED_WINDOW(sw_for_pic)))), 0.);
     break;
   
   case GDK_KEY_Home: case GDK_KEY_a:
@@ -1225,8 +1236,8 @@ else
       RET_IF_NOT_CONTROL;
       up=(event->keyval==GDK_KEY_u);
       oldrow=row;
-      vpage=GTK_ADJUSTMENT(
-        gtk_clist_get_vadjustment(GTK_CLIST(clist)))->page_size;
+      vpage=gtk_adjustment_get_page_size(GTK_ADJUSTMENT(
+        gtk_clist_get_vadjustment(GTK_CLIST(clist))));
       incdec=(int)((vpage/
                     (1+(thin_rows?ROW_HEIGHT_THIN:ROW_HEIGHT_NORMAL)))+0.5);
       /* next statement is bug-compatible with true page up/down :-)
@@ -1306,8 +1317,11 @@ return(TRUE);
 
 void get_zoomed_size(int *swp,int *shp)
 {
-int scrnwide=sw_for_pic->allocation.width-sw_border_width;
-int scrnhigh=sw_for_pic->allocation.height-sw_border_height;
+GtkAllocation allocation;
+
+gtk_widget_get_allocation(sw_for_pic, &allocation);
+int scrnwide=allocation.width-sw_border_width;
+int scrnhigh=allocation.height-sw_border_height;
 int width=theimage->w;
 int height=theimage->h;
 
@@ -1384,7 +1398,7 @@ if(!scaling_up_enabled)
   backend_render_pixmap_for_image(theimage,sw,sh);
 
 /* remove any backing pixmap */
-gdk_window_set_back_pixmap(drawing_area->window,NULL,FALSE);
+gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),NULL,FALSE);
 
 if(thepixmap)
   backend_pixmap_destroy(thepixmap),thepixmap=NULL;
@@ -1416,8 +1430,8 @@ do_gtk_stuff();
  */
 if(thepixmap)
   {
-  gdk_window_set_back_pixmap(drawing_area->window,thepixmap,FALSE);
-  gdk_window_clear(drawing_area->window);
+  gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),thepixmap,FALSE);
+  gdk_window_clear(gtk_widget_get_window(drawing_area));
   }
 
 in_render=0;
@@ -1435,8 +1449,8 @@ if(zoom)
   render_pixmap(1);	/* different size, render again */
 else
   {
-  gdk_window_set_back_pixmap(drawing_area->window,thepixmap,FALSE);
-  gdk_window_clear(drawing_area->window);
+  gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),thepixmap,FALSE);
+  gdk_window_clear(gtk_widget_get_window(drawing_area));
   }
 }
 
@@ -1455,7 +1469,7 @@ gint pic_win_resized(GtkWidget *widget,GdkEventConfigure *event)
  * save us getting bogged down when using `opaque resize' on
  * slower systems.
  */
-gdk_window_set_back_pixmap(drawing_area->window,NULL,FALSE);
+gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),NULL,FALSE);
 
 if(zoom_resize_idle_tag!=-1)
   g_source_remove(zoom_resize_idle_tag);
@@ -1495,10 +1509,10 @@ if(!theimage) return;
 
 width=theimage->w;
 height=theimage->h;
-scrnwide=GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
-  GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size;
-scrnhigh=GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
-  GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size;
+scrnwide=gtk_adjustment_get_page_size(GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
+  GTK_SCROLLED_WINDOW(sw_for_pic))));
+scrnhigh=gtk_adjustment_get_page_size(GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
+  GTK_SCROLLED_WINDOW(sw_for_pic))));
 
 xa=ya=0;
 sw=oldxsc*width;
@@ -1533,8 +1547,8 @@ hadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
 vadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
   GTK_SCROLLED_WINDOW(sw_for_pic)));
 
-oldx=(int)hadj->value;
-oldy=(int)vadj->value;
+oldx=(int)gtk_adjustment_get_value(hadj);
+oldy=(int)gtk_adjustment_get_value(vadj);
 same_centre(&x,&y,newxsc,newysc,oldx,oldy,oldxsc,oldysc);
 
 *xp=(float)x; *yp=(float)y;
@@ -1551,12 +1565,12 @@ hadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
 vadj=GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
   GTK_SCROLLED_WINDOW(sw_for_pic)));
 
-if(new_x<hadj->lower) new_x=hadj->lower;
-if(new_x>hadj->upper-hadj->page_size) new_x=hadj->upper-hadj->page_size;
+if(new_x<gtk_adjustment_get_lower(hadj)) new_x=gtk_adjustment_get_lower(hadj);
+if(new_x>gtk_adjustment_get_upper(hadj)-gtk_adjustment_get_page_size(hadj)) new_x=gtk_adjustment_get_upper(hadj)-gtk_adjustment_get_page_size(hadj);
 gtk_adjustment_set_value(hadj,new_x);
 
-if(new_y<vadj->lower) new_y=vadj->lower;
-if(new_y>vadj->upper-vadj->page_size) new_y=vadj->upper-vadj->page_size;
+if(new_y<gtk_adjustment_get_lower(vadj)) new_y=gtk_adjustment_get_lower(vadj);
+if(new_y>gtk_adjustment_get_upper(vadj)-gtk_adjustment_get_page_size(vadj)) new_y=gtk_adjustment_get_upper(vadj)-gtk_adjustment_get_page_size(vadj);
 gtk_adjustment_set_value(vadj,new_y);
 }
 
@@ -1581,7 +1595,7 @@ gtk_widget_show(drawing_area);
  */
 if(xscaling<oldxsc || yscaling<oldysc)
   {
-  gdk_window_clear(drawing_area->window);
+  gdk_window_clear(gtk_widget_get_window(drawing_area));
   gdk_flush();
   }
 gdk_flush();
@@ -2118,7 +2132,7 @@ if(!numrows) return;		/* this is surely impossible, but WTF :-) */
  * of dealing with when to zero this in the idle function itself.
  * Ditto with last adjustment, though this is a bit ugly. :-)
  */
-idle_xvpic_lastadjval=gtk_clist_get_vadjustment(GTK_CLIST(clist))->value;
+idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
 idle_xvpic_jumped=0;
 idle_xvpic_entry_idle=0;
 tn_idle_tag=g_idle_add((GSourceFunc)idle_xvpic_load,&idle_xvpic_entry_idle);
@@ -2155,7 +2169,7 @@ if(thumbnail_read_running()) return;
 gtk_clist_get_selection_info(GTK_CLIST(clist),0,0,&row,&col);
 if(row==-1) return;
 
-idle_xvpic_lastadjval=gtk_clist_get_vadjustment(GTK_CLIST(clist))->value;
+idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
 idle_xvpic_jumped=0;
 entry=row;
 
@@ -2493,7 +2507,7 @@ int small_w,small_h;
 if(w==0 || h==0) return(NULL);
 
 
-if (NULL == (pixmap=gdk_pixmap_new(mainwin->window,w,h, -1))) { 
+if (NULL == (pixmap=gdk_pixmap_new(gtk_widget_get_window(mainwin),w,h, -1))) { 
     return(NULL);
 }
 
@@ -2502,7 +2516,7 @@ small_h=h/ROW_HEIGHT_DIV;
 if(small_w==0) small_w=1;
 if(small_h==0) small_h=1;
 
-if((small_pixmap=gdk_pixmap_new(mainwin->window,small_w,small_h,-1))==NULL)
+if((small_pixmap=gdk_pixmap_new(gtk_widget_get_window(mainwin),small_w,small_h,-1))==NULL)
 {
     g_object_unref(pixmap);
     return(NULL);
@@ -2527,7 +2541,7 @@ for(y=0;y<h;y++) {
   }
 }
 
-gdk_draw_rgb_image(pixmap,clist->style->white_gc,0,0,w,h,
+gdk_draw_rgb_image(pixmap,gtk_widget_get_style(clist)->white_gc,0,0,w,h,
         GDK_RGB_DITHER_NORMAL,
         (guchar*)buffer, w * 3);
 gdk_flush();
@@ -2543,7 +2557,7 @@ for(y=0;y<small_h;y++) {
   }
 }
 
-gdk_draw_rgb_image(small_pixmap,clist->style->white_gc,0,0,small_w, small_h,
+gdk_draw_rgb_image(small_pixmap,gtk_widget_get_style(clist)->white_gc,0,0,small_w, small_h,
         GDK_RGB_DITHER_NORMAL,
         (guchar*)buffer, small_w * 3);
 
@@ -2579,7 +2593,7 @@ if(idle_xvpic_blocked)
  * preventing it (!), so I've not used those here.
  */
 
-adjval=gtk_clist_get_vadjustment(GTK_CLIST(clist))->value;
+adjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
 if(adjval!=idle_xvpic_lastadjval)
   {
   int row=-1,col=-1;
@@ -3039,13 +3053,13 @@ error_win=gtk_dialog_new();
 
 /* make a new vbox for the top part so we can get spacing more sane */
 vbox=gtk_vbox_new(FALSE,10);
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(error_win)->vbox),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(error_win))),
                    vbox,TRUE,TRUE,0);
 gtk_widget_show(vbox);
 
 gtk_container_set_border_width(GTK_CONTAINER(vbox),5);
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(error_win)->action_area),2);
+  GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(error_win))),2);
 
 gtk_window_set_title(GTK_WINDOW(error_win),title);
 gtk_window_set_resizable(GTK_WINDOW(error_win),TRUE);
@@ -3058,7 +3072,7 @@ gtk_widget_show(label);
 
 /* add ok button */
 action_tbl=gtk_table_new(1,3,TRUE);
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(error_win)->action_area),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(error_win))),
                    action_tbl,TRUE,TRUE,0);
 gtk_widget_show(action_tbl);
 
@@ -3509,6 +3523,7 @@ GtkWidget *clist_sw_ebox;
 GtkItemFactory *selector_menu_factory,*viewer_menu_factory;
 GdkPixbuf *icon;
 char *ptr;
+GtkAllocation allocation, allocation2;
 
 /* selector right-button menu */
 static GtkItemFactoryEntry selector_menu_items[]=
@@ -3953,10 +3968,10 @@ g_signal_connect(sw_for_pic,
 
 /* have to carefully override this for scrollbars! */
 g_signal_connect_after(
-  GTK_SCROLLED_WINDOW(sw_for_pic)->hscrollbar,
+  gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic)),
   "button_press_event",G_CALLBACK(viewer_sb_button_press),NULL);
 g_signal_connect_after(
-  GTK_SCROLLED_WINDOW(sw_for_pic)->vscrollbar,
+  gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic)),
   "button_press_event",G_CALLBACK(viewer_sb_button_press),NULL);
 
 
@@ -3989,8 +4004,10 @@ listen_to_toggles=1;
 gtk_widget_show(mainwin);
 
 /*  now that the window is visible, we can finally determine its border size */
-sw_border_width=sw_for_pic->allocation.width-align->allocation.width;
-sw_border_height=sw_for_pic->allocation.height-align->allocation.height;
+gtk_widget_get_allocation(sw_for_pic, &allocation);
+gtk_widget_get_allocation(align, &allocation2);
+sw_border_width=allocation.width-allocation2.width;
+sw_border_height=allocation.height-allocation2.height;
 
 /* set icon (XXX size should be configurable) */
 icon=gdk_pixbuf_new_from_xpm_data((const char **)icon_48_xpm);
@@ -3998,10 +4015,12 @@ gtk_window_set_icon(GTK_WINDOW(mainwin),icon);
 
 if(fullscreen)
   {
+  GdkWindow *main_gdk_window = gtk_widget_get_window(mainwin);
+
   /* use mwm hints (I think) to turn off window frame */
-  gdk_window_set_decorations(mainwin->window,0);
+  gdk_window_set_decorations(main_gdk_window,0);
   /* also, only allow window close to happen (not resize/move/mini/maximise) */
-  gdk_window_set_functions(mainwin->window,GDK_FUNC_CLOSE);
+  gdk_window_set_functions(main_gdk_window,GDK_FUNC_CLOSE);
   }
 
 /* adjust row heights now, which should leave filename text

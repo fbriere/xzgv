@@ -115,9 +115,9 @@ g_signal_connect(progress_win,"destroy",
                    progress_win_ret);
 
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(progress_win)->vbox),2);
+  GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(progress_win))),2);
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(progress_win)->action_area),0);
+  GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(progress_win))),0);
 
 gtk_window_set_title(GTK_WINDOW(progress_win),
                      cm_do_move?"Moving":"Copying");
@@ -127,12 +127,12 @@ gtk_window_set_position(GTK_WINDOW(progress_win),GTK_WIN_POS_CENTER);
 gtk_window_set_modal(GTK_WINDOW(progress_win),TRUE);
 
 progbar=*progbar_ret=gtk_progress_bar_new();
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(progress_win)->vbox),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(progress_win))),
                    progbar,TRUE,TRUE,2);
 gtk_widget_show(progbar);
 
 button=gtk_button_new_with_label("Cancel");
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(progress_win)->action_area),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(progress_win))),
                    button,TRUE,TRUE,2);
 g_signal_connect_swapped(button,"clicked",
                           G_CALLBACK(gtk_widget_destroy),
@@ -320,17 +320,17 @@ gtk_window_set_modal(GTK_WINDOW(dir_win),TRUE);
 
 /* make a new vbox for the top part so we can get spacing more sane */
 vbox=gtk_vbox_new(FALSE,10);
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dir_win)->vbox),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dir_win))),
                    vbox,TRUE,TRUE,0);
 gtk_widget_show(vbox);
 
 gtk_container_set_border_width(GTK_CONTAINER(vbox),5);
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(dir_win)->action_area),5);
+  GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dir_win))),5);
 
 /* add ok/cancel buttons */
 action_tbl=gtk_table_new(1,5,TRUE);
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dir_win)->action_area),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(dir_win))),
                    action_tbl,TRUE,TRUE,0);
 gtk_widget_show(action_tbl);
 
