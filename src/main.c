@@ -815,7 +815,7 @@ if(event->state&GDK_CONTROL_MASK)
 
 switch(event->keyval)
   {
-  case GDK_bracketleft:		/* [ */
+  case GDK_KEY_bracketleft:		/* [ */
     oldpos=pos;
     pos-=step;
     if(pos<1) pos=1;
@@ -826,7 +826,7 @@ switch(event->keyval)
       }
     return(TRUE);
   
-  case GDK_bracketright:	/* ] */
+  case GDK_KEY_bracketright:	/* ] */
     maxpos=mainwin->allocation.width;
     oldpos=pos;
     pos+=step;
@@ -838,7 +838,7 @@ switch(event->keyval)
       }
     return(TRUE);
   
-  case GDK_asciitilde:		/* ~ */
+  case GDK_KEY_asciitilde:		/* ~ */
     if(pos!=default_sel_width)
       {
       hidden=0;				/* also treat as unhide */
@@ -895,26 +895,26 @@ here=1;
 if((event->state&GDK_SHIFT_MASK))
   switch(event->keyval)
     {
-    case GDK_Left:	goto page_left;
-    case GDK_Right:	goto page_right;
-    case GDK_Up:	goto page_up;
-    case GDK_Down:	goto page_down;
+    case GDK_KEY_Left:	goto page_left;
+    case GDK_KEY_Right:	goto page_right;
+    case GDK_KEY_Up:	goto page_up;
+    case GDK_KEY_Down:	goto page_down;
     }
 
 switch(event->keyval)
   {
-  case GDK_space:
+  case GDK_KEY_space:
     if((event->state&GDK_CONTROL_MASK))
       cb_tag_then_next();
     else
       cb_next_image();
     break;
   
-  case GDK_slash:
+  case GDK_KEY_slash:
     cb_viewer_next_tagged();
     break;
   
-  case GDK_question:
+  case GDK_KEY_question:
     cb_viewer_prev_tagged();
     break;
   
@@ -922,35 +922,35 @@ switch(event->keyval)
    * move a small amount (like unmodified h), but that doesn't hurt,
    * and I s'pose at least it's consistent. :-)
    */
-  case GDK_Left: case GDK_H:
+  case GDK_KEY_Left: case GDK_KEY_H:
     move_pic((event->state&GDK_CONTROL_MASK)?-10.:-100., 0.);
     break;
-  case GDK_Right: case GDK_L:
+  case GDK_KEY_Right: case GDK_KEY_L:
     move_pic((event->state&GDK_CONTROL_MASK)?+10.:+100., 0.);
     break;
-  case GDK_Up: case GDK_K:
+  case GDK_KEY_Up: case GDK_KEY_K:
     move_pic(0., (event->state&GDK_CONTROL_MASK)?-10.:-100.);
     break;
-  case GDK_Down: case GDK_J:
+  case GDK_KEY_Down: case GDK_KEY_J:
     move_pic(0., (event->state&GDK_CONTROL_MASK)?+10.:+100.);
     break;
 
-  case GDK_h:
+  case GDK_KEY_h:
     move_pic(-10.,0.);
     break;
-  case GDK_l:
+  case GDK_KEY_l:
     move_pic(+10.,0.);
     break;
-  case GDK_k:
+  case GDK_KEY_k:
     move_pic(0.,-10.);
     break;
-  case GDK_j:
+  case GDK_KEY_j:
     move_pic(0.,+10.);
     break;
   
-  case GDK_Page_Up: case GDK_u:
+  case GDK_KEY_Page_Up: case GDK_KEY_u:
   page_up:
-    if(event->keyval!=GDK_u || (event->state&GDK_CONTROL_MASK))
+    if(event->keyval!=GDK_KEY_u || (event->state&GDK_CONTROL_MASK))
       move_pic(0.,-0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
         GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size);
     else
@@ -959,9 +959,9 @@ switch(event->keyval)
       return(FALSE);	/* don't stop event if not handled */
       }
     break;
-  case GDK_Page_Down: case GDK_v:
+  case GDK_KEY_Page_Down: case GDK_KEY_v:
   page_down:
-    if(event->keyval!=GDK_v || (event->state&GDK_CONTROL_MASK))
+    if(event->keyval!=GDK_KEY_v || (event->state&GDK_CONTROL_MASK))
       move_pic(0.,+0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_vadjustment(
         GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size);
     else
@@ -970,19 +970,19 @@ switch(event->keyval)
       return(FALSE);
       }
     break;
-  case GDK_minus:
+  case GDK_KEY_minus:
   page_left:
     move_pic(-0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
       GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size, 0.);
     break;
-  case GDK_equal:
+  case GDK_KEY_equal:
   page_right:
     move_pic(+0.9*GTK_ADJUSTMENT(gtk_scrolled_window_get_hadjustment(
       GTK_SCROLLED_WINDOW(sw_for_pic)))->page_size, 0.);
     break;
   
-  case GDK_Home: case GDK_a:
-    if(event->keyval!=GDK_a || (event->state&GDK_CONTROL_MASK))
+  case GDK_KEY_Home: case GDK_KEY_a:
+    if(event->keyval!=GDK_KEY_a || (event->state&GDK_CONTROL_MASK))
       move_pic(-32768.,-32768.);  /* X window size limit is 32767x32767 */
     else
       {
@@ -990,8 +990,8 @@ switch(event->keyval)
       return(FALSE);
       }
     break;
-  case GDK_End: case GDK_e:
-    if(event->keyval!=GDK_e || (event->state&GDK_CONTROL_MASK))
+  case GDK_KEY_End: case GDK_KEY_e:
+    if(event->keyval!=GDK_KEY_e || (event->state&GDK_CONTROL_MASK))
       move_pic(+32768.,+32768.);
     else
       {
@@ -1000,11 +1000,11 @@ switch(event->keyval)
       }
     break;
   
-  case GDK_Tab:		/* also treat tab as esc */
+  case GDK_KEY_Tab:		/* also treat tab as esc */
     cb_back_to_clist();
     break;
   
-  case GDK_F10: case GDK_Menu:
+  case GDK_KEY_F10: case GDK_KEY_Menu:
     /* pop-up menu on F10 (Emacs-like) or Menu */
     gtk_menu_popup(GTK_MENU(viewer_menu),NULL,NULL,
                    (GtkMenuPositionFunc)keyboard_menu_pos,sw_for_pic,
@@ -1118,7 +1118,7 @@ here=1;
 if(goto_next_char)
   {
   /* completely ignore any shift keypress! */
-  if(event->keyval==GDK_Shift_L || event->keyval==GDK_Shift_R)
+  if(event->keyval==GDK_KEY_Shift_L || event->keyval==GDK_KEY_Shift_R)
     {
     RECURSE_PROTECT_END;
     return(FALSE);
@@ -1182,26 +1182,26 @@ else
   /* if not a goto-next-char char... */
   switch(event->keyval)
     {
-    case GDK_Return:	/* select pic */
-    case GDK_space:	/* handle this too, for consistency */
+    case GDK_KEY_Return:	/* select pic */
+    case GDK_KEY_space:	/* handle this too, for consistency */
       view_focus_row_file();
       break;
 
-    case GDK_slash:
+    case GDK_KEY_slash:
       cb_selector_next_tagged();
       break;
       
-    case GDK_question:
+    case GDK_KEY_question:
       cb_selector_prev_tagged();
       break;
       
-    case GDK_apostrophe:
-    case GDK_g:
+    case GDK_KEY_apostrophe:
+    case GDK_KEY_g:
       goto_next_char=1;
       goto_next_evtime=event->time;
       break;
 
-    case GDK_k:		/* up */
+    case GDK_KEY_k:		/* up */
       if(row>0)
         {
         set_focus_row(row=row-1);
@@ -1209,7 +1209,7 @@ else
           gtk_clist_moveto(GTK_CLIST(clist),row,0,0.,0.);
         }
       break;
-    case GDK_j:		/* down */
+    case GDK_KEY_j:		/* down */
       if(row<numrows-1)
         {
         set_focus_row(row=row+1);
@@ -1221,9 +1221,9 @@ else
 #define RET_IF_NOT_CONTROL	\
       if(!(event->state&GDK_CONTROL_MASK)) {RECURSE_PROTECT_END;return(FALSE);}
       
-    case GDK_u: case GDK_v:	/* ctrl-u/v, like page up/down */
+    case GDK_KEY_u: case GDK_KEY_v:	/* ctrl-u/v, like page up/down */
       RET_IF_NOT_CONTROL;
-      up=(event->keyval==GDK_u);
+      up=(event->keyval==GDK_KEY_u);
       oldrow=row;
       vpage=GTK_ADJUSTMENT(
         gtk_clist_get_vadjustment(GTK_CLIST(clist)))->page_size;
@@ -1245,40 +1245,40 @@ else
         }
       break;
       
-    case GDK_a:		/* ctrl-a, like ctrl-home */
+    case GDK_KEY_a:		/* ctrl-a, like ctrl-home */
       RET_IF_NOT_CONTROL;
       if(numrows)
         set_focus_row(0),make_visible_if_not(0);
       break;
-    case GDK_e:		/* ctrl-e, like ctrl-end */
+    case GDK_KEY_e:		/* ctrl-e, like ctrl-end */
       RET_IF_NOT_CONTROL;
       if(numrows)
         set_focus_row(numrows-1),make_visible_if_not(numrows-1);
       break;
   
-    case GDK_semicolon:		/* do the same as colon */
-    case GDK_colon:		/* XXX actually, menu binding seems broken? */
+    case GDK_KEY_semicolon:		/* do the same as colon */
+    case GDK_KEY_colon:		/* XXX actually, menu binding seems broken? */
       cb_file_details();
       break;
 
-    case GDK_KP_Add:
-    case GDK_plus:	/* may be preferable on some non-US/UK keyboards, and on laptops */
-    case GDK_0:		/* last-ditch alternative for non-US/UK laptops */
+    case GDK_KEY_KP_Add:
+    case GDK_KEY_plus:	/* may be preferable on some non-US/UK keyboards, and on laptops */
+    case GDK_KEY_0:		/* last-ditch alternative for non-US/UK laptops */
       if(event->state&GDK_MOD1_MASK)
         cb_tag_all();
       else
         cb_tag_file();
       break;
     
-    case GDK_KP_Subtract:
-    case GDK_9:
+    case GDK_KEY_KP_Subtract:
+    case GDK_KEY_9:
       if(event->state&GDK_MOD1_MASK)
         cb_untag_all();
       else
         cb_untag_file();
       break;
     
-    case GDK_F10: case GDK_Menu:
+    case GDK_KEY_F10: case GDK_KEY_Menu:
       /* pop-up menu, as for viewer */
       gtk_menu_popup(GTK_MENU(selector_menu),NULL,NULL,
                      (GtkMenuPositionFunc)keyboard_menu_pos,sw_for_clist,
@@ -3068,7 +3068,7 @@ gtk_widget_show(button);
 
 /* also allow escs (even from main window!) */
 gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
-                           GDK_Escape,0,0);
+                           GDK_KEY_Escape,0,0);
 
 
 gtk_widget_show(error_win);
@@ -3936,7 +3936,7 @@ gtk_widget_add_accelerator(
   gtk_item_factory_get_widget(selector_menu_factory,
                               "<main>/Exit xzgv"),
   "activate",mainwin_accel_group,
-  GDK_q,0,0);
+  GDK_KEY_q,0,0);
 
 
 /* severely hairy, but needed to allow menu to appear when a non-image

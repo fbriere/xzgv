@@ -67,7 +67,7 @@ gtk_widget_show(button);
 
 /* also allow escs (even from main window!) */
 gtk_widget_add_accelerator(button,"clicked",mainwin_accel_group,
-                           GDK_Escape,0,0);
+                           GDK_KEY_Escape,0,0);
 
 
 gtk_widget_show(about_win);
