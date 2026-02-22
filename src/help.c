@@ -30,13 +30,13 @@ about_win=gtk_dialog_new();
 
 /* make a new vbox for the top part so we can get spacing more sane */
 vbox=gtk_vbox_new(FALSE,10);
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(about_win)->vbox),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(about_win))),
                    vbox,TRUE,TRUE,0);
 gtk_widget_show(vbox);
 
 gtk_container_set_border_width(GTK_CONTAINER(vbox),5);
 gtk_container_set_border_width(
-  GTK_CONTAINER(GTK_DIALOG(about_win)->action_area),2);
+  GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(about_win))),2);
 
 gtk_window_set_title(GTK_WINDOW(about_win),"About xzgv");
 gtk_window_set_resizable(GTK_WINDOW(about_win), TRUE);
@@ -53,7 +53,7 @@ gtk_widget_show(label);
 
 /* add ok button */
 action_tbl=gtk_table_new(1,3,TRUE);
-gtk_box_pack_start(GTK_BOX(GTK_DIALOG(about_win)->action_area),
+gtk_box_pack_start(GTK_BOX(gtk_dialog_get_action_area(GTK_DIALOG(about_win))),
                    action_tbl,TRUE,TRUE,0);
 gtk_widget_show(action_tbl);
 
