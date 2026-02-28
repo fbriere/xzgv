@@ -55,13 +55,11 @@
 GdkInterpType interp_type;
 
 /* do any initialisation the backend needs. Should include any
- * visual/colormap change required.
+ * visual change required.
  * returns 1 if ok, else 0. (If 0, should output descriptive error msg.)
  */
 int backend_init(void)
 {
-gtk_widget_set_default_colormap(gdk_rgb_get_cmap());
-
 interp_type = GDK_INTERP_NEAREST;
 
 return(1);

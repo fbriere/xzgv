@@ -3640,9 +3640,7 @@ static GtkItemFactoryEntry viewer_menu_items[]=
   };
 
 
-gtk_widget_push_colormap(gdk_rgb_get_cmap());
 mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-gtk_widget_pop_colormap();
 gtk_widget_set_can_focus(mainwin, TRUE);
 g_signal_connect(mainwin, "destroy",
                    G_CALLBACK(cb_quit), NULL);
