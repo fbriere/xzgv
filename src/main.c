@@ -82,7 +82,7 @@
 /* limit on scaling down - entirely arbitrary */
 #define SCALING_DOWN_LIMIT	(-32)
 
-/* for defence against render_pixmap recursive callbacks, etc.
+/* for defence against render_pixbuf recursive callbacks, etc.
  * Be sure to do RECURSE_PROTECT_END before *any* possible exit
  * (but as late as possible, of course).
  */
@@ -90,7 +90,8 @@
 #define RECURSE_PROTECT_END	here=0
 
 
-GtkWidget *drawing_area,*align,*sw_for_pic;
+GtkWidget *align,*sw_for_pic;
+GtkWidget *image_widget, *eb_for_pic;
 GtkWidget *clist,*statusbar,*sw_for_clist;
 GtkWidget *selector_menu,*viewer_menu;
 GtkWidget *zoom_widget;		/* widget for zoom opt on menu */
@@ -102,9 +103,9 @@ GtkWidget *mainwin;
 
 guint8 xvpic_pal[256][3];		/* palette for thumbnails */
 
-/* image & rendered pixmap for currently-loaded image */
+/* image & rendered pixbuf for currently-loaded image */
 xzgv_image *theimage=NULL;
-GdkPixmap *thepixmap=NULL;
+GdkPixbuf *thepixbuf=NULL;
 
 /* no-thumbnail icon pixmaps */
 GdkPixmap *dir_icon,*file_icon;
@@ -191,7 +192,7 @@ int orient_state_flip[8]   ={2,3,0,1,6,7,4,5};
 
 
 /* required prototypes */
-void render_pixmap(int reset_pos);
+void render_pixbuf(int reset_pos);
 void cb_nextprev_tagged_image(int next,int view);
 gint idle_xvpic_load(int *entryp);
 gint pic_win_resized(GtkWidget *widget,GdkEventConfigure *event);
@@ -404,7 +405,7 @@ void set_focus_row(int new_row)
 int had_focus=gtk_widget_has_focus(clist);
 
 if(had_focus)
-  gtk_widget_grab_focus(drawing_area);
+  gtk_widget_grab_focus(eb_for_pic);
 
 GTK_CLIST(clist)->focus_row=new_row;
 
@@ -837,7 +838,7 @@ gdk_window_get_position(gtk_widget_get_window(mainwin),xp,yp);
 
 
 /* this may call pic_win_resized, and can inherit the recursion problem
- * of render_pixmap, so be careful.
+ * of render_pixbuf, so be careful.
  */
 int common_key_press(GdkEventKey *event)
 {
@@ -1375,7 +1376,7 @@ else
 }
 
 
-/* render pixmap from image, resize drawing area to fit, and just
+/* render pixbuf from image, resize drawing area to fit, and just
  * generally update things. Call this to update the image after pretty
  * much any change at all. :-)
  *
@@ -1383,7 +1384,7 @@ else
  * beware! (In other words, defend against recursion with something like
  * the in_render stuff below, or RECURSE_PROTECT_START/END.)
  */
-void render_pixmap(int reset_pos)
+void render_pixbuf(int reset_pos)
 {
 int sw,sh;
 int width,height;
@@ -1422,19 +1423,16 @@ if(!zoom)
 
 /* so now our image will be sw x sh */
 if(!scaling_up_enabled)
-  backend_render_pixmap_for_image(theimage,sw,sh);
+  backend_render_pixbuf_for_image(theimage,sw,sh);
 
-/* remove any backing pixmap */
-gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),NULL,FALSE);
-
-if(thepixmap)
-  backend_pixmap_destroy(thepixmap),thepixmap=NULL;
+if(thepixbuf)
+  backend_pixbuf_destroy(thepixbuf),thepixbuf=NULL;
 if(!scaling_up_enabled)
-  thepixmap=backend_get_and_detach_pixmap(theimage);
+  thepixbuf=backend_get_and_detach_pixbuf(theimage);
 
-/* set drawing area to size of pixmap (also generates expose event) */
+/* set drawing area to size of pixbuf (also generates expose event) */
 gtk_widget_set_size_request(align,sw,sh);
-gtk_widget_set_size_request(drawing_area,sw,sh);
+gtk_widget_set_size_request(image_widget,sw,sh);
 
 /* go back to top-left */
 if(reset_pos)
@@ -1445,20 +1443,19 @@ if(reset_pos)
     gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw_for_pic)),0.);
   }
 
-/* let scrollbars appear/disappear as needed *before* we put pixmap on.
+/* let scrollbars appear/disappear as needed *before* we put pixbuf on.
  * Without this you get a nasty `bounce' effect whenever scrollbars
  * appear/disappear. But it can still happen when resizing. (XXX)
  */
 do_gtk_stuff();
 
-/* put pixmap onto window as background. We could then free it, but
+/* put pixbuf onto window as background. We could then free it, but
  * we don't - see idle_zoom_resize() for why. (Basically, we restore
  * the pic there after (to avoid `bounce') having removed it.)
  */
-if(thepixmap)
+if(thepixbuf)
   {
-  gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),thepixmap,FALSE);
-  gdk_window_clear(gtk_widget_get_window(drawing_area));
+  gtk_image_set_from_pixbuf(GTK_IMAGE(image_widget), thepixbuf);
   }
 
 in_render=0;
@@ -1473,30 +1470,22 @@ g_source_remove(zoom_resize_idle_tag);
 zoom_resize_idle_tag=-1;
 
 if(zoom)
-  render_pixmap(1);	/* different size, render again */
+  render_pixbuf(1);	/* different size, render again */
 else
   {
-  gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),thepixmap,FALSE);
-  gdk_window_clear(gtk_widget_get_window(drawing_area));
+  gtk_image_set_from_pixbuf(GTK_IMAGE(image_widget), thepixbuf);
   }
 }
 
 
 /* note that in zoom mode this inherits the recursion problem
- * of render_pixmap due to idle_zoom_resize, so be careful.
+ * of render_pixbuf due to idle_zoom_resize, so be careful.
  */
 gint pic_win_resized(GtkWidget *widget,GdkEventConfigure *event)
 {
 /* NB: this shouldn't use widget or event, as it's sometimes
  * called with them both being NULL (by the auto-hide stuff).
  */
-
-/* Now also does this for non-zoomed pics in a (possibly vain)
- * attempt to reduce any `bounce' effect. But it should at least
- * save us getting bogged down when using `opaque resize' on
- * slower systems.
- */
-gdk_window_set_back_pixmap(gtk_widget_get_window(drawing_area),NULL,FALSE);
 
 if(zoom_resize_idle_tag!=-1)
   g_source_remove(zoom_resize_idle_tag);
@@ -1562,7 +1551,7 @@ if(sh<scrnhigh) ya=(scrnhigh-sh)>>1;
 }
 
 
-/* call this before render_pixmap() */
+/* call this before render_pixbuf() */
 void get_new_centre(int oldxsc,int oldysc,int newxsc,int newysc,
                     float *xp,float *yp)
 {
@@ -1582,7 +1571,7 @@ same_centre(&x,&y,newxsc,newysc,oldx,oldy,oldxsc,oldysc);
 }
 
 
-/* call this after render_pixmap() */
+/* call this after render_pixbuf() */
 void move_to_new_centre(float new_x,float new_y)
 {
 GtkAdjustment *hadj,*vadj;
@@ -1602,7 +1591,7 @@ gtk_adjustment_set_value(vadj,new_y);
 }
 
 
-/* this inherits the same recursion problem as render_pixmap(),
+/* this inherits the same recursion problem as render_pixbuf(),
  * so be careful.
  */
 void scaling_finish(int oldxsc,int oldysc)
@@ -1612,24 +1601,16 @@ float x,y;
 /* fairly hairy... :-/ */
 if(oldxsc!=xscaling || oldysc!=yscaling)
   get_new_centre(oldxsc,oldysc,xscaling,yscaling,&x,&y);
-render_pixmap(0);
-gtk_widget_hide(drawing_area);
+render_pixbuf(0);
+gtk_widget_hide(image_widget);
 if(oldxsc!=xscaling || oldysc!=yscaling)
   move_to_new_centre(x,y);
-gtk_widget_show(drawing_area);
-/* making it smaller can look very nasty before it's redrawn,
- * but clearing the window looks fairly nasty too, so...
- */
-if(xscaling<oldxsc || yscaling<oldysc)
-  {
-  gdk_window_clear(gtk_widget_get_window(drawing_area));
-  gdk_flush();
-  }
+gtk_widget_show(image_widget);
 gdk_flush();
 }
 
 
-/* turn off zoom (if enabled) without a call to render_pixmap() */
+/* turn off zoom (if enabled) without a call to render_pixbuf() */
 void undo_zoom(void)
 {
 if(!zoom) return;
@@ -1869,13 +1850,13 @@ here=1;
 
 undo_zoom();
 xscaling=yscaling=1;
-render_pixmap(1);
+render_pixbuf(1);
 
 here=0;
 }
 
 
-/* Any callbacks which call render_pixmap() `must' avoid recursion,
+/* Any callbacks which call render_pixbuf() `must' avoid recursion,
  * but this is most obvious with toggles like zoom, so toggles really
  * *must* be especially careful about this.
  *
@@ -1896,7 +1877,7 @@ else
                                  GTK_POLICY_AUTOMATIC,
                                  GTK_POLICY_AUTOMATIC);
 xscaling=yscaling=1;
-render_pixmap(1);
+render_pixbuf(1);
 
 listen_to_toggles=1;
 }
@@ -1908,7 +1889,7 @@ if(!listen_to_toggles || in_nextprev) return;
 listen_to_toggles=0;
 
 zoom_reduce_only=!zoom_reduce_only;
-render_pixmap(1);
+render_pixbuf(1);
 
 listen_to_toggles=1;
 }
@@ -1920,7 +1901,7 @@ if(!listen_to_toggles || in_nextprev) return;
 listen_to_toggles=0;
 
 zoom_panorama=!zoom_panorama;
-render_pixmap(1);
+render_pixbuf(1);
 
 listen_to_toggles=1;
 }
@@ -1935,7 +1916,7 @@ interp=!interp;
 
 backend_set_interp(interp);
 
-render_pixmap(0);
+render_pixbuf(0);
 
 listen_to_toggles=1;
 }
@@ -2083,7 +2064,7 @@ if (!theimage) return;
 RECURSE_PROTECT_START;
 backend_flip_vert(theimage);
 orient_current_state=orient_state_flip[orient_current_state];
-render_pixmap(1);
+render_pixbuf(1);
 RECURSE_PROTECT_END;
 }
 
@@ -2094,7 +2075,7 @@ if (!theimage) return;
 RECURSE_PROTECT_START;
 backend_flip_horiz(theimage);
 orient_current_state=orient_state_mirror[orient_current_state];
-render_pixmap(1);
+render_pixbuf(1);
 RECURSE_PROTECT_END;
 }
 
@@ -2109,7 +2090,7 @@ RECURSE_PROTECT_START;
 backend_rotate_cw(theimage);
 orient_current_state=orient_state_rot_cw[orient_current_state];
 swap_xyscaling();
-render_pixmap(1);
+render_pixbuf(1);
 RECURSE_PROTECT_END;
 }
 
@@ -2121,7 +2102,7 @@ RECURSE_PROTECT_START;
 backend_rotate_acw(theimage);
 orient_current_state=orient_state_rot_acw[orient_current_state];
 swap_xyscaling();
-render_pixmap(1);
+render_pixbuf(1);
 RECURSE_PROTECT_END;
 }
 
@@ -2134,7 +2115,7 @@ if(orient_current_state!=0)
   {
     orient_change_state(orient_current_state,0);
     orient_current_state=0;
-    render_pixmap(1);
+    render_pixbuf(1);
   }
 RECURSE_PROTECT_END;
 }
@@ -3450,9 +3431,9 @@ else
  * it due to auto-hide!
  */
 if(!zoom || !auto_hide || hidden)
-  render_pixmap(1);
+  render_pixbuf(1);
 
-/* only now can we safely free the old image (any old pixmap
+/* only now can we safely free the old image (any old pixbuf
  * will now no longer be onscreen).
  */
 if(oldimage)
@@ -3461,7 +3442,7 @@ if(oldimage)
 gtk_statusbar_pop(GTK_STATUSBAR(statusbar),sel_id);
 
 /* switch focus to pic */
-gtk_widget_grab_focus(drawing_area);
+gtk_widget_grab_focus(eb_for_pic);
 
 /* stop us allowing kybd focus (until esc/tab) */
 gtk_widget_set_can_focus(clist, FALSE);
@@ -3799,8 +3780,10 @@ gtk_widget_show(pane);
 /* right-hand side */
 
 /* the drawing area used for the pic */
-drawing_area=gtk_drawing_area_new();
-gtk_widget_set_can_focus(drawing_area, TRUE);
+image_widget=gtk_image_new();
+eb_for_pic = gtk_event_box_new();
+gtk_container_add(GTK_CONTAINER(eb_for_pic), image_widget);
+gtk_widget_set_can_focus(eb_for_pic, TRUE);
 viewer_menu = make_menu(ui_manager,
     "ViewerMenu",
     viewer_menu_ui,
@@ -3810,23 +3793,24 @@ viewer_menu = make_menu(ui_manager,
     NULL, 0, NULL
     );
 
-g_signal_connect(drawing_area, "motion_notify_event",
+g_signal_connect(eb_for_pic, "motion_notify_event",
                    G_CALLBACK(viewer_motion), NULL);
-g_signal_connect(drawing_area, "key_press_event",
+g_signal_connect(eb_for_pic, "key_press_event",
                    G_CALLBACK(viewer_key_press), NULL);
 
 /* need to ask for motion while button 1 is pressed (for drag),
  * keypresses, and (for scaling) expose.
  */
-gtk_widget_set_events(drawing_area,
+gtk_widget_set_events(eb_for_pic,
                       GDK_BUTTON1_MOTION_MASK|GDK_KEY_PRESS_MASK|
                       GDK_EXPOSURE_MASK);
 
-gtk_widget_show(drawing_area);
+gtk_widget_show(image_widget);
+gtk_widget_show(eb_for_pic);
 
 /* alignment to centre the DA */
 align=gtk_alignment_new(0.5,0.5,0.,0.);
-gtk_container_add(GTK_CONTAINER(align),drawing_area);
+gtk_container_add(GTK_CONTAINER(align),eb_for_pic);
 gtk_widget_show(align);
 
 /* scrolled window DA goes into (`inside' alignment) */
