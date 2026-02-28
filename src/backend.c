@@ -60,8 +60,6 @@ GdkInterpType interp_type;
  */
 int backend_init(void)
 {
-gtk_widget_set_default_colormap(gdk_rgb_get_cmap());
-
 interp_type = GDK_INTERP_NEAREST;
 
 return(1);
