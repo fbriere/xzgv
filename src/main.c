@@ -37,7 +37,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkx.h>		/* needed for iconify stuff */
-#include <gdk/gdkrgb.h>
 #include <X11/Xlib.h>		/* needed for iconify stuff */
 
 #include "backend.h"
@@ -2478,35 +2477,23 @@ void find_xvpic_cols(void)
 GdkPixmap *xvpic2pixmap(unsigned char *xvpic,int w,int h,GdkPixmap **smallp)
 {
 GdkPixmap *pixmap,*small_pixmap;
-guint8 *buffer;
+GdkPixbuf *tmp_pixbuf;
+guint8 *buffer, *small_buffer;
 unsigned char *ptr=xvpic;
 int x,y;
 int small_w,small_h;
 
 if(w==0 || h==0) return(NULL);
 
-
-if (NULL == (pixmap=gdk_pixmap_new(gtk_widget_get_window(mainwin),w,h, -1))) { 
-    return(NULL);
-}
-
 small_w=w/ROW_HEIGHT_DIV;
 small_h=h/ROW_HEIGHT_DIV;
 if(small_w==0) small_w=1;
 if(small_h==0) small_h=1;
 
-if((small_pixmap=gdk_pixmap_new(gtk_widget_get_window(mainwin),small_w,small_h,-1))==NULL)
-{
-    g_object_unref(pixmap);
-    return(NULL);
-}
-
 buffer = malloc (w * h * sizeof (guint8) * 3);
 
 if (NULL == buffer) {
     /* malloc failed */
-    g_object_unref(pixmap);
-    g_object_unref(small_pixmap);
     return NULL;
 }
 
@@ -2520,31 +2507,68 @@ for(y=0;y<h;y++) {
   }
 }
 
-gdk_draw_rgb_image(pixmap,gtk_widget_get_style(clist)->white_gc,0,0,w,h,
-        GDK_RGB_DITHER_NORMAL,
-        (guchar*)buffer, w * 3);
+tmp_pixbuf = gdk_pixbuf_new_from_data(
+    (guchar*)buffer,                 /* data */
+    GDK_COLORSPACE_RGB,              /* colorspace */
+    FALSE,                           /* has_alpha */
+    8,                               /* bits_per_sample */
+    w, h,                            /* width, height */
+    w * 3,                           /* rowstride */
+    (GdkPixbufDestroyNotify)g_free,  /* destroy_fn */
+    NULL);                           /* destroy_fn_data */
+
+if (NULL == tmp_pixbuf)
+  {
+    free(buffer);
+    return(NULL);
+  }
+
+/* (from that point on, `tmp_pixbuf` will automatically free `buffer` for us) */
+
+gdk_pixbuf_render_pixmap_and_mask(tmp_pixbuf, &pixmap, NULL, 128);
+g_object_unref(tmp_pixbuf);
+
 gdk_flush();
 
 /* reuse image to draw scaled-down version for thin rows */
 
+small_buffer = malloc (small_w * small_h * sizeof (guint8) * 3);
+
+if (NULL == small_buffer) {
+    /* malloc failed */
+    g_object_unref(pixmap);
+    return NULL;
+}
 
 for(y=0;y<small_h;y++) {
   for(x=0;x<small_w;x++) {
-      buffer[3*(y*small_w + x)+0] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][0];
-      buffer[3*(y*small_w + x)+1] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][1];
-      buffer[3*(y*small_w + x)+2] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][2];
+      small_buffer[3*(y*small_w + x)+0] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][0];
+      small_buffer[3*(y*small_w + x)+1] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][1];
+      small_buffer[3*(y*small_w + x)+2] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][2];
   }
 }
 
-gdk_draw_rgb_image(small_pixmap,gtk_widget_get_style(clist)->white_gc,0,0,small_w, small_h,
-        GDK_RGB_DITHER_NORMAL,
-        (guchar*)buffer, small_w * 3);
+tmp_pixbuf = gdk_pixbuf_new_from_data(
+    (guchar*)small_buffer,           /* data */
+    GDK_COLORSPACE_RGB,              /* colorspace */
+    FALSE,                           /* has_alpha */
+    8,                               /* bits_per_sample */
+    small_w, small_h,                /* width, height */
+    small_w * 3,                     /* rowstride */
+    (GdkPixbufDestroyNotify)g_free,  /* destroy_fn */
+    NULL);                           /* destroy_fn_data */
+
+if (NULL == tmp_pixbuf)
+  {
+    g_object_unref(pixmap);
+    free(small_buffer);
+    return(NULL);
+  }
+
+gdk_pixbuf_render_pixmap_and_mask(tmp_pixbuf, &small_pixmap, NULL, 128);
+g_object_unref(tmp_pixbuf);
 
 *smallp=small_pixmap;
-
-if (NULL != buffer) {
-    free (buffer);
-}
 
 return(pixmap);
 }
