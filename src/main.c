@@ -330,22 +330,51 @@ return(ret);
 
 GtkAccelGroup *mainwin_accel_group;
 
-GtkItemFactory *make_menu(char *base,GtkItemFactoryEntry *menu_items,
-                          int num_items)
+GtkWidget *make_menu(
+    GtkUIManager *ui_manager,
+    char *name,
+    char *ui_description,
+    GtkActionEntry *entries,
+    int num_entries,
+    GtkToggleActionEntry *toggle_entries,
+    int num_toggle_entries,
+    GtkRadioActionEntry *radio1_entries,
+    int num_radio1_entries,
+    GCallback on_change1,
+    GtkRadioActionEntry *radio2_entries,
+    int num_radio2_entries,
+    GCallback on_change2)
 {
-GtkItemFactory *item_factory;
+  GtkActionGroup *action_group;
+  GtkWidget *menu;
+  GError *error = NULL;
+  GString *path;
 
-mainwin_accel_group=gtk_accel_group_new();
+  action_group = gtk_action_group_new(name);
+  gtk_action_group_add_actions(action_group, entries, num_entries, NULL);
+  if (toggle_entries)
+    gtk_action_group_add_toggle_actions(action_group, toggle_entries, num_toggle_entries, NULL);
+  if (radio1_entries)
+    gtk_action_group_add_radio_actions(action_group, radio1_entries, num_radio1_entries, -1, on_change1, NULL);
+  if (radio2_entries)
+    gtk_action_group_add_radio_actions(action_group, radio2_entries, num_radio2_entries, -1, on_change2, NULL);
 
-item_factory=gtk_item_factory_new(GTK_TYPE_MENU,base,mainwin_accel_group);
+  gtk_ui_manager_insert_action_group(ui_manager, action_group, 0);
 
-/* make menus */
-gtk_item_factory_create_items(item_factory,num_items,menu_items,NULL);
+  gtk_ui_manager_add_ui_from_string(ui_manager, ui_description, -1, &error);
+  if (error != NULL) {
+    fprintf(stderr, "building menus failed: %s", error->message);
+    g_error_free(error);
+    exit(1);
+  }
 
-/* add keys to window */
-gtk_window_add_accel_group(GTK_WINDOW(mainwin),mainwin_accel_group);
+  path = g_string_new(NULL);
+  g_string_printf(path, "/%s", name);
+  menu = gtk_ui_manager_get_widget(ui_manager, path->str);
+  g_string_free(path, TRUE);
+  g_assert(menu != NULL);
 
-return(item_factory);
+  return(menu);
 }
 
 
@@ -2243,43 +2272,16 @@ if(was_reading)
 
 
 
-void cb_name_order(void)
+void cb_set_order(GtkRadioAction *action, GtkRadioAction *current, gpointer user_data)
 {
-filesel_sorttype=sort_name;
-resort_finish();
+  filesel_sorttype = gtk_radio_action_get_current_value(current);
+  resort_finish();
 }
 
-void cb_ext_order(void)
+void cb_set_timestamp_type(GtkRadioAction *action, GtkRadioAction *current, gpointer user_data)
 {
-filesel_sorttype=sort_ext;
-resort_finish();
-}
-
-void cb_size_order(void)
-{
-filesel_sorttype=sort_size;
-resort_finish();
-}
-
-void cb_time_order(void)
-{
-filesel_sorttype=sort_time;
-resort_finish();
-}
-
-void cb_mtime_type(void)
-{
-sort_timestamp_type=0; resort_finish();
-}
-
-void cb_ctime_type(void)
-{
-sort_timestamp_type=1; resort_finish();
-}
-
-void cb_atime_type(void)
-{
-sort_timestamp_type=2; resort_finish();
+  sort_timestamp_type = gtk_radio_action_get_current_value(current);
+  resort_finish();
 }
 
 
@@ -3520,142 +3522,264 @@ void init_window(void)
  */
 GtkWidget *vboxl;
 GtkWidget *clist_sw_ebox;
-GtkItemFactory *selector_menu_factory,*viewer_menu_factory;
+GtkUIManager *ui_manager;
 GdkPixbuf *icon;
 char *ptr;
 GtkAllocation allocation, allocation2;
 
-/* selector right-button menu */
-static GtkItemFactoryEntry selector_menu_items[]=
-  {
-  /* menu path		key		callback     cb args	item type */
-  {"/_Update Thumbnails","u",		cb_update_tn,	0,	NULL},
-  {"/_Recursive Update","<alt>u",	cb_update_tn_recursive,0,NULL},
-  {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
-  {"/_File",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_File/_Open",	NULL,		view_focus_row_file, 0,	NULL},
-  {"/_File/_Details...","colon",	cb_file_details,0,	NULL},
-  {"/_File/Clo_se",	"<control>w",	cb_file_close,	0,	NULL},
-  {"/_File/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_File/_Copy...",	"<shift>c",	cb_copy_files,	0,	NULL},
-  {"/_File/_Move...",	"<shift>m",	cb_move_files,	0,	NULL},
-  {"/_File/_Rename file...","<control>n",cb_rename_file,0,	NULL},
-  {"/_File/De_lete file...","<control>d",cb_delete_file,0,	NULL},
-  {"/_File/sep2",	NULL,		NULL,		0,	"<Separator>"},
-  /* duplicate exit, as people will expect it here */
-  {"/_File/E_xit",	NULL,		gtk_main_quit,	0,	NULL},
-  {"/_Tagging",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Tagging/_Next Tagged","slash",	cb_selector_next_tagged,0,NULL},
-  {"/_Tagging/_Previous Tagged","question",cb_selector_prev_tagged,0,NULL},
-  {"/_Tagging/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Tagging/_Tag",	"equal",	cb_tag_file,	0,	NULL},
-  {"/_Tagging/_Untag",	"minus",	cb_untag_file,	0,	NULL},
-  {"/_Tagging/sep2",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Tagging/Tag _All","<alt>equal",	cb_tag_all,	0,	NULL},
-  {"/_Tagging/U_ntag All","<alt>minus",	cb_untag_all,	0,	NULL},
-  {"/_Tagging/T_oggle All","<alt>o",	cb_toggle_all,	0,	NULL},
-  {"/_Directory",	NULL,		NULL,		0,	"<Branch>"},
-  {"/_Directory/_Change...","<shift>g",	cb_goto_dir,	0,	NULL},
-  {"/_Directory/_Rescan","<control>r",	cb_reread_dir,	0,	NULL},
-  {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Directory/_Images Only","<alt>i",	cb_show_images,	0,	"<ToggleItem>"},
-  {"/_Directory/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Directory/Sort by _Name","<alt>n",cb_name_order,	0,	"<RadioItem>"},
-  {"/_Directory/Sort by _Extension","<alt>e",cb_ext_order,
-   0,"/Directory/Sort by Name"},
-  {"/_Directory/Sort by _Size","<alt>s",cb_size_order,
-   0,"/Directory/Sort by Name"},
-  {"/_Directory/Sort by Time & _Date","<alt>d",cb_time_order,
-   0,"/Directory/Sort by Name"},
-  {"/_Directory/Time & Date _Type",NULL,NULL,		0,	"<Branch>"},
-  {"/_Directory/Time & Date _Type/_Modification Time (mtime)",
-   "<alt><shift>m",
-   cb_mtime_type,0,"<RadioItem>"},
-  {"/_Directory/Time & Date _Type/Attribute _Change Time (ctime)",
-   "<alt><shift>c",
-   cb_ctime_type,0,"/Directory/Time & Date Type/Modification Time (mtime)"},
-  {"/_Directory/Time & Date _Type/_Access Time (atime)",
-   "<alt><shift>a",
-   cb_atime_type,0,"/Directory/Time & Date Type/Modification Time (mtime)"},
-  {"/_Options",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Options/_Auto Hide", "<alt>a",	toggle_auto_hide,1,    "<ToggleItem>"},
-  {"/_Options/_Status Bar", "<alt>b",	toggle_status,	1,     "<ToggleItem>"},
-  {"/_Options/Thumb_nail Msgs",
-   NULL,		toggle_tn_msgs,	1,     "<ToggleItem>"},
-  {"/_Options/_Thin Rows", "v",		toggle_thin_rows, 1,   "<ToggleItem>"},
-  {"/_Help",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Help/_Contents",  "F1",		cb_help_contents,0,	NULL},
-  {"/_Help/The _File Selector",NULL,	cb_help_selector,0,	NULL},
-  {"/_Help/_Index",	NULL,		cb_help_index,	0,	NULL},
-  {"/_Help/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Help/_About...",	NULL,		cb_help_about,	0,	NULL},
-  {"/sep2",		NULL,		NULL,		0,	"<Separator>"},
-  {"/E_xit xzgv",	"<control>q",	gtk_main_quit,	0,	NULL}
-  };
+GtkActionEntry selector_menu_entries[] = {
+  { "UpdateTN",          NULL, "_Update Thumbnails", "u",      NULL, G_CALLBACK(cb_update_tn) },
+  { "UpdateTNRecursive", NULL, "_Recursive Update",  "<alt>u", NULL, G_CALLBACK(cb_update_tn_recursive) },
 
-/* viewer right-button menu */
-static GtkItemFactoryEntry viewer_menu_items[]=
-  {
-  /* menu path		key		callback     cb args	item type */
-  {"/_Next Image",	"space",	cb_next_image,	0,	NULL},
-  {"/_Previous Image",	"b",		cb_prev_image,	0,	NULL},
-  {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
-  {"/_Tagging/_Tag then Next","<control>space",cb_tag_then_next,0,	NULL},
-  {"/_Tagging/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Tagging/_Next Tagged","slash",cb_viewer_next_tagged,0,	NULL},
-  {"/_Tagging/_Previous Tagged","question",cb_viewer_prev_tagged,0,NULL},
-  {"/_Scaling",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Scaling/_Normal",	"n",		cb_normal,	0,	NULL},
-  {"/_Scaling/_Double Scaling",	"d",		cb_scaling_double,0,	NULL},
-  {"/_Scaling/_Halve Scaling",	"<shift>d",	cb_scaling_halve,0,	NULL},
-  {"/_Scaling/_Add 1 to Scaling","s",		cb_scaling_add,	0,	NULL},
-  {"/_Scaling/_Sub 1 from Scaling","<shift>s",	cb_scaling_sub,	0,	NULL},
-  {"/_Scaling/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Scaling/_X Only/_Double Scaling",	"x",	cb_xscaling_double,0,	NULL},
-  {"/_Scaling/_X Only/_Halve Scaling","<shift>x",cb_xscaling_halve,0,	NULL},
-  {"/_Scaling/_X Only/_Add 1 to Scaling","<alt>x",cb_xscaling_add,0,	NULL},
-  {"/_Scaling/_X Only/_Sub 1 from Scaling","<alt><shift>x",
-   cb_xscaling_sub,0,	NULL},
-  {"/_Scaling/_Y Only/_Double Scaling",	"y",	cb_yscaling_double,0,	NULL},
-  {"/_Scaling/_Y Only/_Halve Scaling","<shift>y",cb_yscaling_halve,0,	NULL},
-  {"/_Scaling/_Y Only/_Add 1 to Scaling","<alt>y",cb_yscaling_add,0,	NULL},
-  {"/_Scaling/_Y Only/_Sub 1 from Scaling","<alt><shift>y",
-   cb_yscaling_sub,0,	NULL},
-  {"/O_rientation",	NULL,		NULL,		0,	"<Branch>"},
-  {"/O_rientation/_Normal","<shift>n",	cb_normal_orient,0,	NULL},
-  {"/O_rientation/_Mirror (horiz)","m",	cb_mirror,	0,	NULL},
-  {"/O_rientation/_Flip (vert)","f",	cb_flip,	0,	NULL},
-  {"/O_rientation/_Rotate Right","r",	cb_rot_cw,	0,	NULL},
-  {"/O_rientation/Rotate _Left","<shift>r",cb_rot_acw,	0,	NULL},
-  {"/_Window",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Window/_Hide Selector","<shift>z",cb_hide_selector,0,	NULL},
-  /* I would normally write `minimise', but it looks a bit odd and the -ize
-   * spelling is entrenched, so I'll live with it. :-) */
-  {"/_Window/_Minimize",	"<control>z",	cb_iconify,	0,	NULL},
-  {"/_Options",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Options/_Zoom (fit to window)","z",toggle_zoom,	1,     "<ToggleItem>"},
-  {"/_Options/When Zooming _Reduce Only","<alt>r",
-   toggle_zoom_reduce,1,  "<ToggleItem>"},
-  {"/_Options/When Zooming _Panorama","<alt>p",
-   toggle_zoom_panorama,1,  "<ToggleItem>"},
-  {"/_Options/_Interpolate when Scaling","i",toggle_interp,1,  "<ToggleItem>"},
-  {"/_Options/_Ctl+Click Scales X Axis","<alt>c",
-   toggle_mouse_x,	1,	"<ToggleItem>"},
-  {"/_Options/Use _Exif Orientation",NULL,toggle_exif_orient,1, "<ToggleItem>"},
-  {"/_Options/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Options/Revert _Scaling For New Pic",NULL,
-   toggle_revert,	1,	"<ToggleItem>"},
-  {"/_Options/Revert _Orient. For New Pic",NULL,
-   toggle_revert_orient,1,	"<ToggleItem>"},
-  {"/_Help",		NULL,		NULL,		0,	"<Branch>"},
-  {"/_Help/_Contents",  "F1",		cb_help_contents,0,	NULL},
-  {"/_Help/The _Viewer",NULL,		cb_help_viewer,	0,	NULL},
-  {"/_Help/_Index",	NULL,		cb_help_index,	0,	NULL},
-  {"/_Help/sep1",	NULL,		NULL,		0,	"<Separator>"},
-  {"/_Help/_About...",	NULL,		cb_help_about,	0,	NULL},
-  {"/sep2",		NULL,		NULL,		0,	"<Separator>"},
-  {"/E_xit to Selector","Escape",	cb_back_to_clist, 0,	NULL}
-  };
+  { "FileMenu", NULL, "_File" },
+  { "Open",     NULL, "_Open",           NULL,         NULL, G_CALLBACK(view_focus_row_file) },
+  { "Details",  NULL, "_Details...",     "colon",      NULL, G_CALLBACK(cb_file_details) },
+  { "Close",    NULL, "Clo_se",          "<control>w", NULL, G_CALLBACK(cb_file_close) },
+  { "Copy",     NULL, "_Copy...",        "<shift>c",   NULL, G_CALLBACK(cb_copy_files) },
+  { "Move",     NULL, "_Move...",        "<shift>m",   NULL, G_CALLBACK(cb_move_files) },
+  { "Rename",   NULL, "_Rename file...", "<control>n", NULL, G_CALLBACK(cb_rename_file) },
+  { "Delete",   NULL, "De_lete file...", "<control>d", NULL, G_CALLBACK(cb_delete_file) },
+
+  { "TaggingMenu",  NULL, "_Tagging" },
+  { "sNextTagged",  NULL, "_Next Tagged",     "slash",      NULL, G_CALLBACK(cb_selector_next_tagged) },
+  { "sPrevTagged",  NULL, "_Previous Tagged", "question",   NULL, G_CALLBACK(cb_selector_prev_tagged) },
+  { "Tag",          NULL, "_Tag",             "equal",      NULL, G_CALLBACK(cb_tag_file) },
+  { "Untag",        NULL, "_Untag",           "minus",      NULL, G_CALLBACK(cb_untag_file) },
+  { "TagAll",       NULL, "Tag _All",         "<alt>equal", NULL, G_CALLBACK(cb_tag_all) },
+  { "UntagAll",     NULL, "U_ntag All",       "<alt>minus", NULL, G_CALLBACK(cb_untag_all) },
+  { "ToggleAll",    NULL, "T_oggle All",      "<alt>o",     NULL, G_CALLBACK(cb_toggle_all) },
+
+  { "DirectoryMenu", NULL, "_Directory" },
+  { "ChangeDir",     NULL, "_Change...",           "<shift>g",   NULL, G_CALLBACK(cb_goto_dir) },
+  { "RescanDir",     NULL, "_Rescan",              "<control>r", NULL, G_CALLBACK(cb_reread_dir) },
+
+  { "DatetimeTypeMenu", NULL, "Time & Date _Type" },
+
+  { "sOptionsMenu", NULL, "_Options" },
+
+  { "HelpMenu",     NULL, "_Help" },
+  { "HelpContents", NULL, "_Contents",          "F1", NULL, G_CALLBACK(cb_help_contents) },
+  { "HelpSelector", NULL, "The _File Selector", NULL, NULL, G_CALLBACK(cb_help_selector) },
+  { "HelpIndex",    NULL, "_Index",             NULL, NULL, G_CALLBACK(cb_help_index) },
+  { "About",        NULL, "_About...",          NULL, NULL, G_CALLBACK(cb_help_about) },
+
+  { "Exit", NULL, "E_xit xzgv", "<control>q", NULL, gtk_main_quit }
+};
+
+GtkToggleActionEntry selector_menu_toggle_entries[] = {
+  { "ImagesOnly",    NULL, "_Images Only",    "<alt>i", NULL, G_CALLBACK(cb_show_images),   FALSE },
+  { "AutoHide",      NULL, "_Auto Hide",      "<alt>a", NULL, G_CALLBACK(toggle_auto_hide), FALSE },
+  { "StatusBar",     NULL, "_Status Bar",     "<alt>b", NULL, G_CALLBACK(toggle_status),    FALSE },
+  { "ThumbnailMsgs", NULL, "Thumb_nail Msgs", NULL,     NULL, G_CALLBACK(toggle_tn_msgs),   FALSE },
+  { "ThinRows",      NULL, "_Thin Rows",      "v",      NULL, G_CALLBACK(toggle_thin_rows), FALSE }
+};
+
+GtkRadioActionEntry selector_menu_sort_radio_entries[] = {
+  { "SortByName",  NULL, "Sort by _Name",        "<alt>n", NULL, sort_name },
+  { "SortByExt",   NULL, "Sort by _Extension",   "<alt>e", NULL, sort_ext },
+  { "SortBySize",  NULL, "Sort by _Size",        "<alt>s", NULL, sort_size },
+  { "SortByTime",  NULL, "Sort by Time & _Date", "<alt>d", NULL, sort_time }
+};
+
+GtkRadioActionEntry selector_menu_datetime_radio_entries[] = {
+  { "DatetimeMtime", NULL, "_Modification Time (mtime)",     "<alt><shift>m", NULL, 0 },
+  { "DatetimeCtime", NULL, "Attribute _Change Time (ctime)", "<alt><shift>c", NULL, 1 },
+  { "DatetimeAtime", NULL, "_Access Time (atime)",           "<alt><shift>a", NULL, 2 }
+};
+
+char *selector_menu_ui =
+"<ui>"
+"  <popup name='SelectorMenu'>"
+"    <menuitem action='UpdateTN' />"
+"    <menuitem action='UpdateTNRecursive' />"
+"    <separator />"
+"    <menu action='FileMenu'>"
+"      <menuitem action='Open' />"
+"      <menuitem action='Details' />"
+"      <menuitem action='Close' />"
+"      <separator />"
+"      <menuitem action='Copy' />"
+"      <menuitem action='Move' />"
+"      <menuitem action='Rename' />"
+"      <menuitem action='Delete' />"
+"      <separator />"
+"      <!-- duplicate exit, as people will expect it here -->"
+"      <menuitem action='Exit' />"
+"    </menu>"
+"    <menu action='TaggingMenu'>"
+"      <menuitem action='sNextTagged' />"
+"      <menuitem action='sPrevTagged' />"
+"      <separator />"
+"      <menuitem action='Tag' />"
+"      <menuitem action='Untag' />"
+"      <separator />"
+"      <menuitem action='TagAll' />"
+"      <menuitem action='UntagAll' />"
+"      <menuitem action='ToggleAll' />"
+"    </menu>"
+"    <menu action='DirectoryMenu'>"
+"      <menuitem action='ChangeDir' />"
+"      <menuitem action='RescanDir' />"
+"      <separator />"
+"      <menuitem action='ImagesOnly' />"
+"      <separator />"
+"      <menuitem action='SortByName' />"
+"      <menuitem action='SortByExt' />"
+"      <menuitem action='SortBySize' />"
+"      <menuitem action='SortByTime' />"
+"      <menu action='DatetimeTypeMenu'>"
+"        <menuitem action='DatetimeMtime' />"
+"        <menuitem action='DatetimeCtime' />"
+"        <menuitem action='DatetimeAtime' />"
+"      </menu>"
+"    </menu>"
+"    <menu action='sOptionsMenu'>"
+"      <menuitem action='AutoHide' />"
+"      <menuitem action='StatusBar' />"
+"      <menuitem action='ThumbnailMsgs' />"
+"      <menuitem action='ThinRows' />"
+"    </menu>"
+"    <menu action='HelpMenu'>"
+"      <menuitem action='HelpContents' />"
+"      <menuitem action='HelpSelector' />"
+"      <menuitem action='HelpIndex' />"
+"      <separator />"
+"      <menuitem action='About' />"
+"    </menu>"
+"    <menuitem action='Exit' />"
+"  </popup>"
+"</ui>";
+
+
+GtkActionEntry viewer_menu_entries[] = {
+
+  { "NextImage", NULL, "_Next Image",     "space", NULL, G_CALLBACK(cb_next_image) },
+  { "PrevImage", NULL, "_Previous Image", "b",     NULL, G_CALLBACK(cb_prev_image) },
+
+  { "TaggingMenu", NULL, "_Tagging" },
+  { "TagThenNext", NULL, "_Tag then Next",   "<control>space", NULL, G_CALLBACK(cb_tag_then_next) },
+  { "vNextTagged", NULL, "_Next Tagged",     "slash",          NULL, G_CALLBACK(cb_viewer_next_tagged) },
+  { "vPrevTagged", NULL, "_Previous Tagged", "question",       NULL, G_CALLBACK(cb_viewer_prev_tagged) },
+
+  { "ScalingMenu",   NULL, "_Scaling" },
+  { "NormalScaling", NULL, "_Normal",               "n",        NULL, G_CALLBACK(cb_normal) },
+  { "DoubleScaling", NULL, "_Double Scaling",       "d",        NULL, G_CALLBACK(cb_scaling_double) },
+  { "HalveScaling",  NULL, "_Halve Scaling",        "<shift>d", NULL, G_CALLBACK(cb_scaling_halve) },
+  { "AddScaling",    NULL, "_Add 1 to Scaling",     "s",        NULL, G_CALLBACK(cb_scaling_add) },
+  { "SubScaling",    NULL, "_Sub 1 from Scaling",   "<shift>s", NULL, G_CALLBACK(cb_scaling_sub) },
+
+  { "XScalingMenu",   NULL, "_X Only" },
+  { "DoubleXScaling", NULL, "_Double Scaling",     "x",             NULL, G_CALLBACK(cb_xscaling_double) },
+  { "HalveXScaling",  NULL, "_Halve Scaling",      "<shift>x",      NULL, G_CALLBACK(cb_xscaling_halve) },
+  { "AddXScaling",    NULL, "_Add 1 to Scaling",   "<alt>x",        NULL, G_CALLBACK(cb_xscaling_add) },
+  { "SubXScaling",    NULL, "_Sub 1 from Scaling", "<alt><shift>x", NULL, G_CALLBACK(cb_xscaling_sub) },
+  { "YScalingMenu",   NULL, "_Y Only" },
+  { "DoubleYScaling", NULL, "_Double Scaling",     "y",             NULL, G_CALLBACK(cb_yscaling_double) },
+  { "HalveYScaling",  NULL, "_Halve Scaling",      "<shift>y",      NULL, G_CALLBACK(cb_yscaling_halve) },
+  { "AddYScaling",    NULL, "_Add 1 to Scaling",   "<alt>y",        NULL, G_CALLBACK(cb_yscaling_add) },
+  { "SubYScaling",    NULL, "_Sub 1 from Scaling", "<alt><shift>y", NULL, G_CALLBACK(cb_yscaling_sub) },
+
+  { "OrientationMenu", NULL, "O_rientation" },
+  { "Normal",          NULL, "_Normal",         "<shift>n", NULL, G_CALLBACK(cb_normal_orient) },
+  { "Mirror",          NULL, "_Mirror (horiz)", "m",        NULL, G_CALLBACK(cb_mirror) },
+  { "Flip",            NULL, "_Flip (vert)",    "f",        NULL, G_CALLBACK(cb_flip) },
+  { "RotateRight",     NULL, "_Rotate Right",   "r",        NULL, G_CALLBACK(cb_rot_cw) },
+  { "RotateLeft",      NULL, "Rotate _Left",    "<shift>r", NULL, G_CALLBACK(cb_rot_acw) },
+
+  { "WindowMenu",   NULL, "_Window" },
+  { "HideSelector", NULL, "_Hide Selector", "<shift>z",   NULL, G_CALLBACK(cb_hide_selector) },
+  { "Minimize",     NULL, "_Minimize",      "<control>z", NULL, G_CALLBACK(cb_iconify) },
+
+  { "vOptionsMenu",   NULL, "_Options" },
+
+  { "HelpMenu",     NULL, "_Help" },
+  { "HelpContents", NULL, "_Contents",   "F1",  NULL, G_CALLBACK(cb_help_contents) },
+  { "HelpViewer",   NULL, "The _Viewer", NULL,  NULL, G_CALLBACK(cb_help_viewer) },
+  { "HelpIndex",    NULL, "_Index",      NULL,  NULL, G_CALLBACK(cb_help_index) },
+  { "About",        NULL, "_About...",   NULL,  NULL, G_CALLBACK(cb_help_about) },
+
+  { "ExitToSelector", NULL, "E_xit to Selector", "Escape", NULL, G_CALLBACK(cb_back_to_clist) }
+};
+
+GtkToggleActionEntry viewer_menu_toggle_entries[] = {
+  { "Zoom",          NULL, "_Zoom (fit to window)",       "z",        NULL, G_CALLBACK(toggle_zoom),          FALSE },
+  { "ReduceOnly",    NULL, "When Zooming _Reduce Only",   "<alt>r",   NULL, G_CALLBACK(toggle_zoom_reduce),   FALSE },
+  { "Panorama",      NULL, "When Zooming _Panorama",      "<alt>p",   NULL, G_CALLBACK(toggle_zoom_panorama), FALSE },
+  { "Interpolate",   NULL, "_Interpolate when Scaling",   "i",        NULL, G_CALLBACK(toggle_interp),        FALSE },
+  { "MouseX",        NULL, "_Ctl+Click Scales X Axis",    "<alt>c",   NULL, G_CALLBACK(toggle_mouse_x),       FALSE },
+  { "UseExif",       NULL, "Use _Exif Orientation",       NULL,       NULL, G_CALLBACK(toggle_exif_orient),   FALSE },
+  { "RevertScaling", NULL, "Revert _Scaling For New Pic", NULL,       NULL, G_CALLBACK(toggle_revert),        FALSE },
+  { "RevertOrient",  NULL, "Revert _Orient. For New Pic", NULL,       NULL, G_CALLBACK(toggle_revert_orient), FALSE }
+};
+
+char *viewer_menu_ui =
+"<ui>"
+"  <popup name='ViewerMenu'>"
+"    <menuitem action='NextImage' />"
+"    <menuitem action='PrevImage' />"
+"    <separator />"
+"    <menu action='TaggingMenu'>"
+"      <menuitem action='TagThenNext' />"
+"      <separator />"
+"      <menuitem action='vNextTagged' />"
+"      <menuitem action='vPrevTagged' />"
+"    </menu>"
+"    <menu action='ScalingMenu'>"
+"      <menuitem action='NormalScaling' />"
+"      <menuitem action='DoubleScaling' />"
+"      <menuitem action='HalveScaling' />"
+"      <menuitem action='AddScaling' />"
+"      <menuitem action='SubScaling' />"
+"      <separator />"
+"      <menu action='XScalingMenu'>"
+"        <menuitem action='DoubleXScaling' />"
+"        <menuitem action='HalveXScaling' />"
+"        <menuitem action='AddXScaling' />"
+"        <menuitem action='SubXScaling' />"
+"      </menu>"
+"      <menu action='YScalingMenu'>"
+"        <menuitem action='DoubleYScaling' />"
+"        <menuitem action='HalveYScaling' />"
+"        <menuitem action='AddYScaling' />"
+"        <menuitem action='SubYScaling' />"
+"      </menu>"
+"    </menu>"
+"    <menu action='OrientationMenu'>"
+"      <menuitem action='Normal' />"
+"      <menuitem action='Mirror' />"
+"      <menuitem action='Flip' />"
+"      <menuitem action='RotateRight' />"
+"      <menuitem action='RotateLeft' />"
+"    </menu>"
+"    <menu action='WindowMenu'>"
+"      <menuitem action='HideSelector' />"
+"      <menuitem action='Minimize' />"
+"    </menu>"
+"    <menu action='vOptionsMenu'>"
+"      <menuitem action='Zoom' />"
+"      <menuitem action='ReduceOnly' />"
+"      <menuitem action='Panorama' />"
+"      <menuitem action='Interpolate' />"
+"      <menuitem action='MouseX' />"
+"      <menuitem action='UseExif' />"
+"      <separator />"
+"      <menuitem action='RevertScaling' />"
+"      <menuitem action='RevertOrient' />"
+"    </menu>"
+"    <menu action='HelpMenu'>"
+"      <menuitem action='HelpContents' />"
+"      <menuitem action='HelpViewer' />"
+"      <menuitem action='HelpIndex' />"
+"      <separator />"
+"      <menuitem action='About' />"
+"    </menu>"
+"    <separator />"
+"    <menuitem action='ExitToSelector' />"
+"  </popup>"
+"</ui>";
+
+
+ui_manager = gtk_ui_manager_new();
 
 
 mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -3666,6 +3790,10 @@ g_signal_connect(mainwin,"destroy",
 set_title(!hidden);
 
 set_window_pos_and_size();
+
+/* add keys to window */
+mainwin_accel_group = gtk_ui_manager_get_accel_group(ui_manager);
+gtk_window_add_accel_group(GTK_WINDOW(mainwin),mainwin_accel_group);
 
 
 pane=gtk_hpaned_new();
@@ -3679,10 +3807,16 @@ gtk_widget_show(pane);
 /* the drawing area used for the pic */
 drawing_area=gtk_drawing_area_new();
 gtk_widget_set_can_focus(drawing_area,TRUE);
-viewer_menu_factory=make_menu("<main>",viewer_menu_items,
-                              sizeof(viewer_menu_items)/sizeof(
-                                viewer_menu_items[0]));
-viewer_menu=gtk_item_factory_get_widget(viewer_menu_factory,"<main>");
+viewer_menu = make_menu(ui_manager,
+    "ViewerMenu",
+    viewer_menu_ui,
+    viewer_menu_entries,
+    sizeof(viewer_menu_entries)/sizeof(viewer_menu_entries[0]),
+    viewer_menu_toggle_entries,
+    sizeof(viewer_menu_toggle_entries)/sizeof(viewer_menu_toggle_entries[0]),
+    NULL, 0, NULL,
+    NULL, 0, NULL
+    );
 
 g_signal_connect(drawing_area,"motion_notify_event",
                    G_CALLBACK(viewer_motion),NULL);
@@ -3792,10 +3926,20 @@ gtk_clist_set_sort_column(GTK_CLIST(clist),SELECTOR_NAME_COL);
 gtk_container_add(GTK_CONTAINER(sw_for_clist),clist);
 
 /* menu stuff */
-selector_menu_factory=make_menu("<main>",selector_menu_items,
-                                sizeof(selector_menu_items)/sizeof(
-                                  selector_menu_items[0]));
-selector_menu=gtk_item_factory_get_widget(selector_menu_factory,"<main>");
+selector_menu = make_menu(ui_manager,
+    "SelectorMenu",
+    selector_menu_ui,
+    selector_menu_entries,
+    sizeof(selector_menu_entries)/sizeof(selector_menu_entries[0]),
+    selector_menu_toggle_entries,
+    sizeof(selector_menu_toggle_entries)/sizeof(selector_menu_toggle_entries[0]),
+    selector_menu_sort_radio_entries,
+    sizeof(selector_menu_sort_radio_entries)/sizeof(selector_menu_sort_radio_entries[0]),
+    G_CALLBACK(cb_set_order),
+    selector_menu_datetime_radio_entries,
+    sizeof(selector_menu_datetime_radio_entries)/sizeof(selector_menu_datetime_radio_entries[0]),
+    G_CALLBACK(cb_set_timestamp_type)
+    );
 
 g_signal_connect(clist,"button_press_event",
                    G_CALLBACK(selector_button_press),NULL);
@@ -3824,99 +3968,99 @@ if(!have_statusbar)
 /* fix menu options to reflect current status */
 switch(filesel_sorttype)
   {
-  case sort_name:	ptr="<main>/Directory/Sort by Name"; break;
-  case sort_ext:	ptr="<main>/Directory/Sort by Extension"; break;
-  case sort_size:	ptr="<main>/Directory/Sort by Size"; break;
+  case sort_name:	ptr="/SelectorMenu/DirectoryMenu/SortByName"; break;
+  case sort_ext:	ptr="/SelectorMenu/DirectoryMenu/SortByExt"; break;
+  case sort_size:	ptr="/SelectorMenu/DirectoryMenu/SortBySize"; break;
   default:
-    /* sort_time */	ptr="<main>/Directory/Sort by Time & Date"; break;
+    /* sort_time */	ptr="/SelectorMenu/DirectoryMenu/SortByTime"; break;
   }
 gtk_check_menu_item_set_active(
-  &(GTK_RADIO_MENU_ITEM(gtk_item_factory_get_widget(
-    selector_menu_factory,ptr))->check_menu_item),TRUE);
+  GTK_CHECK_MENU_ITEM(gtk_ui_manager_get_widget(
+    ui_manager,ptr)),TRUE);
 
 switch(sort_timestamp_type)
   {
-  default: ptr="<main>/Directory/Time & Date Type/"
-             "Modification Time (mtime)"; break;
-  case 1:  ptr="<main>/Directory/Time & Date Type/"
-             "Attribute Change Time (ctime)"; break;
-  case 2:  ptr="<main>/Directory/Time & Date Type/"
-             "Access Time (atime)"; break;
+  default: ptr="/SelectorMenu/DirectoryMenu/DatetimeTypeMenu/"
+             "DatetimeMtime"; break;
+  case 1:  ptr="/SelectorMenu/DirectoryMenu/DatetimeTypeMenu/"
+             "DatetimeCtime"; break;
+  case 2:  ptr="/SelectorMenu/DirectoryMenu/DatetimeTypeMenu/"
+             "DatetimeAtime"; break;
   }
 gtk_check_menu_item_set_active(
-  &(GTK_RADIO_MENU_ITEM(gtk_item_factory_get_widget(
-    selector_menu_factory,ptr))->check_menu_item),TRUE);
+  GTK_CHECK_MENU_ITEM(gtk_ui_manager_get_widget(
+    ui_manager,ptr)),TRUE);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Options/Auto Hide")),auto_hide);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/sOptionsMenu/AutoHide")),auto_hide);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Options/Status Bar")),have_statusbar);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/sOptionsMenu/StatusBar")),have_statusbar);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Options/Thumbnail Msgs")),tn_msgs);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/sOptionsMenu/ThumbnailMsgs")),tn_msgs);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Options/Thin Rows")),thin_rows);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/sOptionsMenu/ThinRows")),thin_rows);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Directory/Images Only")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/DirectoryMenu/ImagesOnly")),
   show_images_only);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/When Zooming Reduce Only")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/ReduceOnly")),
   zoom_reduce_only);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/When Zooming Panorama")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/Panorama")),
   zoom_panorama);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/Interpolate when Scaling")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/Interpolate")),
   interp);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/Ctl+Click Scales X Axis")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/MouseX")),
   mouse_scale_x);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/Revert Orient. For New Pic")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/RevertOrient")),
   revert_orient);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/Revert Scaling For New Pic")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/RevertScaling")),
   revert);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/Use Exif Orientation")),
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/UseExif")),
   use_exif_orient);
 
-zoom_widget=gtk_item_factory_get_widget(viewer_menu_factory,
-                                        "<main>/Options/Zoom (fit to window)");
+zoom_widget=gtk_ui_manager_get_widget(ui_manager,
+                                        "/ViewerMenu/vOptionsMenu/Zoom");
 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(zoom_widget),zoom);
 
 /* disable thumbnail update and `thumbnail msgs' option if sel initially
@@ -3928,32 +4072,32 @@ gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(zoom_widget),zoom);
 if(hidden)
   {
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Update Thumbnails"),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/UpdateTN"),FALSE);
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Recursive Update"),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/UpdateTNRecursive"),FALSE);
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/File/Rename file..."),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/FileMenu/Rename"),FALSE);
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Directory/Change..."),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/DirectoryMenu/ChangeDir"),FALSE);
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Directory/Rescan"),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/DirectoryMenu/RescanDir"),FALSE);
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Options/Thumbnail Msgs"),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/sOptionsMenu/ThumbnailMsgs"),FALSE);
   gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(selector_menu_factory,
-                                "<main>/Options/Thin Rows"),FALSE);
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/sOptionsMenu/ThinRows"),FALSE);
   }
 
 /* hook up an alternative quit key (q) */
 gtk_widget_add_accelerator(
-  gtk_item_factory_get_widget(selector_menu_factory,
-                              "<main>/Exit xzgv"),
+  gtk_ui_manager_get_widget(ui_manager,
+                              "/SelectorMenu/Exit"),
   "activate",mainwin_accel_group,
   GDK_KEY_q,0,0);
 
