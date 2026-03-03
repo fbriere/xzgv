@@ -149,62 +149,6 @@ public_info_update(image);
 }
 
 
-/* create an image from RGB data, given width and height.
- * This version should do so *non-destructively*, by making a copy of
- * the data - the data passed to it should be left intact (and if it was
- * malloced, will need to later be freed by the caller).
- */
-xzgv_image *backend_create_image_from_data(unsigned char *rgb,int w,int h)
-{
-unsigned char *rgbcopy;
-
-/* no non-destructive version, so copy and use destructive one */
-if((rgbcopy=malloc(w*h*3))==NULL)
-  return(NULL);
-
-memcpy(rgbcopy,rgb,w*h*3);
-return(backend_create_image_from_data_destructively(rgbcopy,w,h));
-}
-
-
-/* create an image from RGB data, *destructively*.
- * This takes over the rgb data passed to it, such that a) the caller
- * should NOT free it, and b) the data may change (probably not now,
- * but perhaps later if we do a flip or something).
- *
- * *On error, the rgb data must be freed.* This is, after all, meant
- * to be destructive, such that the caller need not care about the
- * rgb data after. It also means that the rgb data MUST have been
- * malloced... :-)
- *
- * Obviously this version should be faster if the backend supports it;
- * if not, call backend_create_image_from_data() then free().
- */
-xzgv_image *backend_create_image_from_data_destructively(unsigned char *rgb,
-                                                         int w,int h)
-{
-GdkPixbuf *backim;
-xzgv_image *im;
-
-if((im=malloc(sizeof(xzgv_image)))==NULL)
-  return(NULL);
-
-if((backim=gdk_pixbuf_new_from_data(rgb,GDK_COLORSPACE_RGB,FALSE,8,
-                                    w,h,w*3,
-                                    (GdkPixbufDestroyNotify)free,NULL))==NULL)
-  {
-  free(im);
-  free(rgb);	/* since it failed */
-  return(NULL);
-  }
-
-backend_image_init(im);
-im->backend_image=backim;
-public_info_update(im);
-
-return(im);
-}
-
 int backend_get_orientation_from_file(char *filename)
 {
 GdkPixbufFormat *imform;
@@ -259,26 +203,6 @@ im->backend_image=backim;
 public_info_update(im);
 
 return(im);
-}
-
-
-/* render image at (x,y) in window (at actual size).
- * This is a fairly high-level one, but most backends will probably
- * support it, and xzgv does need it.
- * It should not leave any random pixmaps lying around. :-)
- */
-void backend_render_image_into_window(xzgv_image *image,GdkWindow *win,
-                                      int x,int y)
-{
-/* XXX this assumes only one window is rendered into */
-static GdkGC *gc=NULL;
-
-if(!gc)
-  gc=gdk_gc_new(win);
-
-gdk_draw_pixbuf(win,gc,BACKEND_IMAGE(image),
-                0,0,x,y,image->w,image->h,
-                dither_type,0,0);
 }
 
 
@@ -389,27 +313,6 @@ void backend_get_closest_colour(GdkColor *col)
 /* this seems to be the closest I can manage */
 col->pixel=gdk_rgb_xpixel_from_rgb(
   (guint32)(((col->red>>8)<<16)|(col->green&0xff00)|(col->blue>>8)));
-}
-
-
-/* return visual currently being used.
- * should be able to use GDK call for this if need be, but this
- * call gives you the option to get it right for sure. :-)
- */
-GdkVisual *backend_get_visual(void)
-{
-return(gdk_rgb_get_visual());
-}
-
-
-/* set value mapping to apply to all three colour channels when
- * rendering. While image *is* an arg here, a global setting would
- * be sufficient as long as it doesn't mangle already-rendered
- * pixmaps.
- */
-void backend_set_value_mapping(xzgv_image *image,unsigned char *map)
-{
-/* XXX GDK seems not to have this. */
 }
 
 
