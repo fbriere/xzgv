@@ -39,7 +39,6 @@ extern int backend_get_interp(void);
 extern void backend_set_interp(int on);
 
 extern void backend_get_closest_colour(GdkColor *col);
-extern GdkVisual *backend_get_visual(void);
 
 extern int backend_create_pixmap_from_xpm_data(const char **data,
                                                GdkPixmap **pixmap,

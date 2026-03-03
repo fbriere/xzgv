@@ -309,16 +309,6 @@ col->pixel=gdk_rgb_xpixel_from_rgb(
 }
 
 
-/* return visual currently being used.
- * should be able to use GDK call for this if need be, but this
- * call gives you the option to get it right for sure. :-)
- */
-GdkVisual *backend_get_visual(void)
-{
-return(gdk_rgb_get_visual());
-}
-
-
 /* a fairly high-level one, which is unfortunately required:
  *
  * read XPM data from string array and render into pixmap, also returning
