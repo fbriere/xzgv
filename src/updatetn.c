@@ -269,8 +269,8 @@ GtkWidget *progbar,*button;
 update_tn_win=*update_tn_win_ret=gtk_dialog_new();
 
 /* set returned pointer to NULL when destroyed */
-gtk_signal_connect(GTK_OBJECT(update_tn_win),"destroy",
-                   GTK_SIGNAL_FUNC(gtk_widget_destroyed),
+g_signal_connect(update_tn_win,"destroy",
+                   G_CALLBACK(gtk_widget_destroyed),
                    update_tn_win_ret);
 
 gtk_container_set_border_width(
@@ -292,9 +292,9 @@ gtk_widget_show(progbar);
 button=gtk_button_new_with_label("Cancel");
 gtk_box_pack_start(GTK_BOX(GTK_DIALOG(update_tn_win)->action_area),
                    button,TRUE,TRUE,2);
-gtk_signal_connect_object(GTK_OBJECT(button),"clicked",
-                          GTK_SIGNAL_FUNC(gtk_widget_destroy),
-                          GTK_OBJECT(update_tn_win));
+g_signal_connect_swapped(button,"clicked",
+                          G_CALLBACK(gtk_widget_destroy),
+                          update_tn_win);
 gtk_widget_grab_focus(button);
 gtk_widget_show(button);
 

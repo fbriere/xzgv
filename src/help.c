@@ -59,9 +59,9 @@ gtk_widget_show(action_tbl);
 
 button=gtk_button_new_with_label("Ok");
 gtk_table_attach_defaults(GTK_TABLE(action_tbl),button, 1,2, 0,1);
-gtk_signal_connect_object(GTK_OBJECT(button),"clicked",
-                          GTK_SIGNAL_FUNC(gtk_widget_destroy),
-                          GTK_OBJECT(about_win));
+g_signal_connect_swapped(button,"clicked",
+                          G_CALLBACK(gtk_widget_destroy),
+                          about_win);
 gtk_widget_grab_focus(button);
 gtk_widget_show(button);
 
