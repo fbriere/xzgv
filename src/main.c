@@ -556,7 +556,7 @@ int row,col;
 
 if(ignore_selector_input)
   {
-  gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"button_press_event");
+  g_signal_stop_emission_by_name(widget, "button_press_event");
   return(TRUE);
   }
 
@@ -576,7 +576,7 @@ switch(event->button)
     if(event->state&GDK_CONTROL_MASK)
       {
       /* stop the clist widget seeing it */
-      gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"button_press_event");
+      g_signal_stop_emission_by_name(widget, "button_press_event");
       return(TRUE);	/* otherwise ignored, we do it on release */
       }
     break;
@@ -604,7 +604,7 @@ int row,col;
 
 if(ignore_selector_input)
   {
-  gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"button_release_event");
+  g_signal_stop_emission_by_name(widget, "button_release_event");
   return(TRUE);
   }
 
@@ -874,7 +874,7 @@ static int here=0;
 if(here)
   {
   /* stop the event to avoid weirdness */
-  gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"key_press_event");
+  g_signal_stop_emission_by_name(widget, "key_press_event");
   return(TRUE);
   }
 
@@ -1025,7 +1025,7 @@ switch(event->keyval)
  * in that case, the selector still accepts focus, so (e.g.) pressing
  * down wouldn't work properly.
  */
-gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"key_press_event");
+g_signal_stop_emission_by_name(widget, "key_press_event");
 
 RECURSE_PROTECT_END;
 return(TRUE);
@@ -1107,7 +1107,7 @@ static int here=0;
 if(here || ignore_selector_input)
   {
   /* stop the event to avoid weirdness */
-  gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"key_press_event");
+  g_signal_stop_emission_by_name(widget, "key_press_event");
   return(TRUE);
   }
 
@@ -1296,7 +1296,7 @@ else
   }
 
 /* if we handled it, stop anything else getting the event. */
-gtk_signal_emit_stop_by_name(GTK_OBJECT(widget),"key_press_event");
+g_signal_stop_emission_by_name(widget, "key_press_event");
 
 RECURSE_PROTECT_END;
 return(TRUE);
@@ -2207,9 +2207,9 @@ if(datptr)
   if(current_selection!=-1)
     {
     /* block selection handler while selecting it, so we don't reload pic! */
-    gtk_signal_handler_block(GTK_OBJECT(clist),cb_selection_id);
+    g_signal_handler_block(clist, cb_selection_id);
     gtk_clist_select_row(GTK_CLIST(clist),current_selection,0);
-    gtk_signal_handler_unblock(GTK_OBJECT(clist),cb_selection_id);
+    g_signal_handler_unblock(clist, cb_selection_id);
     }
   }
 
@@ -3060,9 +3060,9 @@ gtk_widget_show(action_tbl);
 
 button=gtk_button_new_with_label("Ok");
 gtk_table_attach_defaults(GTK_TABLE(action_tbl),button, 1,2, 0,1);
-gtk_signal_connect_object(GTK_OBJECT(button),"clicked",
-                          GTK_SIGNAL_FUNC(gtk_widget_destroy),
-                          GTK_OBJECT(error_win));
+g_signal_connect_swapped(button, "clicked",
+                          G_CALLBACK(gtk_widget_destroy),
+                          error_win);
 gtk_widget_grab_focus(button);
 gtk_widget_show(button);
 
@@ -3270,7 +3270,7 @@ cb_copymove_file_or_tagged_files(1);
 /* block keyboard/mouse input to selector */
 void selector_block(void)
 {
-/* can't do this with gtk_signal_handler_block, as that doesn't block
+/* can't do this with g_signal_handler_block, as that doesn't block
  * the native clist handlers. Need to still have the handlers, but
  * have them actively ignore the events.
  */
@@ -3346,9 +3346,9 @@ else
   else	    /* a previous file was selected, reselect it (but don't reload) */
     {
     /* block selection handler while selecting it, so we don't reload pic! */
-    gtk_signal_handler_block(GTK_OBJECT(clist),cb_selection_id);
+    g_signal_handler_block(clist, cb_selection_id);
     gtk_clist_select_row(GTK_CLIST(clist),current_selection,0);
-    gtk_signal_handler_unblock(GTK_OBJECT(clist),cb_selection_id);
+    g_signal_handler_unblock(clist, cb_selection_id);
     }
 
   selector_unblock();
@@ -3644,8 +3644,8 @@ gtk_widget_push_colormap(gdk_rgb_get_cmap());
 mainwin=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 gtk_widget_pop_colormap();
 GTK_WIDGET_UNSET_FLAGS(mainwin,GTK_CAN_FOCUS);
-gtk_signal_connect(GTK_OBJECT(mainwin),"destroy",
-                   GTK_SIGNAL_FUNC(cb_quit),NULL);
+g_signal_connect(mainwin, "destroy",
+                   G_CALLBACK(cb_quit), NULL);
 /* don't include dir if selector initially hidden (loading from cmdline) */
 set_title(!hidden);
 
@@ -3668,10 +3668,10 @@ viewer_menu_factory=make_menu("<main>",viewer_menu_items,
                                 viewer_menu_items[0]));
 viewer_menu=gtk_item_factory_get_widget(viewer_menu_factory,"<main>");
 
-gtk_signal_connect(GTK_OBJECT(drawing_area),"motion_notify_event",
-                   GTK_SIGNAL_FUNC(viewer_motion),NULL);
-gtk_signal_connect(GTK_OBJECT(drawing_area),"key_press_event",
-                   GTK_SIGNAL_FUNC(viewer_key_press),NULL);
+g_signal_connect(drawing_area, "motion_notify_event",
+                   G_CALLBACK(viewer_motion), NULL);
+g_signal_connect(drawing_area, "key_press_event",
+                   G_CALLBACK(viewer_key_press), NULL);
 
 /* need to ask for motion while button 1 is pressed (for drag),
  * keypresses, and (for scaling) expose.
@@ -3727,10 +3727,10 @@ gtk_box_pack_start(GTK_BOX(vboxl),clist_sw_ebox,TRUE,TRUE,0);
  * start in the selector though, hence the left-button-press event
  * handling here.
  */
-gtk_signal_connect(GTK_OBJECT(clist_sw_ebox),"button_press_event",
-                   GTK_SIGNAL_FUNC(clist_sw_ebox_button_press),NULL);
-gtk_signal_connect(GTK_OBJECT(clist_sw_ebox),"motion_notify_event",
-                   GTK_SIGNAL_FUNC(viewer_motion),NULL);
+g_signal_connect(clist_sw_ebox, "button_press_event",
+                   G_CALLBACK(clist_sw_ebox_button_press), NULL);
+g_signal_connect(clist_sw_ebox, "motion_notify_event",
+                   G_CALLBACK(viewer_motion), NULL);
 gtk_widget_set_events(clist_sw_ebox,
                       GDK_BUTTON_PRESS_MASK|GDK_BUTTON1_MOTION_MASK);
 gtk_widget_show(clist_sw_ebox);
@@ -3755,8 +3755,8 @@ gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_SINGLE);
 /* selection callback - we save handler id as it needs to be blocked
  * in some circumstances.
  */
-cb_selection_id=gtk_signal_connect(GTK_OBJECT(clist),"select_row",
-                                   GTK_SIGNAL_FUNC(cb_selection),sw_for_pic);
+cb_selection_id = g_signal_connect(clist, "select_row",
+                                   G_CALLBACK(cb_selection), sw_for_pic);
 
 set_thumbnail_column_width();		/* set width of thumbnail column */
 gtk_clist_set_column_auto_resize(GTK_CLIST(clist),SELECTOR_NAME_COL,TRUE);
@@ -3781,12 +3781,12 @@ selector_menu_factory=make_menu("<main>",selector_menu_items,
                                   selector_menu_items[0]));
 selector_menu=gtk_item_factory_get_widget(selector_menu_factory,"<main>");
 
-gtk_signal_connect(GTK_OBJECT(clist),"button_press_event",
-                   GTK_SIGNAL_FUNC(selector_button_press),NULL);
-gtk_signal_connect(GTK_OBJECT(clist),"button_release_event",
-                   GTK_SIGNAL_FUNC(selector_button_release),NULL);
-gtk_signal_connect(GTK_OBJECT(clist),"key_press_event",
-                   GTK_SIGNAL_FUNC(selector_key_press),NULL);
+g_signal_connect(clist, "button_press_event",
+                   G_CALLBACK(selector_button_press), NULL);
+g_signal_connect(clist, "button_release_event",
+                   G_CALLBACK(selector_button_release), NULL);
+g_signal_connect(clist, "key_press_event",
+                   G_CALLBACK(selector_key_press), NULL);
 /* need to ask for button press (for menu), release (for tag), and key press */
 gtk_widget_set_events(clist,
                       GDK_BUTTON_PRESS_MASK|GDK_BUTTON_RELEASE_MASK|
@@ -3946,27 +3946,27 @@ gtk_widget_add_accelerator(
  * bit of the viewer window is selected. Also allows drags in non-image
  * bits, which is handy for really thin images.
  */
-gtk_signal_connect(GTK_OBJECT(sw_for_pic),
+g_signal_connect(sw_for_pic,
                    "button_press_event",
-                   GTK_SIGNAL_FUNC(viewer_button_press),NULL);
+                   G_CALLBACK(viewer_button_press), NULL);
 
 /* have to carefully override this for scrollbars! */
-gtk_signal_connect_after(
-  GTK_OBJECT(GTK_SCROLLED_WINDOW(sw_for_pic)->hscrollbar),
-  "button_press_event",GTK_SIGNAL_FUNC(viewer_sb_button_press),NULL);
-gtk_signal_connect_after(
-  GTK_OBJECT(GTK_SCROLLED_WINDOW(sw_for_pic)->vscrollbar),
-  "button_press_event",GTK_SIGNAL_FUNC(viewer_sb_button_press),NULL);
+g_signal_connect_after(
+  GTK_SCROLLED_WINDOW(sw_for_pic)->hscrollbar,
+  "button_press_event", G_CALLBACK(viewer_sb_button_press), NULL);
+g_signal_connect_after(
+  GTK_SCROLLED_WINDOW(sw_for_pic)->vscrollbar,
+  "button_press_event", G_CALLBACK(viewer_sb_button_press), NULL);
 
 
-gtk_signal_connect(GTK_OBJECT(mainwin),"configure_event",
-                   GTK_SIGNAL_FUNC(pic_win_resized),NULL);
+g_signal_connect(mainwin, "configure_event",
+                   G_CALLBACK(pic_win_resized), NULL);
 /* this catches dragging across the pane splitter */
-gtk_signal_connect(GTK_OBJECT(mainwin),"motion_notify_event",
-                   GTK_SIGNAL_FUNC(viewer_motion),NULL);
-gtk_signal_connect(GTK_OBJECT(mainwin),
+g_signal_connect(mainwin, "motion_notify_event",
+                   G_CALLBACK(viewer_motion), NULL);
+g_signal_connect(mainwin,
                    "button_release_event",
-                   GTK_SIGNAL_FUNC(viewer_button_release),NULL);
+                   G_CALLBACK(viewer_button_release), NULL);
 /* ask for configure and left-button drag */
 gtk_widget_set_events(mainwin,
                       GDK_STRUCTURE_MASK|GDK_BUTTON1_MOTION_MASK|

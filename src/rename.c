@@ -139,9 +139,9 @@ gtk_widget_show(ok_button);
 
 cancel_button=gtk_button_new_with_label("Cancel");
 gtk_table_attach_defaults(GTK_TABLE(action_tbl),cancel_button, 3,4, 0,1);
-gtk_signal_connect_object(GTK_OBJECT(cancel_button),"clicked",
-                          GTK_SIGNAL_FUNC(gtk_widget_destroy),
-                          GTK_OBJECT(rename_win));
+g_signal_connect_swapped(cancel_button, "clicked",
+                          G_CALLBACK(gtk_widget_destroy),
+                          rename_win);
 gtk_widget_show(cancel_button);
 
 
@@ -178,12 +178,12 @@ gtk_entry_set_text(GTK_ENTRY(entry), oldname);
 gtk_table_attach_defaults(GTK_TABLE(table),entry, 1,3, tbl_row,tbl_row+1);
 gtk_widget_grab_focus(entry);
 gtk_widget_show(entry);
-gtk_signal_connect(GTK_OBJECT(entry),"activate",
-                   GTK_SIGNAL_FUNC(cb_ok_button),GTK_OBJECT(entry));
+g_signal_connect(entry, "activate",
+                   G_CALLBACK(cb_ok_button), entry);
 
 /* finally connect up the ok button */
-gtk_signal_connect(GTK_OBJECT(ok_button),"clicked",
-                   GTK_SIGNAL_FUNC(cb_ok_button),GTK_OBJECT(entry));
+g_signal_connect(ok_button, "clicked",
+                   G_CALLBACK(cb_ok_button), entry);
 
 
 /* esc = cancel */

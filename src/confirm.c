@@ -64,15 +64,15 @@ gtk_widget_show(action_tbl);
 
 yes_button=gtk_button_new_with_label("Yes");
 gtk_table_attach_defaults(GTK_TABLE(action_tbl),yes_button, 1,2, 0,1);
-gtk_signal_connect(GTK_OBJECT(yes_button),"clicked",
-                   GTK_SIGNAL_FUNC(cb_yes_button),main_callback);
+g_signal_connect(yes_button, "clicked",
+                   G_CALLBACK(cb_yes_button), main_callback);
 gtk_widget_show(yes_button);
 
 no_button=gtk_button_new_with_label("No");
 gtk_table_attach_defaults(GTK_TABLE(action_tbl),no_button, 3,4, 0,1);
-gtk_signal_connect_object(GTK_OBJECT(no_button),"clicked",
-                          GTK_SIGNAL_FUNC(gtk_widget_destroy),
-                          GTK_OBJECT(yesno_win));
+g_signal_connect_swapped(no_button, "clicked",
+                          G_CALLBACK(gtk_widget_destroy),
+                          yesno_win);
 gtk_widget_show(no_button);
 
 
