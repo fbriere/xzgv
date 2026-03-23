@@ -544,7 +544,7 @@ RECURSE_PROTECT_END;
 void cb_iconify(void)
 {
 XIconifyWindow(GDK_WINDOW_XDISPLAY(mainwin->window),
-               GDK_WINDOW_XWINDOW(mainwin->window),
+               GDK_WINDOW_XID(mainwin->window),
                XScreenNumberOfScreen(XDefaultScreenOfDisplay(
                  GDK_WINDOW_XDISPLAY(mainwin->window))));
 }
