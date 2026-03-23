@@ -3503,8 +3503,7 @@ void init_window(void)
 GtkWidget *vboxl;
 GtkWidget *clist_sw_ebox;
 GtkItemFactory *selector_menu_factory,*viewer_menu_factory;
-GdkPixmap *icon;
-GdkBitmap *icon_mask;
+GdkPixbuf *icon;
 char *ptr;
 
 /* selector right-button menu */
@@ -3990,8 +3989,8 @@ sw_border_width=sw_for_pic->allocation.width-align->allocation.width;
 sw_border_height=sw_for_pic->allocation.height-align->allocation.height;
 
 /* set icon (XXX size should be configurable) */
-icon=gdk_pixmap_create_from_xpm_d(mainwin->window,&icon_mask,NULL,icon_48_xpm);
-gdk_window_set_icon(mainwin->window,NULL,icon,icon_mask);
+icon = gdk_pixbuf_new_from_xpm_data((const char **) icon_48_xpm);
+gtk_window_set_icon(GTK_WINDOW(mainwin), icon);
 
 if(fullscreen)
   {
