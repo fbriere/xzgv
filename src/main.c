@@ -1912,22 +1912,6 @@ mouse_scale_x=!mouse_scale_x;
 }
 
 
-void toggle_hicol_dither(gpointer cb_data,guint cb_action,GtkWidget *widget)
-{
-if(!listen_to_toggles || hicol_dither==-1) return;
-listen_to_toggles=0;
-
-hicol_dither=!hicol_dither;
-
-/* if hicol_dither!=-1, we must be in 15/16-bit, so set accordingly. */
-backend_set_hicol_dither(hicol_dither);
-
-render_pixmap(0);
-
-listen_to_toggles=1;
-}
-
-
 void toggle_revert(gpointer cb_data,guint cb_action,GtkWidget *widget)
 {
 if(!listen_to_toggles || in_nextprev) return;
@@ -3642,8 +3626,6 @@ static GtkItemFactoryEntry viewer_menu_items[]=
   {"/_Options/_Interpolate when Scaling","i",toggle_interp,1,  "<ToggleItem>"},
   {"/_Options/_Ctl+Click Scales X Axis","<alt>c",
    toggle_mouse_x,	1,	"<ToggleItem>"},
-  {"/_Options/_Dither in 15 & 16-bit","<shift>f",
-   toggle_hicol_dither,1, "<ToggleItem>"},
   {"/_Options/Use _Exif Orientation",NULL,toggle_exif_orient,1, "<ToggleItem>"},
   {"/_Options/sep1",	NULL,		NULL,		0,	"<Separator>"},
   {"/_Options/Revert _Scaling For New Pic",NULL,
@@ -3904,17 +3886,6 @@ gtk_check_menu_item_set_active(
                                 "<main>/Options/Ctl+Click Scales X Axis")),
   mouse_scale_x);
 
-if(hicol_dither==-1)
-  gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Options/Dither in 15 & 16-bit"),FALSE);
-else
-  gtk_check_menu_item_set_active(
-    GTK_CHECK_MENU_ITEM(
-      gtk_item_factory_get_widget(viewer_menu_factory,
-                                  "<main>/Options/Dither in 15 & 16-bit")),
-    hicol_dither);
-
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
     gtk_item_factory_get_widget(viewer_menu_factory,
@@ -4121,20 +4092,10 @@ int main(int argc,char *argv[])
 {
 int f,argsleft;
 int read_dir=1;
-int old_hidith;
 
 gtk_set_locale();
 gtk_init(&argc,&argv);
 backend_init();
-
-/* set hicol_dither based on current setting */
-hicol_dither=backend_get_hicol_dither();
-
-/* force it to n/a if more than 16-bit, though */
-if(gdk_visual_get_best_depth()>16)
-  hicol_dither=-1;
-
-old_hidith=hicol_dither;
 
 find_xvpic_cols();
 
@@ -4145,17 +4106,14 @@ for(f=0;f<MAX_PASTPOS;f++)
 get_config();				/* read config file if any */
 argsleft=parse_options(argc,argv);	/* and command-line options */
 
+if(hicol_dither>=0)
+  fprintf(stderr,"Notice: The `dither-hicol' option is deprecated and has no effect.\n");
+
 if(careful_jpeg>=0)
   fprintf(stderr,"Notice: The `careful-jpeg' option is deprecated and has no effect.\n");
 
 if(image_bigness_threshold>=0)
   fprintf(stderr,"Notice: The `image-bigness-threshold' option is deprecated and has no effect.\n");
-
-/* they may have changed hicol_dither, so tell backend */
-if(old_hidith!=-1)
-  backend_set_hicol_dither(hicol_dither);
-else
-  hicol_dither=-1;	/* if it was n/a before, it should be n/a now :-) */
 
 backend_set_interp(interp);
 

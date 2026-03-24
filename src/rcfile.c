@@ -42,8 +42,7 @@ int revert_orient=1;		/* revert to normal orientation on pic load */
 int fullscreen=0;		/* take up whole screen for window */
 int show_tagged=0;		/* echo currently-tagged files on exit */
 int fast_recursive_update=0;	/* if 0, use blocking tn update (slow :-/) */
-int hicol_dither=-1;		/* 15/16-bit dither. 0=don't, 1=do, -1=n/a;
-				   default is whatever backend decides on */
+int hicol_dither=-1;		/* (deprecated) */
 int skip_parent=0;		/* skip cursor past .. on initial dir */
 int click_nextpic=1;		/* click on viewer = next pic */
 int mouse_scale_x=0;		/* ctrl-click scales x if true, else y */
@@ -570,10 +569,6 @@ puts(
 "			(normally enabled, use --delete-single-prompt=off to\n"
 "			disable) if *disabled*, don't prompt for confirmation\n"
 "			when deleting a file.\n"
-"	--dither-hicol	use dithering in 15/16-bit to increase apparent\n"
-"			colour depth, whatever Imlib's default setting is.\n"
-"			You can also use `--dither-hicol=off' to disable\n"
-"			this if you normally have Imlib use it.\n"
 "	--exif-orient	in JPEG files, use Exif orientation tags (inserted\n"
 "			by e.g. digital cameras) to correct image orientation\n"
 "			before display.\n"

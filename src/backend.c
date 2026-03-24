@@ -51,9 +51,6 @@
 /* get backend image, casted to appropriate type */
 #define BACKEND_IMAGE(x)	((x)->backend_image)
 
-/* Dithering type */
-GdkRgbDither dither_type;
-
 /* Interpolation type */
 GdkInterpType interp_type;
 
@@ -65,8 +62,6 @@ int backend_init(void)
 {
 gtk_widget_set_default_colormap(gdk_rgb_get_cmap());
 gtk_widget_set_default_visual(gdk_rgb_get_visual());
-
-dither_type = GDK_RGB_DITHER_NORMAL;
 
 interp_type = GDK_INTERP_NEAREST;
 
@@ -262,26 +257,6 @@ if(image->backend_image)
   g_object_unref(BACKEND_IMAGE(image));
 
 free(image);
-}
-
-
-/* get high-colour (15/16-bit) dithering status.
- * returns 1 if enabled, 0 if disabled, else -1 which indicates that
- * either the current visual does not support hicol dithering, or
- * this backend doesn't support it. (Since it's optional.)
- */
-int backend_get_hicol_dither(void)
-{
-return (dither_type == GDK_RGB_DITHER_MAX) ? TRUE : FALSE;
-}
-
-
-/* set high-colour dithering status.
- * Should not be called if backend_get_hicol_dither() returned -1.
- */
-void backend_set_hicol_dither(int on)
-{
-dither_type = on ? GDK_RGB_DITHER_MAX : GDK_RGB_DITHER_NORMAL;
 }
 
 

@@ -31,9 +31,6 @@ extern GdkPixmap *backend_get_and_detach_pixmap(xzgv_image *image);
 extern void backend_pixmap_destroy(GdkPixmap *pixmap);
 extern void backend_image_destroy(xzgv_image *image);
 
-extern int backend_get_hicol_dither(void);
-extern void backend_set_hicol_dither(int on);
-
 extern int backend_get_interp(void);
 extern void backend_set_interp(int on);
 
