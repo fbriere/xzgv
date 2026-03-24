@@ -294,9 +294,7 @@ override.)
 
 @vindex dither-hicol
 @item --dither-hicol
-Use dithering in 15/16-bit, whatever the default setting is.
-@xref{Viewer Options}, for a discussion of benefits/drawbacks. You can
-also use @code{--dither-hicol=off} to disable this.
+@strong{Deprecated.}  This option no longer has any effect.
 
 @vindex exif-orient
 @item --exif-orient
@@ -1982,12 +1980,6 @@ increased beyond the point where the overall image size would exceed
 32767x32767 --- this limit is due to the combination of X's limit on
 window sizes, and the implementation used by xzgv for scaling.
 
-One problem with scaling up, given the way it's currently implemented,
-is that it's not well-suited to dithered display --- so if you're
-running on an 8-bit server, dragging the image around slowly when using
-scaling (especially scaling with interpolation) may result in some
-nasty, streaky, undithered-looking parts of the picture. :-(
-
 You can undo the effect of scaling (up or down) at any time:
 
 @table @kbd
@@ -2290,9 +2282,6 @@ Minimize the xzgv window.
 @cindex digital camera pictures, correcting
 @cindex exif orientation support
 @cindex orientation, exif
-@cindex dithering in 15/16-bit modes
-@cindex 15/16-bit modes, toggling dithering in
-@cindex high-colour modes, toggling dithering in
 @cindex mouse scaling axis, toggling
 @cindex scaling axis, toggling mouse
 @cindex axis, toggling mouse scaling
@@ -2334,16 +2323,6 @@ already been mentioned (@pxref{Scaling}).
 @itemx Viewer menu, Options, Ctl+Click Scales X Axis
 Toggle the axis scaled when you control-click (or control-right-click)
 on the image. The default is to scale the y axis.
-
-@kindex F
-@item F (shift-f)
-@findex Viewer menu, Options, Dither in 15 & 16-bit
-@itemx Viewer menu, Options, Dither in 15 & 16-bit
-Toggle dithering in 15/16-bit modes. This increases the apparent colour
-depth making gradations look much better, but it's slower than
-undithered rendering, and can (in 16-bit) slightly distort a picture's
-colour balance. (The @kbd{F} key was chosen for this as the dither
-toggle is functionally similar to zgv's `fakecols' toggle.)
 
 @findex Viewer menu, Options, Revert Scaling For New Pic
 @item Viewer menu, Options, Revert Scaling For New Pic
@@ -2762,12 +2741,6 @@ hiding/showing selector or resizing from keyboard, but that's only 'cos
 I kludged it :-)).
 
 @item
-When scaling up and dithering, you end up with a crappy-looking picture
-if you drag the picture around slowly (since each exposed bit is
-dithered independently, with no regard given to matching up to any
-previous error-diffusion).
-
-@item
 Scaling up is slow. Not sure if I can do much about this.
 
 @item
@@ -2875,7 +2848,7 @@ The bitdepth your X server is running in (common depths are 16-bit,
 @item
 A description of the bug --- what effects it has, the circumstances it
 occurs in, and so on. Does it only happen for certain types of file?
-Only when in 8-bit modes? Only when dithering is enabled? Even
+Only when in 8-bit modes? Only when interpolation is enabled? Even
 `irrelevant' details can sometimes be useful.
 
 @item
