@@ -427,6 +427,12 @@ void move_to_row(int row, float row_align)
 }
 
 
+void sort_rows(void)
+{
+  gtk_clist_sort(GTK_CLIST(clist));
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
@@ -2265,7 +2271,7 @@ if(current_selection!=-1)
  */
 datptr=get_row_data(focus_row);
 
-gtk_clist_sort(GTK_CLIST(clist));
+sort_rows();
 
 /* look up data, and reselect it. */
 if(datptr)
@@ -3021,7 +3027,7 @@ closedir(dirfile);
 if(numrows)
   {
   /* sort the list (using sort_cmp) */
-  gtk_clist_sort(GTK_CLIST(clist));
+  sort_rows();
   
   /* unselect the first row to give us a sane initial pos for
    * keyboard movement. (Doesn't seem to be necessary after sorting,
