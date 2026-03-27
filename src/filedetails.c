@@ -264,7 +264,7 @@ if(row<0 || row>=numrows)
   return;
 
 /* make the window and fill with details */
-gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
+get_row_filename(row,&ptr);
 make_details_win(ptr);
 
 /* that's it then; it's modal so we can just leave GTK+ to deal with things. */
