@@ -36,6 +36,7 @@ extern int focus_row;
 extern void do_gtk_stuff(void);
 extern xzgv_image *load_image(char *file,int for_thumbnail,
                                  int *origwp,int *orighp);
+extern struct row_data_tag *get_row_data(int row);
 extern void get_row_filename(int row, char **text);
 extern void set_row_filename(int row, char *text);
 extern int get_row_thumbnail(int row, GdkPixmap **pixmap, GdkBitmap **mask);
