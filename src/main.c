@@ -390,6 +390,17 @@ return(TRUE);
 }
 
 
+int get_row_at_pos(int x, int y)
+{
+  int row, col;
+
+  if (!gtk_clist_get_selection_info(GTK_CLIST(clist), x, y, &row, &col))
+    return -1;
+
+  return row;
+}
+
+
 void get_row_text(int row, int column, char **text)
 {
   gtk_clist_get_text(GTK_CLIST(clist), row, column, text);
@@ -441,6 +452,16 @@ void select_row(int row)
 void unselect_row(int row)
 {
   gtk_clist_unselect_row(GTK_CLIST(clist), row, 0);
+}
+
+
+int first_visible_row(void)
+{
+  int row, col;
+
+  gtk_clist_get_selection_info(GTK_CLIST(clist), 0, 0, &row, &col);
+
+  return row;
 }
 
 
@@ -648,7 +669,7 @@ XIconifyWindow(GDK_WINDOW_XDISPLAY(main_gdk_window),
 
 gint selector_button_press(GtkWidget *widget,GdkEventButton *event)
 {
-int row,col;
+int row;
 
 if(ignore_selector_input)
   {
@@ -679,8 +700,7 @@ switch(event->button)
   
   case 3:
     /* move cursor to row clicked on (if any) */
-    gtk_clist_get_selection_info(GTK_CLIST(clist),
-                                 event->x,event->y,&row,&col);
+    row = get_row_at_pos(event->x, event->y);
     cb_back_to_clist();			/* show selector and switch to it */
     if(row>=0 && row<numrows)
       set_focus_row(row);
@@ -696,7 +716,7 @@ return(FALSE);
 
 gint selector_button_release(GtkWidget *widget,GdkEventButton *event)
 {
-int row,col;
+int row;
 
 if(ignore_selector_input)
   {
@@ -709,8 +729,7 @@ switch(event->button)
   case 1:
     if(event->state&GDK_CONTROL_MASK)
       {
-      gtk_clist_get_selection_info(GTK_CLIST(clist),
-                                   event->x,event->y,&row,&col);
+      row = get_row_at_pos(event->x, event->y);
       if(row>=0 && row<numrows)		/* sanity check :-) */
         set_tagged_state(row,-1);	/* toggle */
       return(TRUE);
@@ -2247,11 +2266,11 @@ if(thumbnail_read_running())
 void blocking_thumbnail_read_visible(GtkWidget **checkptr)
 {
 int entry;
-int row=-1,col=-1;
+int row=-1;
 
 if(thumbnail_read_running()) return;
 
-gtk_clist_get_selection_info(GTK_CLIST(clist),0,0,&row,&col);
+row = first_visible_row();
 if(row==-1) return;
 
 idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
@@ -2671,7 +2690,7 @@ if(idle_xvpic_blocked)
 adjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
 if(adjval!=idle_xvpic_lastadjval)
   {
-  int row=-1,col=-1;
+  int row=-1;
   
   idle_xvpic_lastadjval=adjval;
   
@@ -2681,7 +2700,7 @@ if(adjval!=idle_xvpic_lastadjval)
    * big dirs, even though in practice if you move about a lot
    * it can actually increase it somewhat. :-)
    */
-  gtk_clist_get_selection_info(GTK_CLIST(clist),0,0,&row,&col);
+  row = first_visible_row();
   if(row!=-1)
     {
     idle_xvpic_jumped++;
