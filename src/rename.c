@@ -68,7 +68,7 @@ if((tn_src=malloc(8+strlen(oldname)+1))==NULL ||
    (tn_dst=malloc(8+strlen(dest)+1))==NULL)
   {
   /* rename entry */
-  gtk_clist_set_text(GTK_CLIST(clist),current_row,SELECTOR_NAME_COL,dest);
+  set_row_filename(current_row,dest);
   if(tn_src) free(tn_src);
   resort_finish();
   return;
@@ -82,7 +82,7 @@ strcat(tn_dst,dest);
 rename(tn_src,tn_dst);		/* don't much care if it works or not */
 
 /* rename entry */
-gtk_clist_set_text(GTK_CLIST(clist),current_row,SELECTOR_NAME_COL,dest);
+set_row_filename(current_row,dest);
 
 free(tn_dst);
 free(tn_src);
@@ -106,7 +106,7 @@ current_row=focus_row;
 if(current_row<0 || current_row>=numrows) return;
 
 oldname=NULL;
-gtk_clist_get_text(GTK_CLIST(clist),current_row,SELECTOR_NAME_COL,&oldname);
+get_row_filename(current_row,&oldname);
 
 rename_win=gtk_dialog_new();
 
