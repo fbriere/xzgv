@@ -412,6 +412,12 @@ void set_row_pixmap(int row, int column, GdkPixmap *pixmap, GdkBitmap *mask)
 }
 
 
+struct row_data_tag *get_row_data(int row)
+{
+  return gtk_clist_get_row_data(GTK_CLIST(clist), row);
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
@@ -448,7 +454,7 @@ struct row_data_tag *datptr;
 
 if(row<0 || row>=numrows) return(0);
 
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
+datptr=get_row_data(row);
 return(datptr->tagged);
 }
 
@@ -462,7 +468,7 @@ void set_tagged_state(int row,int tagged)
 static GdkColor col={0, 0xffff,0,0};	/* red */
 struct row_data_tag *datptr;
 
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
+datptr=get_row_data(row);
 if(datptr->isdir) return;
 
 if(datptr)
@@ -1133,7 +1139,7 @@ if(in_nextprev) return;
 dest=-1;
 for(f=row+incr;(next && f<numrows) || (!next && f>=0);f+=incr)
   {
-  datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
+  datptr=get_row_data(f);
   if(datptr && datptr->tagged)
     {
     dest=f;
@@ -1212,7 +1218,7 @@ if(goto_next_char)
      */
     for(f=0;f<numrows;f++)
       {
-      datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
+      datptr=get_row_data(f);
       if(!datptr->isdir)
         {
         char first_char;
@@ -2015,7 +2021,7 @@ for(f=0;f<numrows;f++)
   if(!get_row_pixmap(f,SELECTOR_TN_COL,&pixmap,&mask))
     continue;
   
-  datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
+  datptr=get_row_data(f);
   set_row_pixmap(f,SELECTOR_TN_COL,
                        thin_rows?datptr->pm_small:datptr->pm_norm,
                        thin_rows?datptr->pm_small_mask:datptr->pm_norm_mask);
@@ -2240,7 +2246,7 @@ if(current_selection!=-1)
 /* now we do everything in terms of the focus row.
  * get row data pointer (which is unique) so we can look the row up after.
  */
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),focus_row);
+datptr=get_row_data(focus_row);
 
 gtk_clist_sort(GTK_CLIST(clist));
 
@@ -2336,7 +2342,7 @@ if(current_selection==-1) return;	/* skip it if no current selection */
  */
 if(current_selection==0) return;
 
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),current_selection-1);
+datptr=get_row_data(current_selection-1);
 if(datptr->isdir) return;
 
 in_nextprev=1;
@@ -2661,7 +2667,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     strncat(buf,ptr,sizeof(buf)-8-2);	/* above string is 8 chars long */
     g_free(ptr);
     
-    datptr=gtk_clist_get_row_data(GTK_CLIST(clist),*entryp);
+    datptr=get_row_data(*entryp);
     
     /* if it's a dir, use ref to dir_icon pixmap. */
     if(datptr->isdir)
@@ -2750,7 +2756,7 @@ for(f=0;f<numrows;f++)
    * However, only one of our pixmaps (normal/small) is showing currently;
    * remove the other before removing the data.
    */
-  datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
+  datptr=get_row_data(f);
   /* be careful - we may be halfway through thumbnail-read... */
   if(datptr)
     {
@@ -3221,7 +3227,7 @@ if(row<0 || row>=numrows) return;
 get_row_text(row,SELECTOR_NAME_COL,&ptr);
 if(!ptr) return;
 
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
+datptr=get_row_data(row);
 if(!datptr || datptr->isdir) return;
 
 msg=malloc(strlen(ptr)+strlen(prefix)+strlen(suffix)+1);
@@ -3371,7 +3377,7 @@ if(!ptr)
   }
 
 /* this definitely can't be NULL; always allocated if the row exists */
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
+datptr=get_row_data(row);
 
 if(!datptr)	/* but it can't hurt to check :-) */
   {
@@ -4272,7 +4278,7 @@ int f;
 for(f=0;f<numrows;f++)
   {
   get_row_text(f,SELECTOR_NAME_COL,&ptr);
-  datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
+  datptr=get_row_data(f);
   if(datptr && datptr->tagged)
     printf("%s\n",ptr);
   }
