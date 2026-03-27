@@ -2904,7 +2904,7 @@ return(1);
  * an idle function which loads the xvpics (removing any already-running
  * one to do this, if needed).
  */
-void create_clist_from_dir(void)
+void add_new_rows_from_dir(void)
 {
 DIR *dirfile;
 struct dirent *dent;
@@ -3241,7 +3241,7 @@ if(try_to_save_cursor_pos)
   }
 
 blast_clist();
-create_clist_from_dir();
+add_new_rows_from_dir();
 set_title(1);
 
 if(try_to_save_cursor_pos)
@@ -4221,7 +4221,7 @@ return(1);
 }
 
 
-void create_clist_from_cmdline(int argsleft,int argc,char *argv[])
+void add_new_rows_from_cmdline(int argsleft,int argc,char *argv[])
 {
 int f;
 struct stat sbuf;
@@ -4312,7 +4312,7 @@ init_icon_pixmaps();
 /* read dir (unless loading pics from cmdline) */
 if(read_dir)
   {
-  create_clist_from_dir();
+  add_new_rows_from_dir();
   if(skip_parent && numrows>1)		/* skip .. if they asked us to */
     {
     char *ptr;
@@ -4325,7 +4325,7 @@ if(read_dir)
   }
 else
   {
-  create_clist_from_cmdline(argsleft,argc,argv);
+  add_new_rows_from_cmdline(argsleft,argc,argv);
   gtk_clist_set_column_width(GTK_CLIST(clist),SELECTOR_TN_COL,1);
   /* select first image, but make sure things are up and running first */
   do_gtk_stuff();
