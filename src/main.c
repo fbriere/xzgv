@@ -1601,10 +1601,15 @@ return(FALSE);
 }
 
 
+void set_row_height(int height)
+{
+  gtk_clist_set_row_height(GTK_CLIST(clist), height);
+}
+
+
 void fix_row_heights(void)
 {
-gtk_clist_set_row_height(GTK_CLIST(clist),
-                         thin_rows?ROW_HEIGHT_THIN:ROW_HEIGHT_NORMAL);
+set_row_height(thin_rows?ROW_HEIGHT_THIN:ROW_HEIGHT_NORMAL);
 }
 
 
@@ -4022,7 +4027,7 @@ cb_selection_id = g_signal_connect(clist, "select_row",
 set_thumbnail_column_width();		/* set width of thumbnail column */
 gtk_clist_set_column_auto_resize(GTK_CLIST(clist),SELECTOR_NAME_COL,TRUE);
 /* set heights to thin initially; see end of routine for why */
-gtk_clist_set_row_height(GTK_CLIST(clist),ROW_HEIGHT_THIN);
+set_row_height(ROW_HEIGHT_THIN);
 gtk_clist_set_column_justification(GTK_CLIST(clist),
                                    SELECTOR_TN_COL,GTK_JUSTIFY_CENTER);
 gtk_clist_set_compare_func(GTK_CLIST(clist),sort_cmp);
@@ -4279,7 +4284,7 @@ if(fullscreen)
  * I couldn't get this to work using vertical shifts for both
  * thin_rows modes.
  */
-gtk_clist_set_row_height(GTK_CLIST(clist),ROW_HEIGHT_NORMAL);
+set_row_height(ROW_HEIGHT_NORMAL);
 
 /* that's all folks */
 }
