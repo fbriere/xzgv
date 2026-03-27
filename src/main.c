@@ -418,11 +418,21 @@ struct row_data_tag *get_row_data(int row)
 }
 
 
+void move_to_row(int row, float row_align)
+{
+  /* these constants are just there to act as named function arguments  */
+  const int column = 0;
+  const float col_align = 0;
+
+  gtk_clist_moveto(GTK_CLIST(clist), row, column, row_align, col_align);
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
 if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-  gtk_clist_moveto(GTK_CLIST(clist),row,0,0.5,0.);
+  move_to_row(row,0.5);
 }
 
 
@@ -1245,7 +1255,7 @@ if(goto_next_char)
     
     /* recentre on it */
     if(!nofiles)
-      gtk_clist_moveto(GTK_CLIST(clist),focus_row,0,0.5,0.);
+      move_to_row(focus_row,0.5);
     }
   }
 else
@@ -1282,7 +1292,7 @@ else
         {
         set_focus_row(row=row-1);
         if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-          gtk_clist_moveto(GTK_CLIST(clist),row,0,0.,0.);
+          move_to_row(row,0.);
         }
       break;
     case GDK_KEY_j:		/* down */
@@ -1291,7 +1301,7 @@ else
         {
         set_focus_row(row=row+1);
         if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-          gtk_clist_moveto(GTK_CLIST(clist),row,0,1.,0.);
+          move_to_row(row,1.);
         }
       break;
 
@@ -1319,7 +1329,7 @@ else
         {
         set_focus_row(row);
         if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-          gtk_clist_moveto(GTK_CLIST(clist),row,0,up?0.:1.,0.);
+          move_to_row(row,up?0.:1.);
         }
       break;
       
@@ -2041,7 +2051,7 @@ do_gtk_stuff();
  */
 if(current_selection!=-1)
   set_focus_row(current_selection);
-gtk_clist_moveto(GTK_CLIST(clist),focus_row,0,0.5,0.);
+move_to_row(focus_row,0.5);
 
 listen_to_toggles=1;
 }
@@ -2278,7 +2288,7 @@ if(datptr)
  * as toggle_thin_rows() - if one selected move focus row to there
  * (did that before the sort), and either way force focus row to middle.
  */
-gtk_clist_moveto(GTK_CLIST(clist),focus_row,0,0.5,0.);
+move_to_row(focus_row,0.5);
 
 /* a thumbnail-read may have been ongoing; if so, restart it. */
 if(was_reading)
@@ -3300,7 +3310,7 @@ if(do_pastpos)
      * put it in middle of win.
      */
     set_focus_row(row);
-    gtk_clist_moveto(GTK_CLIST(clist),row,0,0.5,0.);
+    move_to_row(row,0.5);
     }
   }
 }
