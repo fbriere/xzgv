@@ -266,26 +266,14 @@ interp_type = on ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST;
 
 /* a fairly high-level one, which is unfortunately required:
  *
- * read XPM data from string array and render into pixmap, also returning
- * a bitmap mask matching any transparent parts. Any image used
+ * read XPM data from string array and render into pixbuf.  Any image used
  * on the way should be freed, making it a straight XPM to
- * pixmap/bitmap job.
+ * pixbuf job.
  */
-int backend_create_pixmap_from_xpm_data(const char **data,
-                                        GdkPixmap **pixmap,GdkBitmap **mask)
+int backend_create_pixbuf_from_xpm_data(const char **data,
+                                        GdkPixbuf **pixbuf)
 {
-GdkPixbuf *backim=gdk_pixbuf_new_from_xpm_data(data);
+  *pixbuf = gdk_pixbuf_new_from_xpm_data(data);
 
-if(backim==NULL)
-  {
-  *pixmap=NULL;
-  *mask=NULL;
-  return(0);
-  }
-
-gdk_pixbuf_render_pixmap_and_mask(backim,pixmap,mask,128);
-
-g_object_unref(backim);
-
-return(1);
+  return(pixbuf != NULL);
 }
