@@ -433,6 +433,22 @@ void sort_rows(void)
 }
 
 
+void select_row(int row)
+{
+  gtk_clist_select_row(GTK_CLIST(clist), row, 0);
+}
+
+void unselect_row(int row)
+{
+  gtk_clist_unselect_row(GTK_CLIST(clist), row, 0);
+}
+
+void unselect_all(void)
+{
+  gtk_clist_unselect_all(GTK_CLIST(clist));
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
@@ -1133,9 +1149,9 @@ in_nextprev=1;	/* in effect :-) */
 row=focus_row;
 if(row>=0 && row<numrows)
   {
-  gtk_clist_unselect_all(GTK_CLIST(clist));
+  unselect_all();
   /* this sets current_selection and zeroes in_nextprev too */
-  gtk_clist_select_row(GTK_CLIST(clist),row,0);
+  select_row(row);
   in_nextprev=0;
   }
 else
@@ -2284,7 +2300,7 @@ if(datptr)
     {
     /* block selection handler while selecting it, so we don't reload pic! */
     g_signal_handler_block(clist, cb_selection_id);
-    gtk_clist_select_row(GTK_CLIST(clist),current_selection,0);
+    select_row(current_selection);
     g_signal_handler_unblock(clist, cb_selection_id);
     }
   }
@@ -2337,7 +2353,7 @@ make_visible_if_not(row);
  * including zeroing in_nextprev.
  */
 set_focus_row(row);
-gtk_clist_select_row(GTK_CLIST(clist),row,0);	/* sets current_selection */
+select_row(row);	/* sets current_selection */
 in_nextprev=0;
 }
 
@@ -2369,7 +2385,7 @@ make_visible_if_not(row);
  * including zeroing in_nextprev.
  */
 set_focus_row(row);
-gtk_clist_select_row(GTK_CLIST(clist),row,0);	/* sets current_selection */
+select_row(row);	/* sets current_selection */
 in_nextprev=0;
 }
 
@@ -3027,7 +3043,7 @@ if(numrows)
    * keyboard movement. (Doesn't seem to be necessary after sorting,
    * but can't hurt.)
    */
-  gtk_clist_unselect_row(GTK_CLIST(clist),0,0);
+  unselect_row(0);
   
   /* setup idle function to load thumbnails. */
   start_thumbnail_read();
@@ -3147,7 +3163,7 @@ gtk_widget_show(error_win);
 /* close file (clear viewer). */
 void cb_file_close(void)
 {
-gtk_clist_unselect_all(GTK_CLIST(clist));
+unselect_all();
 current_selection=-1;
 cb_back_to_clist();		/* enable selector */
 
@@ -3417,13 +3433,13 @@ else
   if(current_selection==-1)
     {
     /* unselect, then */
-    gtk_clist_unselect_all(GTK_CLIST(clist));
+    unselect_all();
     }
   else	    /* a previous file was selected, reselect it (but don't reload) */
     {
     /* block selection handler while selecting it, so we don't reload pic! */
     g_signal_handler_block(clist, cb_selection_id);
-    gtk_clist_select_row(GTK_CLIST(clist),current_selection,0);
+    select_row(current_selection);
     g_signal_handler_unblock(clist, cb_selection_id);
     }
 
@@ -4370,7 +4386,7 @@ else
   gtk_clist_set_column_width(GTK_CLIST(clist),SELECTOR_TN_COL,1);
   /* select first image, but make sure things are up and running first */
   do_gtk_stuff();
-  gtk_clist_select_row(GTK_CLIST(clist),0,0);
+  select_row(0);
   }
 
 /* initialise thin_rows stuff (has to be after above so there's something
