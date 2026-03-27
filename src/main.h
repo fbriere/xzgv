@@ -38,6 +38,8 @@ extern xzgv_image *load_image(char *file,int for_thumbnail,
                                  int *origwp,int *orighp);
 extern void get_row_filename(int row, char **text);
 extern void set_row_filename(int row, char *text);
+extern int get_row_thumbnail(int row, GdkPixmap **pixmap, GdkBitmap **mask);
+extern void set_row_thumbnail(int row, GdkPixmap *pixmap, GdkBitmap *mask);
 extern void make_visible_if_not(int row);
 extern int get_tagged_state(int row);
 extern int thumbnail_read_running(void);
