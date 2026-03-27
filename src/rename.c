@@ -102,7 +102,7 @@ GtkWidget *label,*entry;
 static char buf[1024];
 int tbl_row;
 
-current_row=GTK_CLIST(clist)->focus_row;
+current_row=focus_row;
 if(current_row<0 || current_row>=numrows) return;
 
 oldname=NULL;

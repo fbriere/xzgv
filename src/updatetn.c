@@ -470,7 +470,7 @@ clist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
 prev_vadj_value=gtk_adjustment_get_value(clist_vadj);
 
 /* also save focus row, via pastpos. */
-new_pastpos(GTK_CLIST(clist)->focus_row);
+new_pastpos(focus_row);
 
 /* remove any running thumbnail read. Once we return to this
  * dir, it'll be scanned from scratch which will restart this.
