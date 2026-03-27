@@ -2823,7 +2823,7 @@ return(1);			/* else second one is dir */
 int clist_add_new_row(char *filename,struct stat *sbuf)
 {
 struct clist_data_tag *datptr;
-gchar *textarr[2];
+gchar *textarr[SELECTOR_NUM_COLUMNS];
 char *ptr;
 int row;
 static char* extensions[] ={".GIF", ".JPEG", ".JPG", ".PNG", ".PBM", ".PGM", ".PPM",
@@ -3898,7 +3898,7 @@ gtk_container_add(GTK_CONTAINER(clist_sw_ebox),sw_for_clist);
 gtk_widget_show(sw_for_clist);
 
 /* the clist */
-clist=gtk_clist_new(2);
+clist=gtk_clist_new(SELECTOR_NUM_COLUMNS);
 /* select only one thing at a time */
 gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_SINGLE);
 

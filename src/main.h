@@ -6,8 +6,13 @@
  */
 
 /* which column is which in selector */
-#define SELECTOR_TN_COL		0
-#define SELECTOR_NAME_COL	1
+enum
+{
+  SELECTOR_TN_COL = 0,  /* thumbnail */
+  SELECTOR_NAME_COL,    /* filename */
+
+  SELECTOR_NUM_COLUMNS
+};
 
 struct clist_data_tag
   {
