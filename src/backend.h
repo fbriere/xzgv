@@ -34,6 +34,5 @@ extern void backend_image_destroy(xzgv_image *image);
 extern int backend_get_interp(void);
 extern void backend_set_interp(int on);
 
-extern int backend_create_pixmap_from_xpm_data(const char **data,
-                                               GdkPixmap **pixmap,
-                                               GdkBitmap **mask);
+extern int backend_create_pixbuf_from_xpm_data(const char **data,
+                                               GdkPixbuf **pixbuf);

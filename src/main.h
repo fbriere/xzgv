@@ -10,6 +10,8 @@ enum
 {
   SELECTOR_TN_COL = 0,  /* thumbnail */
   SELECTOR_NAME_COL,    /* filename */
+  SELECTOR_DATA_COL,    /* struct row_data_tag */
+  SELECTOR_TAGGED_COL,  /* bool: row is tagged */
 
   SELECTOR_NUM_COLUMNS
 };
@@ -21,13 +23,12 @@ struct row_data_tag
   off_t size;
   time_t mtime,ctime,atime;
   int extofs;
-  GdkPixmap *pm_norm;	/* normal thumbnail pixmap */
-  GdkPixmap *pm_small;	/* small version for thin rows mode */
-  GdkBitmap *pm_norm_mask;	/* mask, NULL for `real' thumbnails */
-  GdkBitmap *pm_small_mask;	/* ...but used for dirs and no-tn files */
+  GdkPixbuf *pb_norm;	/* normal thumbnail pixbuf */
+  GdkPixbuf *pb_small;	/* small version for thin rows mode */
   };
 
-extern GtkWidget *clist,*mainwin;
+extern GtkWidget *treeview,*mainwin;
+extern GtkListStore *liststore;
 extern GtkAccelGroup *mainwin_accel_group;
 extern int numrows;
 extern int cmdline_files;
@@ -39,8 +40,8 @@ extern xzgv_image *load_image(char *file,int for_thumbnail,
 extern struct row_data_tag *get_row_data(int row);
 extern void get_row_filename(int row, char **text);
 extern void set_row_filename(int row, char *text);
-extern int get_row_thumbnail(int row, GdkPixmap **pixmap, GdkBitmap **mask);
-extern void set_row_thumbnail(int row, GdkPixmap *pixmap, GdkBitmap *mask);
+extern int get_row_thumbnail(int row, GdkPixbuf **pixbuf);
+extern void set_row_thumbnail(int row, GdkPixbuf *pixbuf);
 extern void make_visible_if_not(int row);
 extern int get_tagged_state(int row);
 extern int thumbnail_read_running(void);
@@ -48,8 +49,8 @@ extern void start_thumbnail_read(void);
 extern void stop_thumbnail_read(void);
 extern void blocking_thumbnail_read_visible(GtkWidget **checkptr);
 extern void resort_finish(void);
-extern GdkPixmap *xvpic2pixmap(unsigned char *xvpic,
-                               int w,int h,GdkPixmap **smallp);
+extern GdkPixbuf *xvpic2pixbuf(unsigned char *xvpic,
+                               int w,int h,GdkPixbuf **smallp);
 extern void new_pastpos(int row);
 extern void error_dialog(char *title,char *msg);
 extern void reinit_dir(int do_pastpos,int try_to_save_cursor_pos);
