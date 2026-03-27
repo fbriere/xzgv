@@ -195,7 +195,7 @@ for(done=f=0;f<numrows;f++)
   else
     if(!get_tagged_state(f)) continue;
   
-  gtk_clist_get_text(GTK_CLIST(clist),f,SELECTOR_NAME_COL,&ptr);
+  get_row_text(f,SELECTOR_NAME_COL,&ptr);
   
   if(!copy_or_move(ptr,destdir,cm_do_move))
     {

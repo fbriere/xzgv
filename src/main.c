@@ -388,6 +388,17 @@ return(TRUE);
 }
 
 
+void get_row_text(int row, int column, char **text)
+{
+  gtk_clist_get_text(GTK_CLIST(clist), row, column, text);
+}
+
+void set_row_text(int row, int column, char *text)
+{
+  gtk_clist_set_text(GTK_CLIST(clist), row, column, text);
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
@@ -1191,7 +1202,7 @@ if(goto_next_char)
       datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
       if(!datptr->isdir)
         {
-        gtk_clist_get_text(GTK_CLIST(clist),f,SELECTOR_NAME_COL,&ptr);
+        get_row_text(f,SELECTOR_NAME_COL,&ptr);
         nofiles=0;
         if(*ptr>=event->keyval)
           {
@@ -2627,7 +2638,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
                            SELECTOR_TN_COL,&pixmap,&mask))
     {
     /* construct filename for file's (possible) thumbnail */
-    gtk_clist_get_text(GTK_CLIST(clist),*entryp,SELECTOR_NAME_COL,&ptr);
+    get_row_text(*entryp,SELECTOR_NAME_COL,&ptr);
     strcpy(buf,".xvpics/");
     strncat(buf,ptr,sizeof(buf)-8-2);	/* above string is 8 chars long */
     
@@ -3120,7 +3131,7 @@ int row;
 int was_reading=0;
 
 row=focus_row;
-gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,SELECTOR_NAME_COL,&ptr);
 
 /* delete the file */
 if(remove(ptr)==-1)
@@ -3186,7 +3197,7 @@ int row;
 row=focus_row;
 if(row<0 || row>=numrows) return;
 
-gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,SELECTOR_NAME_COL,&ptr);
 if(!ptr) return;
 
 datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
@@ -3222,7 +3233,7 @@ if(do_pastpos && try_to_save_cursor_pos)
 
 if(try_to_save_cursor_pos)
   {
-  gtk_clist_get_text(GTK_CLIST(clist),focus_row,
+  get_row_text(focus_row,
                      SELECTOR_NAME_COL,&ptr);
   if(!ptr || (oldname=malloc(strlen(ptr)+1))==NULL)
     try_to_save_cursor_pos=0;
@@ -3240,7 +3251,7 @@ if(try_to_save_cursor_pos)
 
   for(f=0;f<numrows;f++)
     {
-    gtk_clist_get_text(GTK_CLIST(clist),f,SELECTOR_NAME_COL,&ptr);
+    get_row_text(f,SELECTOR_NAME_COL,&ptr);
     if(*ptr==*oldname && strcmp(ptr,oldname)==0)
       {
       /* focus and make sure it's visible */
@@ -3327,7 +3338,7 @@ selector_block();
 
 current_selection=row;
 
-gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,SELECTOR_NAME_COL,&ptr);
 
 /* don't think this can happen, but what the heck */
 if(!ptr)
@@ -4238,7 +4249,7 @@ int f;
 
 for(f=0;f<numrows;f++)
   {
-  gtk_clist_get_text(GTK_CLIST(clist),f,SELECTOR_NAME_COL,&ptr);
+  get_row_text(f,SELECTOR_NAME_COL,&ptr);
   datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
   if(datptr && datptr->tagged)
     printf("%s\n",ptr);
@@ -4303,7 +4314,7 @@ if(read_dir)
     char *ptr;
     
     /* check it's really `..' (won't be if in root dir) */
-    gtk_clist_get_text(GTK_CLIST(clist),0,SELECTOR_NAME_COL,&ptr);
+    get_row_text(0,SELECTOR_NAME_COL,&ptr);
     if(strcmp(ptr,"..")==0)
       set_focus_row(1);
     }
