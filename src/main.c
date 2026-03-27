@@ -92,7 +92,7 @@
 
 GtkWidget *align,*sw_for_pic;
 GtkWidget *image_widget, *eb_for_pic;
-GtkWidget *clist,*statusbar,*sw_for_flist;
+GtkWidget *treeview,*statusbar,*sw_for_flist;
 GtkWidget *selector_menu,*viewer_menu;
 GtkWidget *zoom_widget;		/* widget for zoom opt on menu */
 GtkWidget *pane;
@@ -102,17 +102,17 @@ int focus_row = -1;
 
 GtkWidget *mainwin;
 
+GtkListStore *liststore;
+
 guint8 xvpic_pal[256][3];		/* palette for thumbnails */
 
 /* image & rendered pixbuf for currently-loaded image */
 xzgv_image *theimage=NULL;
 GdkPixbuf *thepixbuf=NULL;
 
-/* no-thumbnail icon pixmaps */
-GdkPixmap *dir_icon,*file_icon;
-GdkPixmap *dir_icon_small,*file_icon_small;
-GdkBitmap *dir_icon_mask,*file_icon_mask;
-GdkBitmap *dir_icon_small_mask,*file_icon_small_mask;
+/* no-thumbnail icon pixbufs */
+GdkPixbuf *dir_icon,*file_icon;
+GdkPixbuf *dir_icon_small,*file_icon_small;
 
 /* stuff for the idle-func thumbnail loading */
 gint tn_idle_tag=-1;		/* tag returned by g_idle_add() */
@@ -122,7 +122,7 @@ int idle_xvpic_blocked=0;	/* disables idle_xvpic_load() temporarily */
 int idle_xvpic_called=0;	/* set when idle_xvpic_load is called */
 int idle_xvpic_entry_idle;	/* entry placeholder when using g_idle_add() */
 
-int numrows=0;			/* number of rows in clist */
+int numrows=0;			/* number of rows in liststore */
 
 gint zoom_resize_idle_tag=-1;	/* tag for zoom-resize kludge idle func */
 
@@ -391,21 +391,46 @@ return(TRUE);
 
 void flist_freeze(void)
 {
-  gtk_clist_freeze(GTK_CLIST(clist));
+  /* detach model */
+  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), NULL);
 }
 
 void flist_thaw(void)
 {
-  gtk_clist_thaw(GTK_CLIST(clist));
+  /* re-attach model */
+  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(liststore));
 }
 
 
+int get_path_row_number(GtkTreePath *path)
+{
+  if (!path)
+    return -1;
+
+  if (gtk_tree_path_get_depth(path) != 1)
+    return -1;
+
+  gint *indices = gtk_tree_path_get_indices(path);
+
+  if (!indices)
+    return -1;
+
+  return indices[0];
+}
+
 int get_row_at_pos(int x, int y)
 {
-  int row, col;
+  GtkTreePath *path;
+  int row;
 
-  if (!gtk_clist_get_selection_info(GTK_CLIST(clist), x, y, &row, &col))
-    return -1;
+  gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
+      x, y,
+      &path,
+      NULL,   /* column */
+      NULL,   /* cell_x */
+      NULL);  /* cell_y */
+  row = get_path_row_number(path);
+  gtk_tree_path_free(path);
 
   return row;
 }
@@ -414,86 +439,193 @@ int get_row_at_pos(int x, int y)
 /* NOTE: The caller takes ownership ot *filename, and is responsible for freeing it. */
 void get_row_filename(int row, char **filename)
 {
-  gtk_clist_get_text(GTK_CLIST(clist), row, SELECTOR_NAME_COL, filename);
-  *filename = g_strdup(*filename);
+  GtkTreeIter iter;
+
+  if (row < 0 || row >= numrows)
+    return;
+
+  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_NAME_COL, filename, -1);
 }
 
 void set_row_filename(int row, char *filename)
 {
-  gtk_clist_set_text(GTK_CLIST(clist), row, SELECTOR_NAME_COL, filename);
+  GtkTreeIter iter;
+
+  if (row < 0 || row >= numrows)
+    return;
+
+  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+  gtk_list_store_set(liststore, &iter, SELECTOR_NAME_COL, filename, -1);
 }
 
 
-int get_row_thumbnail(int row, GdkPixmap **pixmap, GdkBitmap **mask)
+int get_row_thumbnail(int row, GdkPixbuf **pixbuf)
 {
-  return gtk_clist_get_pixmap(GTK_CLIST(clist), row, SELECTOR_TN_COL, pixmap, mask);
+  GtkTreeIter iter;
+
+  if (row < 0 || row >= numrows)
+    return 0;
+
+  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_TN_COL, pixbuf, -1);
+
+  return (*pixbuf != NULL);
 }
 
-void set_row_thumbnail(int row, GdkPixmap *pixmap, GdkBitmap *mask)
+void set_row_thumbnail(int row, GdkPixbuf *pixbuf)
 {
-  gtk_clist_set_pixmap(GTK_CLIST(clist), row, SELECTOR_TN_COL, pixmap, mask);
+  GtkTreeIter iter;
+
+  if (row < 0 || row >= numrows)
+    return;
+
+  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+  gtk_list_store_set(liststore, &iter, SELECTOR_TN_COL, pixbuf, -1);
 }
 
 
 struct row_data_tag *get_row_data(int row)
 {
-  return gtk_clist_get_row_data(GTK_CLIST(clist), row);
-}
+  GtkTreeIter iter;
+  struct row_data_tag *datptr;
 
+  if (row < 0 || row >= numrows)
+    return(NULL);
+
+  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_DATA_COL, &datptr, -1);
+
+  return(datptr);
+}
 
 void move_to_row(int row, float row_align)
 {
   /* these constants are just there to act as named function arguments  */
-  const int column = 0;
+  const int column_idx = 0;
   const float col_align = 0;
+  const gboolean use_align = TRUE;
 
-  gtk_clist_moveto(GTK_CLIST(clist), row, column, row_align, col_align);
+  GtkTreePath *path;
+  GtkTreeViewColumn* column;
+
+  path = gtk_tree_path_new_from_indices(row, -1);
+  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), column_idx);
+  gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(treeview),
+      path, column,
+      use_align, row_align, col_align);
+  gtk_tree_path_free(path);
+}
+
+
+void enable_sorting(void)
+{
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
+      SELECTOR_NAME_COL,
+      GTK_SORT_ASCENDING);
+}
+
+void disable_sorting(void)
+{
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
+      GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+      GTK_SORT_ASCENDING);
+}
+
+/* sort model rows -- resort_finish() should usually be called instead */
+void sort_model_rows(void)
+{
+  enable_sorting();
+  disable_sorting();
 }
 
 
 void select_row(int row)
 {
-  const int column = 0;
+  GtkTreeSelection *selection;
+  GtkTreePath *path;
 
-  gtk_clist_select_row(GTK_CLIST(clist), row, column);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  path = gtk_tree_path_new_from_indices(row, -1);
+  gtk_tree_selection_select_path(selection, path);
+  gtk_tree_path_free(path);
 }
 
 void unselect_row(int row)
 {
-  const int column = 0;
+  GtkTreeSelection *selection;
+  GtkTreePath *path;
 
-  gtk_clist_unselect_row(GTK_CLIST(clist), row, column);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  path = gtk_tree_path_new_from_indices(row, -1);
+  gtk_tree_selection_unselect_path(selection, path);
+  gtk_tree_path_free(path);
 }
 
 void unselect_all(void)
 {
-  gtk_clist_unselect_all(GTK_CLIST(clist));
+  GtkTreeSelection *selection;
+
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_unselect_all(selection);
 }
 
 
 int first_visible_row(void)
 {
-  const int x = 0, y = 0;  /* point (0,0) at the lop-left */
-  int row, col;
+  GtkTreePath *start_path;
+  int row;
 
-  gtk_clist_get_selection_info(GTK_CLIST(clist), x, y, &row, &col);
+  if (!gtk_tree_view_get_visible_range(GTK_TREE_VIEW(treeview), &start_path, NULL))
+    return -1;
+
+  row = get_path_row_number(start_path);
+
+  gtk_tree_path_free(start_path);
 
   return row;
 }
 
-
 gboolean row_is_visible(int row)
 {
-  return gtk_clist_row_is_visible(GTK_CLIST(clist), row) != GTK_VISIBILITY_NONE;
+  GtkTreePath *start_path, *end_path;
+  gboolean ret;
 
+  if (!gtk_tree_view_get_visible_range(GTK_TREE_VIEW(treeview), &start_path, &end_path))
+    return(FALSE);
+
+  ret = (get_path_row_number(start_path) <= row) && (row <= get_path_row_number(end_path));
+
+  gtk_tree_path_free(start_path);
+  gtk_tree_path_free(end_path);
+
+  return ret;
 }
 
 gboolean row_is_fully_visible(int row)
 {
-  return gtk_clist_row_is_visible(GTK_CLIST(clist), row) == GTK_VISIBILITY_FULL;
+  GtkTreePath *path;
+  GdkRectangle visible_rect;  /* visible region, in tree coordinates */
+  GdkRectangle row_area_bin;  /* area occupied by row, in bin_window coordinates */
+  gint row_area_tree_x, row_area_tree_y;  /* same, in tree coordinates */
 
+  gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &visible_rect);
+
+  path = gtk_tree_path_new_from_indices(row, -1);
+  gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeview), path, NULL, &row_area_bin);
+  gtk_tree_path_free(path);
+
+  /* We'll be operating in tree coordinates, so convert row_area_bin */
+  gtk_tree_view_convert_bin_window_to_tree_coords(
+      GTK_TREE_VIEW(treeview),
+      row_area_bin.x,
+      row_area_bin.y,
+      &row_area_tree_x,
+      &row_area_tree_y);
+
+  return (row_area_tree_y >= visible_rect.y) &&
+    ((row_area_tree_y + row_area_bin.height) <= (visible_rect.y + visible_rect.height));
 }
-
 
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
@@ -503,22 +635,154 @@ if(!row_is_fully_visible(row))
 }
 
 
-/* moving the cursor while the clist is focused can screw up the display.
- * Instead, we unfocus the clist (if focused), change rows, then
- * (if it was previously focused) return focus to clist.
+/*
+ * GtkTreeView does not have the equivalent of GtkCList's focus_row, so we
+ * have to manage our own, and draw its cursor rectangle ourselves.
+ */
+
+/* get a rectangle (in widget coordinates) for the focus row cursor */
+gboolean get_focus_row_rect(GdkRectangle *rect)
+{
+  GtkTreePath *path;
+  GdkRectangle visible_rect;  /* visible region, in tree coordinates */
+  GdkRectangle row_area;      /* area occupied by row, in bin_window coordinates */
+
+  /* have the cursor disappear when focus is lost */
+  if ((focus_row < 0) || !gtk_widget_has_focus(treeview))
+    return(FALSE);
+
+  /* Note that although we are dealing with three different coordinate systems,
+   * converting between them is merely a geometric translation, so it does not
+   * affect any width/height measurement. */
+
+  /* Horizontal (x) coordinates, anchored to the widget itself */
+
+  /* left anchor is widget's leftmost coordinate (i.e. 0) */
+  rect->x = 0;
+  /* width is widget's width, also equal to visible width */
+  gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &visible_rect);
+  rect->width = visible_rect.width;
+
+  /* Vertical (y) coordinates, anchored to the focus row */
+
+  /* fetch the area occupied by the focus row */
+  path = gtk_tree_path_new_from_indices(focus_row, -1);
+  gtk_tree_view_get_cell_area(GTK_TREE_VIEW(treeview), path, NULL, &row_area);
+  gtk_tree_path_free(path);
+  /* top anchor is focus row's top border */
+  /* (This is technically in bin_window coordinates, not widget coordinates,
+   * but their y coordinates differ only by the height of the headers, which
+   * is 0 in our case, since they are disabled.) */
+  rect->y = row_area.y;
+  /* height is merely the focus row's height */
+  rect->height = row_area.height;
+
+  return(TRUE);
+}
+
+/* drawing differs considerably between GTK 2 and 3 */
+
+#if GTK_MAJOR_VERSION >= 3
+
+/* GTK 3: callback for the `draw` signal */
+gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
+{
+  GdkRectangle rect;
+  GtkStyleContext *context;
+  GdkRGBA color;
+
+  if (get_focus_row_rect(&rect)) {
+    context = gtk_widget_get_style_context(widget);
+    gtk_style_context_get_color(context,
+        gtk_style_context_get_state(context),
+        &color);
+    gdk_cairo_set_source_rgba(cr, &color);
+
+    cairo_set_line_width(cr, 1);
+    cairo_rectangle(cr,
+        /* see https://www.cairographics.org/FAQ/#sharp_lines */
+        rect.x + 0.5, rect.y + 0.5,
+        /* we need to remove one line width from both dimensions */
+        rect.width - 1, rect.height - 1);
+    cairo_stroke(cr);
+  }
+
+  return GDK_EVENT_PROPAGATE;
+}
+
+#else
+
+/*
+ * GTK 2: I didn't have much success by simply drawing after the `expose-event`
+ * signal (the treeview would overwrite our work, even when using
+ * `g_signal_connect_after`), so I resorted to using a timer event that
+ * constantly redraws our cursor.  It sucks, but it works.
+ *
+ * If `user_data` is true, this is a one-shot timer and G_SOURCE_REMOVE will
+ * be returned; otherwise, this is a recurrent timer and G_SOURCE_CONTINUE
+ * will be returned.  (Remember to use GINT_TO_POINTER() for this.)
+ */
+gboolean refresh_focus_row_timer_cb(gpointer user_data)
+{
+  GdkWindow *win;
+  GdkRectangle rect;
+  GdkGC *gc;
+
+  if (get_focus_row_rect(&rect)) {
+    win = gtk_widget_get_window(treeview);
+
+    gc = gdk_gc_new(win);
+
+    gdk_gc_set_subwindow(gc, GDK_INCLUDE_INFERIORS);
+
+    gdk_draw_rectangle(win, gc,
+        FALSE,  /* filled */
+        rect.x, rect.y,
+        /* we need to remove one line width from both dimensions */
+        rect.width - 1, rect.height - 1);
+
+    g_object_unref(gc);
+  }
+
+  return (GPOINTER_TO_INT(user_data) ? G_SOURCE_REMOVE : G_SOURCE_CONTINUE);
+}
+
+#endif
+
+/* redraw the focus row cursor; this can be used as a standalone function or
+ * as a callback */
+gboolean refresh_focus_row(void)
+{
+#if GTK_MAJOR_VERSION >= 3
+  /* this will trigger draw_callback() */
+  gtk_widget_queue_draw(treeview);
+
+  return GDK_EVENT_PROPAGATE;
+#else
+  /* add a single-shot timer with a slight delay; g_idle_add() would be too fast */
+  g_timeout_add(10, refresh_focus_row_timer_cb, GINT_TO_POINTER(TRUE));
+
+  return FALSE;  /* GDK_EVENT_PROPAGATE */
+#endif
+}
+
+
+/* moving the cursor while the treeview is focused can screw up the display.
+ * Instead, we unfocus the treeview (if focused), change rows, then
+ * (if it was previously focused) return focus to treeview.
  */
 void set_focus_row(int new_row)
 {
-int had_focus=gtk_widget_has_focus(clist);
+int had_focus=gtk_widget_has_focus(treeview);
 
 if(had_focus)
   gtk_widget_grab_focus(eb_for_pic);
 
-GTK_CLIST(clist)->focus_row=new_row;
 focus_row=new_row;
+refresh_focus_row();
 
 if(had_focus)
-  gtk_widget_grab_focus(clist);
+  gtk_widget_grab_focus(treeview);
 }
 
 
@@ -541,8 +805,7 @@ return(datptr->tagged);
  */
 void set_tagged_state(int row,int tagged)
 {
-/* XXX colour used for tagging should be configurable */
-static GdkColor col={0, 0xffff,0,0};	/* red */
+GtkTreeIter iter;
 struct row_data_tag *datptr;
 
 datptr=get_row_data(row);
@@ -556,7 +819,8 @@ if(datptr)
     datptr->tagged=tagged;
   }
 
-gtk_clist_set_foreground(GTK_CLIST(clist),row,datptr->tagged?&col:NULL);
+gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+gtk_list_store_set(liststore, &iter, SELECTOR_TAGGED_COL, datptr->tagged, -1);
 }
 
 
@@ -630,8 +894,8 @@ if(hidden)
   hidden=0;
   }
 
-gtk_widget_set_can_focus(clist, TRUE);
-gtk_widget_grab_focus(clist);
+gtk_widget_set_can_focus(treeview, TRUE);
+gtk_widget_grab_focus(treeview);
 
 /* XXX kludge: make sure pic is fixed in zoom mode */
 pic_win_resized(NULL,NULL);
@@ -703,7 +967,7 @@ switch(event->button)
   case 1:
     if(event->state&GDK_CONTROL_MASK)
       {
-      /* stop the clist widget seeing it */
+      /* stop the treeview widget seeing it */
       g_signal_stop_emission_by_name(widget, "button_press_event");
       return(TRUE);	/* otherwise ignored, we do it on release */
       }
@@ -1174,7 +1438,7 @@ if(in_nextprev) return;
 
 in_nextprev=1;	/* in effect :-) */
 
-/* one difference from normal clist keyboard-select behaviour;
+/* one difference from normal treeview keyboard-select behaviour;
  * we always select (rather than toggling), even if image was
  * previously selected.
  */
@@ -1367,7 +1631,7 @@ else
       up=((event->keyval==GDK_KEY_u) || (event->keyval==GDK_KEY_Page_Up));
       oldrow=row;
       vpage=gtk_adjustment_get_page_size(GTK_ADJUSTMENT(
-        gtk_clist_get_vadjustment(GTK_CLIST(clist))));
+        gtk_tree_view_get_vadjustment(GTK_TREE_VIEW(treeview))));
       incdec=(int)((vpage/
                     (1+(thin_rows?ROW_HEIGHT_THIN:ROW_HEIGHT_NORMAL)))+0.5);
       /* next statement is bug-compatible with true page up/down :-)
@@ -1603,9 +1867,24 @@ return(FALSE);
 
 void set_row_height(int height)
 {
-  gtk_clist_set_row_height(GTK_CLIST(clist), height);
-}
+  GList *column_list;
 
+  column_list = gtk_tree_view_get_columns(GTK_TREE_VIEW(treeview));
+  for (GList *l = column_list; l != NULL; l = l->next)
+  {
+    GtkTreeViewColumn *column = l->data;
+    GList *renderer_list;
+
+    renderer_list = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(column));
+    for (GList *ll = renderer_list; ll != NULL; ll = ll->next)
+    {
+      GtkCellRenderer *renderer = ll->data;
+      g_object_set(renderer, "height", height, NULL);
+    }
+    g_list_free(renderer_list);
+  }
+  g_list_free(column_list);
+}
 
 void fix_row_heights(void)
 {
@@ -1615,10 +1894,13 @@ set_row_height(thin_rows?ROW_HEIGHT_THIN:ROW_HEIGHT_NORMAL);
 
 void set_thumbnail_column_width(void)
 {
-gtk_clist_set_column_width(GTK_CLIST(clist),SELECTOR_TN_COL,
-                           thin_rows?(80/ROW_HEIGHT_DIV+1):80);
-}
+  GtkTreeViewColumn *column;
 
+  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL);
+  gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_fixed_width(column,
+                           thin_rows ? (80 / ROW_HEIGHT_DIV + 1) : 80);
+}
 
 
 void same_centre(int *xp,int *yp,int newxsc,int newysc,
@@ -2064,8 +2346,7 @@ use_exif_orient=!use_exif_orient;
 void toggle_thin_rows(gpointer cb_data,guint cb_action,GtkWidget *widget)
 {
 struct row_data_tag *datptr;
-GdkPixmap *pixmap;
-GdkBitmap *mask;
+GdkPixbuf *pixbuf;
 int f;
 
 if(!listen_to_toggles || in_nextprev) return;
@@ -2078,21 +2359,20 @@ thin_rows=!thin_rows;
 fix_row_heights();
 set_thumbnail_column_width();
 
-/* switch pixmaps (normal for small, small for normal).
+/* switch pixbufs (normal for small, small for normal).
  * This is slightly tricky as there may be a thumbnail-read ongoing.
  * The current state is at least consistent though (it's not actually
  * multi-threaded or anything :-)), so just switch all which have
- * pixmaps.
+ * pixbufs.
  */
 for(f=0;f<numrows;f++)
   {
-  if(!get_row_thumbnail(f,&pixmap,&mask))
+  if(!get_row_thumbnail(f,&pixbuf))
     continue;
   
   datptr=get_row_data(f);
   set_row_thumbnail(f,
-                       thin_rows?datptr->pm_small:datptr->pm_norm,
-                       thin_rows?datptr->pm_small_mask:datptr->pm_norm_mask);
+                       thin_rows?datptr->pb_small:datptr->pb_norm);
   }
 
 flist_thaw();
@@ -2244,7 +2524,7 @@ if(!numrows) return;		/* this is surely impossible, but WTF :-) */
  * of dealing with when to zero this in the idle function itself.
  * Ditto with last adjustment, though this is a bit ugly. :-)
  */
-idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
+idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_tree_view_get_vadjustment(GTK_TREE_VIEW(treeview)));
 idle_xvpic_jumped=0;
 idle_xvpic_entry_idle=0;
 tn_idle_tag=g_idle_add((GSourceFunc)idle_xvpic_load,&idle_xvpic_entry_idle);
@@ -2281,7 +2561,7 @@ if(thumbnail_read_running()) return;
 row = first_visible_row();
 if(row==-1) return;
 
-idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
+idle_xvpic_lastadjval=gtk_adjustment_get_value(gtk_tree_view_get_vadjustment(GTK_TREE_VIEW(treeview)));
 idle_xvpic_jumped=0;
 entry=row;
 
@@ -2299,7 +2579,8 @@ while(entry!=-1 && mainwin && (!checkptr || *checkptr) &&
 void resort_finish(void)
 {
 int was_reading=0;
-struct row_data_tag *datptr=NULL;
+GtkTreePath *path;
+GtkTreeRowReference *row_ref;
 
 if(thumbnail_read_running())
   {
@@ -2312,18 +2593,22 @@ if(current_selection!=-1)
   set_focus_row(current_selection);
 
 /* now we do everything in terms of the focus row.
- * get row data pointer (which is unique) so we can look the row up after.
+ * get a row reference so we can look the row up after.
  */
-datptr=get_row_data(focus_row);
+path = gtk_tree_path_new_from_indices(focus_row, -1);
+row_ref = gtk_tree_row_reference_new(GTK_TREE_MODEL(liststore), path);
+gtk_tree_path_free(path);
 
-gtk_clist_sort(GTK_CLIST(clist));
+sort_model_rows();
 
-/* look up data, and reselect it. */
-if(datptr)
+/* fetch back the row, and reselect it. */
+if(row_ref)
   {
-  int tmp=gtk_clist_find_row_from_data(GTK_CLIST(clist),datptr);
+  path = gtk_tree_row_reference_get_path(row_ref);
+  int tmp = get_path_row_number(path);
+  gtk_tree_path_free(path);
   
-  /* ..._find_row_from_data() returns -1 on error, great for this. :-) */
+  /* ... get_path_row_number() returns -1 on error, great for this. :-) */
   if(current_selection!=-1)
     current_selection=tmp;
   
@@ -2335,11 +2620,15 @@ if(datptr)
    */
   if(current_selection!=-1)
     {
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+
     /* block selection handler while selecting it, so we don't reload pic! */
-    g_signal_handler_block(clist, cb_selection_id);
+    g_signal_handler_block(selection, cb_selection_id);
     select_row(current_selection);
-    g_signal_handler_unblock(clist, cb_selection_id);
+    g_signal_handler_unblock(selection, cb_selection_id);
     }
+
+  gtk_tree_row_reference_free(row_ref);
   }
 
 /* now deal with visibility problems. This takes the same approach
@@ -2581,10 +2870,9 @@ void find_xvpic_cols(void)
 }
 
 
-GdkPixmap *xvpic2pixmap(unsigned char *xvpic,int w,int h,GdkPixmap **smallp)
+GdkPixbuf *xvpic2pixbuf(unsigned char *xvpic,int w,int h,GdkPixbuf **smallp)
 {
-GdkPixmap *pixmap,*small_pixmap;
-GdkPixbuf *tmp_pixbuf;
+GdkPixbuf *pixbuf,*small_pixbuf;
 guint8 *buffer, *small_buffer;
 unsigned char *ptr=xvpic;
 int x,y;
@@ -2614,7 +2902,7 @@ for(y=0;y<h;y++) {
   }
 }
 
-tmp_pixbuf = gdk_pixbuf_new_from_data(
+pixbuf = gdk_pixbuf_new_from_data(
     (guchar*)buffer,                 /* data */
     GDK_COLORSPACE_RGB,              /* colorspace */
     FALSE,                           /* has_alpha */
@@ -2624,16 +2912,13 @@ tmp_pixbuf = gdk_pixbuf_new_from_data(
     (GdkPixbufDestroyNotify)g_free,  /* destroy_fn */
     NULL);                           /* destroy_fn_data */
 
-if (NULL == tmp_pixbuf)
+if (NULL == pixbuf)
   {
     free(buffer);
     return(NULL);
   }
 
-/* (from that point on, `tmp_pixbuf` will automatically free `buffer` for us) */
-
-gdk_pixbuf_render_pixmap_and_mask(tmp_pixbuf, &pixmap, NULL, 128);
-g_object_unref(tmp_pixbuf);
+/* (from that point on, `pixbuf` will automatically free `buffer` for us) */
 
 gdk_flush();
 
@@ -2643,7 +2928,7 @@ small_buffer = malloc (small_w * small_h * sizeof (guint8) * 3);
 
 if (NULL == small_buffer) {
     /* malloc failed */
-    g_object_unref(pixmap);
+    g_object_unref(pixbuf);
     return NULL;
 }
 
@@ -2655,7 +2940,7 @@ for(y=0;y<small_h;y++) {
   }
 }
 
-tmp_pixbuf = gdk_pixbuf_new_from_data(
+small_pixbuf = gdk_pixbuf_new_from_data(
     (guchar*)small_buffer,           /* data */
     GDK_COLORSPACE_RGB,              /* colorspace */
     FALSE,                           /* has_alpha */
@@ -2665,19 +2950,16 @@ tmp_pixbuf = gdk_pixbuf_new_from_data(
     (GdkPixbufDestroyNotify)g_free,  /* destroy_fn */
     NULL);                           /* destroy_fn_data */
 
-if (NULL == tmp_pixbuf)
+if (NULL == small_pixbuf)
   {
-    g_object_unref(pixmap);
+    g_object_unref(pixbuf);
     free(small_buffer);
     return(NULL);
   }
 
-gdk_pixbuf_render_pixmap_and_mask(tmp_pixbuf, &small_pixmap, NULL, 128);
-g_object_unref(tmp_pixbuf);
+*smallp=small_pixbuf;
 
-*smallp=small_pixmap;
-
-return(pixmap);
+return(pixbuf);
 }
 
 
@@ -2687,8 +2969,7 @@ static char buf[1024];
 struct row_data_tag *datptr;
 char *ptr;
 int f,w,h;
-GdkPixmap *pixmap,*small_pixmap;
-GdkBitmap *mask;
+GdkPixbuf *pixbuf,*small_pixbuf;
 static unsigned char xvpic_data[80*60];		/* max thumbnail size */
 float adjval;
 static int prev_scanpos=0;	/* if jumped, saved pos in top-to-bot scan */
@@ -2703,7 +2984,7 @@ if(idle_xvpic_blocked)
  * preventing it (!), so I've not used those here.
  */
 
-adjval=gtk_adjustment_get_value(gtk_clist_get_vadjustment(GTK_CLIST(clist)));
+adjval=gtk_adjustment_get_value(gtk_tree_view_get_vadjustment(GTK_TREE_VIEW(treeview)));
 if(adjval!=idle_xvpic_lastadjval)
   {
   int row=-1;
@@ -2733,8 +3014,8 @@ if(adjval!=idle_xvpic_lastadjval)
 
 for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   {
-  /* if there's already a pixmap there, skip it. */
-  if(!get_row_thumbnail(*entryp,&pixmap,&mask))
+  /* if there's already a pixbuf there, skip it. */
+  if(!get_row_thumbnail(*entryp,&pixbuf))
     {
     /* construct filename for file's (possible) thumbnail */
     get_row_filename(*entryp,&ptr);
@@ -2744,42 +3025,32 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     
     datptr=get_row_data(*entryp);
     
-    /* if it's a dir, use ref to dir_icon pixmap. */
+    /* if it's a dir, use ref to dir_icon pixbuf. */
     if(datptr->isdir)
       {
-      datptr->pm_norm=g_object_ref(dir_icon);
-      datptr->pm_small=g_object_ref(dir_icon_small);
-      datptr->pm_norm_mask=g_object_ref(dir_icon_mask);
-      datptr->pm_small_mask=g_object_ref(dir_icon_small_mask);
+      datptr->pb_norm=g_object_ref(dir_icon);
+      datptr->pb_small=g_object_ref(dir_icon_small);
       set_row_thumbnail(*entryp,
-                           thin_rows?datptr->pm_small:datptr->pm_norm,
-                           (thin_rows?datptr->pm_small_mask:
-                            datptr->pm_norm_mask));
+                           thin_rows?datptr->pb_small:datptr->pb_norm);
       }
     else
       {
       /* it's a file, try to load a thumbnail for it */
       if(read_xvpic(buf,xvpic_data,&w,&h) &&
-         (pixmap=xvpic2pixmap(xvpic_data,w,h,&small_pixmap))!=NULL)
+         (pixbuf=xvpic2pixbuf(xvpic_data,w,h,&small_pixbuf))!=NULL)
         {
-        datptr->pm_norm=pixmap;
-        datptr->pm_small=small_pixmap;
-        datptr->pm_norm_mask=datptr->pm_small_mask=NULL;
+        datptr->pb_norm=pixbuf;
+        datptr->pb_small=small_pixbuf;
         set_row_thumbnail(*entryp,
-                             thin_rows?datptr->pm_small:datptr->pm_norm,
-                             NULL);
+                             thin_rows?datptr->pb_small:datptr->pb_norm);
         }
       else
         {
-        /* no thumbnail then, use ref to file_icon pixmap. */
-        datptr->pm_norm=g_object_ref(file_icon);
-        datptr->pm_small=g_object_ref(file_icon_small);
-        datptr->pm_norm_mask=g_object_ref(file_icon_mask);
-        datptr->pm_small_mask=g_object_ref(file_icon_small_mask);
+        /* no thumbnail then, use ref to file_icon pixbuf. */
+        datptr->pb_norm=g_object_ref(file_icon);
+        datptr->pb_small=g_object_ref(file_icon_small);
         set_row_thumbnail(*entryp,
-                             thin_rows?datptr->pm_small:datptr->pm_norm,
-                             (thin_rows?datptr->pm_small_mask:
-                              datptr->pm_norm_mask));
+                             thin_rows?datptr->pb_small:datptr->pb_norm);
         }
       }
     }
@@ -2809,14 +3080,17 @@ return 1;
 }
 
 
-/* remove everything from clist, freeing pixmaps beforehand */
-void blast_clist(void)
+/* remove everything from liststore, freeing pixbufs beforehand */
+void blast_liststore(void)
 {
 int f;
 struct row_data_tag *datptr;
 
 if(numrows==0) return;
 
+/* freezing here is not just about efficiency, but also prevents cb_selection()
+ * from being called and trying to read the row data which we have just freed
+ */
 flist_freeze();
 
 /* stop any `currently'-running idle func to read thumbnails
@@ -2826,26 +3100,27 @@ stop_thumbnail_read();
 
 for(f=0;f<numrows;f++)
   {
-  /* seems to free the pixmaps itself, but doesn't free the data AFAIK
+  /* seems to free the pixbufs itself, but doesn't free the data AFAIK
    * (reasonable enough - the data could point to something static, etc.)
-   * However, only one of our pixmaps (normal/small) is showing currently;
+   * However, only one of our pixbufs (normal/small) is showing currently;
    * remove the other before removing the data.
    */
   datptr=get_row_data(f);
   /* be careful - we may be halfway through thumbnail-read... */
   if(datptr)
     {
-    if(datptr->pm_norm) g_object_unref(datptr->pm_norm);
-    if(datptr->pm_norm_mask) g_object_unref(datptr->pm_norm_mask);
-    if(datptr->pm_small) g_object_unref(datptr->pm_small);
-    if(datptr->pm_small_mask) g_object_unref(datptr->pm_small_mask);
+    if(datptr->pb_norm) g_object_unref(datptr->pb_norm);
+    if(datptr->pb_small) g_object_unref(datptr->pb_small);
     free(datptr);
     }
   }
 
 /* now remove all rows at once */
-gtk_clist_clear(GTK_CLIST(clist));
+gtk_list_store_clear(liststore);
 numrows=0;
+
+/* reset columns width, so that the filename column can grow from zero again */
+gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeview));
 
 focus_row = 0;
 
@@ -2853,17 +3128,19 @@ flist_thaw();
 }
 
 
-gint sort_cmp(GtkCList *clist,gconstpointer ptr1,gconstpointer ptr2)
+gint sort_cmp(
+    GtkTreeModel *model,
+    GtkTreeIter  *a,
+    GtkTreeIter  *b,
+    gpointer      user_data)
 {
-GtkCListRow *row1=(GtkCListRow *)ptr1;
-GtkCListRow *row2=(GtkCListRow *)ptr2;
-char *txt1,*txt2;
+g_autofree char *txt1 = NULL, *txt2 = NULL;
 struct row_data_tag *dat1,*dat2;
 
-txt1=GTK_CELL_TEXT(row1->cell[SELECTOR_NAME_COL])->text;
-txt2=GTK_CELL_TEXT(row2->cell[SELECTOR_NAME_COL])->text;
-dat1=row1->data;
-dat2=row2->data;
+gtk_tree_model_get(model, a, SELECTOR_NAME_COL, &txt1, -1);
+gtk_tree_model_get(model, b, SELECTOR_NAME_COL, &txt2, -1);
+gtk_tree_model_get(model, a, SELECTOR_DATA_COL, &dat1, -1);
+gtk_tree_model_get(model, b, SELECTOR_DATA_COL, &dat2, -1);
 
 /* directories always come first.
  * so, if comparing two files, use a normal comparison;
@@ -2933,9 +3210,7 @@ return(1);			/* else second one is dir */
 int add_new_row(char *filename,struct stat *sbuf)
 {
 struct row_data_tag *datptr;
-gchar *textarr[SELECTOR_NUM_COLUMNS];
 char *ptr;
-int row;
 static char* extensions[] ={".GIF", ".JPEG", ".JPG", ".PNG", ".PBM", ".PGM", ".PPM",
                             ".PNM", ".BMP",  ".TGA", ".PCX", ".MRF", ".PRF", ".XBM",
                             ".XPM", ".TIFF", ".TIF", ".TIM", ".XWD"};
@@ -2977,17 +3252,18 @@ datptr->mtime=sbuf->st_mtime;
 datptr->ctime=sbuf->st_ctime;
 datptr->atime=sbuf->st_atime;
 datptr->tagged=0;
-datptr->pm_norm=datptr->pm_small=NULL;	/* no pixmaps initially */
-datptr->pm_norm_mask=datptr->pm_small_mask=NULL;
+datptr->pb_norm=datptr->pb_small=NULL;	/* no pixbufs initially */
 
-textarr[SELECTOR_TN_COL]="";
-textarr[SELECTOR_NAME_COL]=filename;
-row=gtk_clist_append(GTK_CLIST(clist),textarr);
-gtk_clist_set_row_data(GTK_CLIST(clist),row,datptr);
+gtk_list_store_insert_with_values(liststore,
+    NULL,  /* iter */
+    -1,    /* position */
+    SELECTOR_NAME_COL, filename,
+    SELECTOR_DATA_COL, datptr,
+    -1);
 
-/* we *could* put pixmaps in place for directories right now,
+/* we *could* put pixbufs in place for directories right now,
  * rather than waiting for idle_xvpic_load() to do it. However,
- * this a) seems to end up being a bit flickery despite the clist
+ * this a) seems to end up being a bit flickery despite the list
  * being `frozen', and b) looks rather odd. :-)
  */
 
@@ -3081,7 +3357,7 @@ closedir(dirfile);
 if(numrows)
   {
   /* sort the list (using sort_cmp) */
-  gtk_clist_sort(GTK_CLIST(clist));
+  sort_model_rows();
   
   /* unselect the first row to give us a sane initial pos for
    * keyboard movement. (Doesn't seem to be necessary after sorting,
@@ -3230,6 +3506,7 @@ g_autofree char *ptr = NULL;
 char *tn;
 int row;
 int was_reading=0;
+GtkTreeIter iter;
 
 row=focus_row;
 get_row_filename(row,&ptr);
@@ -3250,7 +3527,7 @@ tn=malloc(strlen(prefix)+strlen(ptr)+1);
 if(tn)
   strcpy(tn,prefix),strcat(tn,ptr);
 
-/* remove the row in the clist. We need to stop/restart thumbnail read
+/* remove the row in the liststore. We need to stop/restart thumbnail read
  * if it's running, as unexpectedly losing a row midway through could
  * cause problems.
  */
@@ -3260,7 +3537,8 @@ if(thumbnail_read_running())
   was_reading=1;
   }
 
-gtk_clist_remove(GTK_CLIST(clist),row);
+gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
+gtk_list_store_remove(liststore, &iter);
 numrows--;
 
 if(was_reading)
@@ -3343,7 +3621,7 @@ if(try_to_save_cursor_pos)
     strcpy(oldname,ptr);
   }
 
-blast_clist();
+blast_liststore();
 add_new_rows_from_dir();
 set_title(1);
 
@@ -3406,7 +3684,7 @@ cb_copymove_file_or_tagged_files(1);
 void selector_block(void)
 {
 /* can't do this with g_signal_handler_block, as that doesn't block
- * the native clist handlers. Need to still have the handlers, but
+ * the native treeview handlers. Need to still have the handlers, but
  * have them actively ignore the events.
  */
 ignore_selector_input=1;
@@ -3419,14 +3697,17 @@ ignore_selector_input=0;
 }
 
 
-void cb_selection(GtkWidget *clist,gint row,gint column,
-                  GdkEventButton *event,GtkScrolledWindow *sw)
+void cb_selection(GtkTreeSelection *selection,
+                  GtkScrolledWindow *sw)
 {
 g_autofree char *ptr = NULL;
 xzgv_image *oldimage=theimage;
 struct row_data_tag *datptr;
 int orient_lastpicexit_state=0;
 int old_selection=current_selection;
+int row;
+GtkTreeIter iter;
+GtkTreePath *path;
 FILE *test;
 static int in_routine=0;
 
@@ -3438,7 +3719,19 @@ in_routine=1;
 /* block mouse click/release and keys on selector while loading. */
 selector_block();
 
+if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
+{
+  /* no row selected */
+  selector_unblock();
+  in_nextprev=in_routine=0;
+  return;
+}
+path = gtk_tree_model_get_path(GTK_TREE_MODEL(liststore), &iter);
+row = get_path_row_number(path);
+gtk_tree_path_free(path);
+
 current_selection=row;
+set_focus_row(row);
 
 get_row_filename(row,&ptr);
 
@@ -3481,9 +3774,9 @@ else
   else	    /* a previous file was selected, reselect it (but don't reload) */
     {
     /* block selection handler while selecting it, so we don't reload pic! */
-    g_signal_handler_block(clist, cb_selection_id);
+    g_signal_handler_block(selection, cb_selection_id);
     select_row(current_selection);
-    g_signal_handler_unblock(clist, cb_selection_id);
+    g_signal_handler_unblock(selection, cb_selection_id);
     }
 
   selector_unblock();
@@ -3585,7 +3878,7 @@ gtk_statusbar_pop(GTK_STATUSBAR(statusbar),sel_id);
 gtk_widget_grab_focus(eb_for_pic);
 
 /* stop us allowing kybd focus (until esc/tab) */
-gtk_widget_set_can_focus(clist, FALSE);
+gtk_widget_set_can_focus(treeview, FALSE);
 
 /* hide us if auto hide is on */
 if(auto_hide && !hidden)
@@ -3626,7 +3919,7 @@ void init_window(void)
  *   (paned in window contains all this)
  *   __________________paned_________________
  * v|                |^|                     | 	maybe toolbar here eventually?
- * b|clist of pics   |||                     |
+ * b|treeview of pics|||                     |
  * o| in scrolled win|||                     |
  * x|1st col xvpic,  ||| pic in scrolled win |
  * l|2nd col fname.  |||                     |
@@ -3641,6 +3934,8 @@ GtkUIManager *ui_manager;
 GdkPixbuf *icon;
 char *ptr;
 GtkAllocation allocation, allocation2;
+GtkCellRenderer *renderer;
+GtkTreeSelection *selection;
 
 GtkActionEntry selector_menu_entries[] = {
   { "UpdateTN",          NULL, "_Update Thumbnails", "u",      NULL, G_CALLBACK(cb_update_tn) },
@@ -3978,7 +4273,7 @@ gtk_widget_set_can_focus(vboxl, FALSE);
 gtk_paned_add1(GTK_PANED(pane),vboxl);
 gtk_widget_show(vboxl);
 
-/* event box for scrolled window for clist (!), to make sure it has a
+/* event box for scrolled window for treeview (!), to make sure it has a
  * proper window to draw into (otherwise it screws up when pane-split pos
  * is near left of window). The image is ok on this count 'cos its
  * scrollbars are drawn to the right, i.e. off the window, and X clips
@@ -4001,7 +4296,7 @@ gtk_widget_set_events(flist_sw_ebox,
                       GDK_BUTTON_PRESS_MASK|GDK_BUTTON1_MOTION_MASK);
 gtk_widget_show(flist_sw_ebox);
 
-/* now the scrolled window for clist, and the clist which goes into it. */
+/* now the scrolled window for treeview, and the treeview which goes into it. */
 sw_for_flist=gtk_scrolled_window_new(NULL,NULL);
 gtk_widget_set_can_focus(sw_for_flist, FALSE);
 gtk_container_set_border_width(GTK_CONTAINER(sw_for_flist),0);
@@ -4013,23 +4308,92 @@ gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_flist),
 gtk_container_add(GTK_CONTAINER(flist_sw_ebox),sw_for_flist);
 gtk_widget_show(sw_for_flist);
 
-/* the clist */
-clist=gtk_clist_new(SELECTOR_NUM_COLUMNS);
+/* the liststore */
+liststore = gtk_list_store_new(
+    SELECTOR_NUM_COLUMNS,
+    GDK_TYPE_PIXBUF,      /* SELECTOR_TN_COL */
+    G_TYPE_STRING,        /* SELECTOR_NAME_COL */
+    G_TYPE_POINTER,       /* SELECTOR_DATA_COL */
+    G_TYPE_BOOLEAN        /* SELECTOR_TAGGED_COL */
+    );
+
+/* the treeview */
+treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(liststore));
+
+/* column 1: thumbnail */
+renderer = gtk_cell_renderer_pixbuf_new();
+gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
+    -1,           /* position */
+    "Thumbnail",  /* title */
+    renderer,     /* cell */
+    /* attributes: */
+    "pixbuf", SELECTOR_TN_COL,  /* fetch pixbuf from thumbnail column */
+    NULL);
+
+/* column 2: filename */
+renderer = gtk_cell_renderer_text_new();
+gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
+    -1,           /* position */
+    "Filename",   /* title */
+    renderer,     /* cell */
+    /* attributes: */
+    "text",           SELECTOR_NAME_COL,    /* fetch text from name column */
+    "foreground-set", SELECTOR_TAGGED_COL,  /* use foreground color if tagged */
+    NULL);
+/* set default properties for our filename cell renderer */
+g_object_set(renderer,
+    /* XXX colour used for tagging should be configurable */
+    "foreground",     "red",  /* tagged color */
+    "foreground-set", FALSE,  /* don't use foreground color by default */
+    NULL);
+
+/* don't display headers */
+gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+
 /* select only one thing at a time */
-gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_SINGLE);
+selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+
+/* refresh the focus row cursor when appropriate */
+#if GTK_MAJOR_VERSION >= 3
+/* GTK 3: whenever treeview redraws itself */
+g_signal_connect_after(treeview, "draw",
+    G_CALLBACK(draw_callback), NULL);
+#else
+/* GTK 2: set up a recurrent timer for this */
+g_timeout_add(100, refresh_focus_row_timer_cb, GINT_TO_POINTER(FALSE));
+/* (refreshing on expose-event isn't sufficient, but shouldn't hurt either) */
+g_signal_connect_after(flist_sw_ebox, "expose-event",
+    G_CALLBACK(refresh_focus_row), NULL);
+#endif
+/* also refresh the cursor on focus in/out */
+g_signal_connect_after(treeview, "focus-in-event",
+    G_CALLBACK(refresh_focus_row), NULL);
+g_signal_connect_after(treeview, "focus-out-event",
+    G_CALLBACK(refresh_focus_row), NULL);
 
 /* selection callback - we save handler id as it needs to be blocked
  * in some circumstances.
  */
-cb_selection_id = g_signal_connect(clist, "select_row",
+cb_selection_id = g_signal_connect(selection, "changed",
                                    G_CALLBACK(cb_selection), sw_for_pic);
 
 set_thumbnail_column_width();		/* set width of thumbnail column */
-gtk_clist_set_column_auto_resize(GTK_CLIST(clist),SELECTOR_NAME_COL,TRUE);
-gtk_clist_set_column_justification(GTK_CLIST(clist),
-                                   SELECTOR_TN_COL,GTK_JUSTIFY_CENTER);
-gtk_clist_set_compare_func(GTK_CLIST(clist),sort_cmp);
-gtk_clist_set_sort_column(GTK_CLIST(clist),SELECTOR_NAME_COL);
+gtk_tree_view_column_set_alignment(
+    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL),
+    GTK_JUSTIFY_CENTER);
+
+/* set up the sort comparison function
+ * from the liststore's POV, there is only one way to sort rows (by
+ * filename), as all sorting options are handled by sort_cmp()
+ */
+gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore),
+    SELECTOR_NAME_COL,  /* sort_column_id */
+    sort_cmp,           /* sort_func */
+    NULL,               /* user_data */
+    NULL);              /* destroy */
+/* but make sure it's only called on request */
+disable_sorting();
 
 /* put in scrolled_window
  * (can't use ...add_with_viewport() if I want keyboard control to work)
@@ -4037,7 +4401,7 @@ gtk_clist_set_sort_column(GTK_CLIST(clist),SELECTOR_NAME_COL);
  * surprised the GTK+ tutorial describes it as `the' way to do it,
  * even if it does work for all widgets. :-/)
  */
-gtk_container_add(GTK_CONTAINER(sw_for_flist),clist);
+gtk_container_add(GTK_CONTAINER(sw_for_flist),treeview);
 
 /* menu stuff */
 selector_menu = make_menu(ui_manager,
@@ -4051,18 +4415,18 @@ selector_menu = make_menu(ui_manager,
     G_CALLBACK(cb_set_timestamp_type)
     );
 
-g_signal_connect(clist, "button_press_event",
+g_signal_connect(treeview, "button_press_event",
                    G_CALLBACK(selector_button_press), NULL);
-g_signal_connect(clist, "button_release_event",
+g_signal_connect(treeview, "button_release_event",
                    G_CALLBACK(selector_button_release), NULL);
-g_signal_connect(clist, "key_press_event",
+g_signal_connect(treeview, "key_press_event",
                    G_CALLBACK(selector_key_press), NULL);
 /* need to ask for button press (for menu), release (for tag), and key press */
-gtk_widget_set_events(clist,
+gtk_widget_set_events(treeview,
                       GDK_BUTTON_PRESS_MASK|GDK_BUTTON_RELEASE_MASK|
                       GDK_KEY_PRESS_MASK);
 
-gtk_widget_show(clist);
+gtk_widget_show(treeview);
 
 /* status line */
 statusbar=gtk_statusbar_new();
@@ -4249,8 +4613,9 @@ gtk_paned_set_position(GTK_PANED(pane),hidden?1:hide_saved_pos);
 
 gtk_widget_set_size_request(mainwin,100,50);
 
-/* initially focus clist */
-gtk_widget_grab_focus(clist);
+/* initially focus treeview */
+gtk_widget_set_can_focus(treeview, TRUE);
+gtk_widget_grab_focus(treeview);
 
 /* make sure option toggles are acknowledged */
 listen_to_toggles=1;
@@ -4284,20 +4649,20 @@ fix_row_heights();
 }
 
 
-void init_icon_pixmaps(void)
+void init_icon_pixbufs(void)
 {
-/* convert #included XPMs to pixmaps. We then use refs to these pixmaps
- * (increasing the ref count should avoid gtk_clist_clear() freeing them).
+/* convert #included XPMs to pixbufs. We then use refs to these pixbufs
+ * (increasing the ref count should avoid gtk_list_store_clear() freeing them).
  */
-backend_create_pixmap_from_xpm_data((const char **)dir_icon_xpm,
-                                    &dir_icon,&dir_icon_mask);
-backend_create_pixmap_from_xpm_data((const char **)file_icon_xpm,
-                                    &file_icon,&file_icon_mask);
+backend_create_pixbuf_from_xpm_data((const char **)dir_icon_xpm,
+                                    &dir_icon);
+backend_create_pixbuf_from_xpm_data((const char **)file_icon_xpm,
+                                    &file_icon);
 
-backend_create_pixmap_from_xpm_data((const char **)dir_icon_small_xpm,
-                         &dir_icon_small,&dir_icon_small_mask);
-backend_create_pixmap_from_xpm_data((const char **)file_icon_small_xpm,
-                         &file_icon_small,&file_icon_small_mask);
+backend_create_pixbuf_from_xpm_data((const char **)dir_icon_small_xpm,
+                         &dir_icon_small);
+backend_create_pixbuf_from_xpm_data((const char **)file_icon_small_xpm,
+                         &file_icon_small);
 }
 
 
@@ -4399,7 +4764,7 @@ else
 /* now actually get going */
 init_window();
 
-init_icon_pixmaps();
+init_icon_pixbufs();
 
 /* read dir (unless loading pics from cmdline) */
 if(read_dir)
@@ -4420,9 +4785,13 @@ if(read_dir)
 else
   {
   add_new_rows_from_cmdline(argsleft,argc,argv);
-  gtk_clist_set_column_width(GTK_CLIST(clist),SELECTOR_TN_COL,1);
+  gtk_tree_view_column_set_visible(
+    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL),
+    FALSE);
+
   /* select first image, but make sure things are up and running first */
   do_gtk_stuff();
+  set_focus_row(0);
   select_row(0);
   }
 
