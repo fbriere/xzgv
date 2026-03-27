@@ -444,10 +444,17 @@ void unselect_row(int row)
 }
 
 
+gboolean row_is_visible(int row)
+{
+  return gtk_clist_row_is_visible(GTK_CLIST(clist), row) == GTK_VISIBILITY_FULL;
+
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
-if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
+if(!row_is_visible(row))
   move_to_row(row,0.5);
 }
 
@@ -1302,7 +1309,7 @@ else
       if(row>0)
         {
         set_focus_row(row=row-1);
-        if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
+        if(!row_is_visible(row))
           move_to_row(row,0.);
         }
       break;
@@ -1311,7 +1318,7 @@ else
       if(row<numrows-1)
         {
         set_focus_row(row=row+1);
-        if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
+        if(!row_is_visible(row))
           move_to_row(row,1.);
         }
       break;
@@ -1339,7 +1346,7 @@ else
       if(row!=oldrow)
         {
         set_focus_row(row);
-        if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
+        if(!row_is_visible(row))
           move_to_row(row,up?0.:1.);
         }
       break;
@@ -2252,7 +2259,7 @@ idle_xvpic_jumped=0;
 entry=row;
 
 while(entry!=-1 && mainwin && (!checkptr || *checkptr) &&
-      gtk_clist_row_is_visible(GTK_CLIST(clist),entry)!=GTK_VISIBILITY_NONE)
+      row_is_visible(entry))
   {
   if(mainwin && (!checkptr || *checkptr))
     do_gtk_stuff();		/* make sure things get updated */
@@ -2747,7 +2754,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   /* if we jumped, stop on first invisible row or end of list */
   if(idle_xvpic_jumped &&
      (*entryp>=numrows ||
-      gtk_clist_row_is_visible(GTK_CLIST(clist),*entryp)==GTK_VISIBILITY_NONE))
+      !row_is_visible(*entryp)))
     {
     /* we pop all jumps, as it were; we only did ..._jumped++ above
      * to ensure we save a single (correct! :-)) prev_scanpos.
