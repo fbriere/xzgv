@@ -2819,7 +2819,7 @@ return(1);			/* else second one is dir */
 }
 
 
-int clist_add_new_row(char *filename,struct stat *sbuf)
+int add_new_row(char *filename,struct stat *sbuf)
 {
 struct row_data_tag *datptr;
 gchar *textarr[SELECTOR_NUM_COLUMNS];
@@ -2961,7 +2961,7 @@ while((dent=readdir(dirfile))!=NULL)
     sbuf.st_atime=0;
     }
   
-  if(clist_add_new_row(dent->d_name,&sbuf))
+  if(add_new_row(dent->d_name,&sbuf))
     numrows++;
   }
 
@@ -4216,7 +4216,7 @@ for(f=argc-argsleft;f<=argc-1;f++)
   /* can't use isdir() as that has different reaction to stat() failing */
   if(stat(argv[f],&sbuf)!=-1 && !S_ISDIR(sbuf.st_mode))
     {
-    if(clist_add_new_row(argv[f],&sbuf))
+    if(add_new_row(argv[f],&sbuf))
       numrows++;
     }
   }
