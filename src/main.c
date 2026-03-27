@@ -2560,9 +2560,9 @@ gdk_flush();
 
 for(y=0;y<small_h;y++) {
   for(x=0;x<small_w;x++) {
-      buffer[3*(y*w + x)+0] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][0];
-      buffer[3*(y*w + x)+1] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][1];
-      buffer[3*(y*w + x)+2] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][2];
+      buffer[3*(y*small_w + x)+0] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][0];
+      buffer[3*(y*small_w + x)+1] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][1];
+      buffer[3*(y*small_w + x)+2] = xvpic_pal[xvpic[(y*w+x)*ROW_HEIGHT_DIV]][2];
   }
 }
 
