@@ -401,6 +401,17 @@ void set_row_filename(int row, char *filename)
 }
 
 
+int get_row_thumbnail(int row, GdkPixmap **pixmap, GdkBitmap **mask)
+{
+  return gtk_clist_get_pixmap(GTK_CLIST(clist), row, SELECTOR_TN_COL, pixmap, mask);
+}
+
+void set_row_thumbnail(int row, GdkPixmap *pixmap, GdkBitmap *mask)
+{
+  gtk_clist_set_pixmap(GTK_CLIST(clist), row, SELECTOR_TN_COL, pixmap, mask);
+}
+
+
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
 void make_visible_if_not(int row)
 {
@@ -2001,11 +2012,11 @@ set_thumbnail_column_width();
  */
 for(f=0;f<numrows;f++)
   {
-  if(!gtk_clist_get_pixmap(GTK_CLIST(clist),f,SELECTOR_TN_COL,&pixmap,&mask))
+  if(!get_row_thumbnail(f,&pixmap,&mask))
     continue;
   
   datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
-  gtk_clist_set_pixmap(GTK_CLIST(clist),f,SELECTOR_TN_COL,
+  set_row_thumbnail(f,
                        thin_rows?datptr->pm_small:datptr->pm_norm,
                        thin_rows?datptr->pm_small_mask:datptr->pm_norm_mask);
   }
@@ -2641,8 +2652,7 @@ if(adjval!=idle_xvpic_lastadjval)
 for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   {
   /* if there's already a pixmap there, skip it. */
-  if(!gtk_clist_get_pixmap(GTK_CLIST(clist),*entryp,
-                           SELECTOR_TN_COL,&pixmap,&mask))
+  if(!get_row_thumbnail(*entryp,&pixmap,&mask))
     {
     /* construct filename for file's (possible) thumbnail */
     get_row_filename(*entryp,&ptr);
@@ -2659,7 +2669,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
       datptr->pm_small=g_object_ref(dir_icon_small);
       datptr->pm_norm_mask=g_object_ref(dir_icon_mask);
       datptr->pm_small_mask=g_object_ref(dir_icon_small_mask);
-      gtk_clist_set_pixmap(GTK_CLIST(clist),*entryp,SELECTOR_TN_COL,
+      set_row_thumbnail(*entryp,
                            thin_rows?datptr->pm_small:datptr->pm_norm,
                            (thin_rows?datptr->pm_small_mask:
                             datptr->pm_norm_mask));
@@ -2673,7 +2683,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
         datptr->pm_norm=pixmap;
         datptr->pm_small=small_pixmap;
         datptr->pm_norm_mask=datptr->pm_small_mask=NULL;
-        gtk_clist_set_pixmap(GTK_CLIST(clist),*entryp,SELECTOR_TN_COL,
+        set_row_thumbnail(*entryp,
                              thin_rows?datptr->pm_small:datptr->pm_norm,
                              NULL);
         }
@@ -2684,7 +2694,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
         datptr->pm_small=g_object_ref(file_icon_small);
         datptr->pm_norm_mask=g_object_ref(file_icon_mask);
         datptr->pm_small_mask=g_object_ref(file_icon_small_mask);
-        gtk_clist_set_pixmap(GTK_CLIST(clist),*entryp,SELECTOR_TN_COL,
+        set_row_thumbnail(*entryp,
                              thin_rows?datptr->pm_small:datptr->pm_norm,
                              (thin_rows?datptr->pm_small_mask:
                               datptr->pm_norm_mask));

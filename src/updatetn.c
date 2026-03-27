@@ -210,7 +210,7 @@ if(stat(buf,&xvpic)==-1 || realpic.st_mtime>xvpic.st_mtime ||
       datptr->pm_norm=pixmap;
       datptr->pm_small=small_pixmap;
       datptr->pm_norm_mask=datptr->pm_small_mask=NULL;
-      gtk_clist_set_pixmap(GTK_CLIST(clist),row,SELECTOR_TN_COL,
+      set_row_thumbnail(row,
                            thin_rows?datptr->pm_small:datptr->pm_norm,
                            NULL);
       }
