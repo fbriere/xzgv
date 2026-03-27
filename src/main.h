@@ -36,6 +36,8 @@ extern int focus_row;
 extern void do_gtk_stuff(void);
 extern xzgv_image *load_image(char *file,int for_thumbnail,
                                  int *origwp,int *orighp);
+extern void get_row_text(int row, int column, char **text);
+extern void set_row_text(int row, int column, char *text);
 extern void make_visible_if_not(int row);
 extern int get_tagged_state(int row);
 extern int thumbnail_read_running(void);

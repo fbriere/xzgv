@@ -161,7 +161,7 @@ int w,h;
 char *ptr;
 int written_ok=1;	/* only 0 if we *tried* to write one and it failed */
 
-gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,SELECTOR_NAME_COL,&ptr);
 datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
 
 /* skip dirs, files we can't stat, and hidden files */
