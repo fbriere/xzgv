@@ -93,7 +93,7 @@ for(f=t=0;f<numrows;f++)
   if(get_tagged_state(f))
     t++;
 
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),focus_row);
+datptr=get_row_data(focus_row);
 
 return(t || !datptr->isdir);
 }
