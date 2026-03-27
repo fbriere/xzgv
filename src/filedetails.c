@@ -259,7 +259,7 @@ char *ptr;
 int row;
 
 /* if focus row is somehow bogus, don't do it */
-row=GTK_CLIST(clist)->focus_row;
+row=focus_row;
 if(row<0 || row>=numrows)
   return;
 

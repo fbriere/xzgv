@@ -93,7 +93,7 @@ for(f=t=0;f<numrows;f++)
   if(get_tagged_state(f))
     t++;
 
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),GTK_CLIST(clist)->focus_row);
+datptr=gtk_clist_get_row_data(GTK_CLIST(clist),focus_row);
 
 return(t || !datptr->isdir);
 }
@@ -191,7 +191,7 @@ for(done=f=0;f<numrows;f++)
    * 		-- South Park
    */
   if(t==0)
-    f=GTK_CLIST(clist)->focus_row;
+    f=focus_row;
   else
     if(!get_tagged_state(f)) continue;
   
@@ -282,7 +282,7 @@ if(!cmdline_files)	/* don't update if run as `xzgv file(s)' */
    * we stand a decent chance of staying at a tolerably similar place
    * in the dir.
    */
-  new_pastpos(GTK_CLIST(clist)->focus_row);
+  new_pastpos(focus_row);
 
   reinit_dir(1,0);
   }
