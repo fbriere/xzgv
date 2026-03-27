@@ -162,7 +162,7 @@ char *ptr;
 int written_ok=1;	/* only 0 if we *tried* to write one and it failed */
 
 get_row_text(row,SELECTOR_NAME_COL,&ptr);
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
+datptr=get_row_data(row);
 
 /* skip dirs, files we can't stat, and hidden files */
 if(datptr->isdir || stat(ptr,&realpic)==-1 || *ptr=='.')
