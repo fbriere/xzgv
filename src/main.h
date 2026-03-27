@@ -31,6 +31,7 @@ extern GtkWidget *clist,*mainwin;
 extern GtkAccelGroup *mainwin_accel_group;
 extern int numrows;
 extern int cmdline_files;
+extern int focus_row;
 
 extern void do_gtk_stuff(void);
 extern xzgv_image *load_image(char *file,int for_thumbnail,

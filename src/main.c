@@ -97,6 +97,7 @@ GtkWidget *zoom_widget;		/* widget for zoom opt on menu */
 GtkWidget *pane;
 guint sel_id;			/* selector id for statusbar messages */
 guint tn_id;			/* `thumbnail' id for statusbar messages */
+int focus_row = -1;
 
 GtkWidget *mainwin;
 
@@ -407,6 +408,7 @@ if(had_focus)
   gtk_widget_grab_focus(eb_for_pic);
 
 GTK_CLIST(clist)->focus_row=new_row;
+focus_row=new_row;
 
 if(had_focus)
   gtk_widget_grab_focus(clist);
@@ -456,7 +458,7 @@ gtk_clist_set_foreground(GTK_CLIST(clist),row,datptr->tagged?&col:NULL);
  */
 void cb_tag_file(void)
 {
-int row=GTK_CLIST(clist)->focus_row;
+int row=focus_row;
 
 if(row<0) return;
 
@@ -470,7 +472,7 @@ if(row<numrows-1)		/* move on one */
 
 void cb_untag_file(void)
 {
-int row=GTK_CLIST(clist)->focus_row;
+int row=focus_row;
 
 if(row<0) return;
 
@@ -1083,7 +1085,7 @@ in_nextprev=1;	/* in effect :-) */
  * we always select (rather than toggling), even if image was
  * previously selected.
  */
-row=GTK_CLIST(clist)->focus_row;
+row=focus_row;
 if(row>=0 && row<numrows)
   {
   gtk_clist_unselect_all(GTK_CLIST(clist));
@@ -1098,7 +1100,7 @@ else
 
 void cb_nextprev_tagged_image(int next,int view)
 {
-int f,dest,row=GTK_CLIST(clist)->focus_row;
+int f,dest,row=focus_row;
 struct clist_data_tag *datptr;
 int incr=(next?1:-1);
 
@@ -1208,13 +1210,13 @@ if(goto_next_char)
     
     /* recentre on it */
     if(!nofiles)
-      gtk_clist_moveto(GTK_CLIST(clist),GTK_CLIST(clist)->focus_row,0,0.5,0.);
+      gtk_clist_moveto(GTK_CLIST(clist),focus_row,0,0.5,0.);
     }
   }
 else
   {
   int oldrow,incdec,up;
-  int row=GTK_CLIST(clist)->focus_row;
+  int row=focus_row;
   float vpage;
   
   /* if not a goto-next-char char... */
@@ -1240,6 +1242,7 @@ else
       break;
 
     case GDK_KEY_k:		/* up */
+    case GDK_KEY_Up:
       if(row>0)
         {
         set_focus_row(row=row-1);
@@ -1248,6 +1251,7 @@ else
         }
       break;
     case GDK_KEY_j:		/* down */
+    case GDK_KEY_Down:
       if(row<numrows-1)
         {
         set_focus_row(row=row+1);
@@ -1261,7 +1265,8 @@ else
       
     case GDK_KEY_u: case GDK_KEY_v:	/* ctrl-u/v, like page up/down */
       RET_IF_NOT_CONTROL;
-      up=(event->keyval==GDK_KEY_u);
+    case GDK_KEY_Page_Up: case GDK_KEY_Page_Down:
+      up=((event->keyval==GDK_KEY_u) || (event->keyval==GDK_KEY_Page_Up));
       oldrow=row;
       vpage=gtk_adjustment_get_page_size(GTK_ADJUSTMENT(
         gtk_clist_get_vadjustment(GTK_CLIST(clist))));
@@ -2001,7 +2006,7 @@ do_gtk_stuff();
  */
 if(current_selection!=-1)
   set_focus_row(current_selection);
-gtk_clist_moveto(GTK_CLIST(clist),GTK_CLIST(clist)->focus_row,0,0.5,0.);
+gtk_clist_moveto(GTK_CLIST(clist),focus_row,0,0.5,0.);
 
 listen_to_toggles=1;
 }
@@ -2206,7 +2211,7 @@ if(current_selection!=-1)
 /* now we do everything in terms of the focus row.
  * get row data pointer (which is unique) so we can look the row up after.
  */
-datptr=gtk_clist_get_row_data(GTK_CLIST(clist),GTK_CLIST(clist)->focus_row);
+datptr=gtk_clist_get_row_data(GTK_CLIST(clist),focus_row);
 
 gtk_clist_sort(GTK_CLIST(clist));
 
@@ -2238,7 +2243,7 @@ if(datptr)
  * as toggle_thin_rows() - if one selected move focus row to there
  * (did that before the sort), and either way force focus row to middle.
  */
-gtk_clist_moveto(GTK_CLIST(clist),GTK_CLIST(clist)->focus_row,0,0.5,0.);
+gtk_clist_moveto(GTK_CLIST(clist),focus_row,0,0.5,0.);
 
 /* a thumbnail-read may have been ongoing; if so, restart it. */
 if(was_reading)
@@ -2731,6 +2736,8 @@ for(f=0;f<numrows;f++)
 gtk_clist_clear(GTK_CLIST(clist));
 numrows=0;
 
+focus_row = 0;
+
 gtk_clist_thaw(GTK_CLIST(clist));
 }
 
@@ -3112,7 +3119,7 @@ char *ptr,*tn;
 int row;
 int was_reading=0;
 
-row=GTK_CLIST(clist)->focus_row;
+row=focus_row;
 gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
 
 /* delete the file */
@@ -3155,6 +3162,10 @@ if(was_reading)
 if(current_selection==row)
   current_selection=-1;
 
+/* if we deleted the last row, move the focus row to the new last row */
+if (row == numrows)
+  focus_row--;
+
 /* only now do we quit if we couldn't allocate mem for tn */
 if(!tn) return;
 
@@ -3172,7 +3183,7 @@ struct clist_data_tag *datptr;
 char *ptr,*msg;
 int row;
 
-row=GTK_CLIST(clist)->focus_row;
+row=focus_row;
 if(row<0 || row>=numrows) return;
 
 gtk_clist_get_text(GTK_CLIST(clist),row,SELECTOR_NAME_COL,&ptr);
@@ -3211,7 +3222,7 @@ if(do_pastpos && try_to_save_cursor_pos)
 
 if(try_to_save_cursor_pos)
   {
-  gtk_clist_get_text(GTK_CLIST(clist),GTK_CLIST(clist)->focus_row,
+  gtk_clist_get_text(GTK_CLIST(clist),focus_row,
                      SELECTOR_NAME_COL,&ptr);
   if(!ptr || (oldname=malloc(strlen(ptr)+1))==NULL)
     try_to_save_cursor_pos=0;
@@ -4286,6 +4297,7 @@ init_icon_pixmaps();
 if(read_dir)
   {
   create_clist_from_dir();
+  set_focus_row(0);
   if(skip_parent && numrows>1)		/* skip .. if they asked us to */
     {
     char *ptr;
