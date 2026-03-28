@@ -279,18 +279,6 @@ interp_type = on ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST;
 }
 
 
-/* get colour which most closely matches arg's RGB fields
- * preferably setting those fields to actual RGB value of
- * colour returned (in col->pixel).
- */
-void backend_get_closest_colour(GdkColor *col)
-{
-/* this seems to be the closest I can manage */
-col->pixel=gdk_rgb_xpixel_from_rgb(
-  (guint32)(((col->red>>8)<<16)|(col->green&0xff00)|(col->blue>>8)));
-}
-
-
 /* a fairly high-level one, which is unfortunately required:
  *
  * read XPM data from string array and render into pixmap, also returning
