@@ -408,7 +408,6 @@ void set_tagged_state(int row,int tagged)
 {
 /* XXX colour used for tagging should be configurable */
 static GdkColor col={0, 0xffff,0,0};	/* red */
-static int gotcol=0;
 struct clist_data_tag *datptr;
 
 datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
@@ -421,9 +420,6 @@ if(datptr)
   else
     datptr->tagged=tagged;
   }
-
-if(!gotcol)
-  backend_get_closest_colour(&col),gotcol=1;
 
 gtk_clist_set_foreground(GTK_CLIST(clist),row,datptr->tagged?&col:NULL);
 }
