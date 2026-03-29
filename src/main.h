@@ -14,7 +14,7 @@ enum
   SELECTOR_NUM_COLUMNS
 };
 
-struct clist_data_tag
+struct row_data_tag
   {
   char isdir;		/* 0=file, 1=dir. */
   char tagged;

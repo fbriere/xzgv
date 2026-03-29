@@ -153,7 +153,7 @@ int update_one_tn(int row,GtkWidget **update_tn_win_ptr)
 {
 static char buf[1024];
 FILE *test=NULL;
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 unsigned char *xvpic_data;
 GdkPixmap *pixmap,*small_pixmap;
 struct stat realpic,xvpic;

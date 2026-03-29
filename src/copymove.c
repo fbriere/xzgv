@@ -84,7 +84,7 @@ return (do_move?g_file_move:g_file_copy)(srcfile, dstfile, 0, NULL, NULL, NULL, 
 /* see if we have either tagged files, or cursor on a file (not a dir). */
 int ok_for_copymove(void)
 {
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 int f,t;
 
 if(!numrows) return(0);
