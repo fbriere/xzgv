@@ -18,7 +18,7 @@ CFLAGS=-O2 -Wall
 AWK=awk
 
 # GTK version to compile for (either 2.0 or 3.0)
-GTK_VERSION=2.0
+GTK_VERSION=3.0
 
 # --------------------- Installation options ----------------------
 
