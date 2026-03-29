@@ -421,7 +421,7 @@ if(had_focus)
  */
 int get_tagged_state(int row)
 {
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 
 if(row<0 || row>=numrows) return(0);
 
@@ -437,7 +437,7 @@ void set_tagged_state(int row,int tagged)
 {
 /* XXX colour used for tagging should be configurable */
 static GdkColor col={0, 0xffff,0,0};	/* red */
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 
 datptr=gtk_clist_get_row_data(GTK_CLIST(clist),row);
 if(datptr->isdir) return;
@@ -1102,7 +1102,7 @@ else
 void cb_nextprev_tagged_image(int next,int view)
 {
 int f,dest,row=focus_row;
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 int incr=(next?1:-1);
 
 if(in_nextprev) return;
@@ -1171,7 +1171,7 @@ if(goto_next_char)
      event->keyval>=33 && event->keyval<=126)
     {
     int f,nofiles=1,found=0;
-    struct clist_data_tag *datptr;
+    struct row_data_tag *datptr;
     char *ptr;
     
     /* go to first file (not dir) which starts with that char.
@@ -1961,7 +1961,7 @@ use_exif_orient=!use_exif_orient;
 
 void toggle_thin_rows(gpointer cb_data,guint cb_action,GtkWidget *widget)
 {
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 GdkPixmap *pixmap;
 GdkBitmap *mask;
 int f;
@@ -2197,7 +2197,7 @@ while(entry!=-1 && mainwin && (!checkptr || *checkptr) &&
 void resort_finish(void)
 {
 int was_reading=0;
-struct clist_data_tag *datptr=NULL;
+struct row_data_tag *datptr=NULL;
 
 if(thumbnail_read_running())
   {
@@ -2295,7 +2295,7 @@ in_nextprev=0;
 
 void cb_prev_image(void)
 {
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 int row;
 
 if(in_nextprev) return;
@@ -2582,7 +2582,7 @@ return(pixmap);
 gint idle_xvpic_load(int *entryp)
 {
 static char buf[1024];
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 char *ptr;
 int f,w,h;
 GdkPixmap *pixmap,*small_pixmap;
@@ -2711,7 +2711,7 @@ return 1;
 void blast_clist(void)
 {
 int f;
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 
 if(numrows==0) return;
 
@@ -2756,7 +2756,7 @@ gint sort_cmp(GtkCList *clist,gconstpointer ptr1,gconstpointer ptr2)
 GtkCListRow *row1=(GtkCListRow *)ptr1;
 GtkCListRow *row2=(GtkCListRow *)ptr2;
 char *txt1,*txt2;
-struct clist_data_tag *dat1,*dat2;
+struct row_data_tag *dat1,*dat2;
 
 txt1=GTK_CELL_TEXT(row1->cell[SELECTOR_NAME_COL])->text;
 txt2=GTK_CELL_TEXT(row2->cell[SELECTOR_NAME_COL])->text;
@@ -2830,7 +2830,7 @@ return(1);			/* else second one is dir */
 
 int clist_add_new_row(char *filename,struct stat *sbuf)
 {
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 gchar *textarr[SELECTOR_NUM_COLUMNS];
 char *ptr;
 int row;
@@ -2857,7 +2857,7 @@ if (!S_ISDIR(sbuf->st_mode) && show_images_only)
     }
 
 /* allocate data-pointer struct for row */
-if((datptr=malloc(sizeof(struct clist_data_tag)))==NULL)
+if((datptr=malloc(sizeof(struct row_data_tag)))==NULL)
   return(0);
 
 /* can't use a pointer to the extension (GTK+ makes its own copy
@@ -3188,7 +3188,7 @@ free(tn);
 void cb_delete_file(void)
 {
 static char *prefix="Really delete `",*suffix="'?";
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 char *ptr,*msg;
 int row;
 
@@ -3320,7 +3320,7 @@ void cb_selection(GtkWidget *clist,gint row,gint column,
 {
 char *ptr;
 xzgv_image *oldimage=theimage;
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 int orient_lastpicexit_state=0;
 int old_selection=current_selection;
 FILE *test;
@@ -4241,7 +4241,7 @@ if(numrows==0)
 
 void echo_tagged_files(void)
 {
-struct clist_data_tag *datptr;
+struct row_data_tag *datptr;
 char *ptr;
 int f;
 
