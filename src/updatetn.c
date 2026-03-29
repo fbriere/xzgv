@@ -155,7 +155,7 @@ static char buf[1024];
 FILE *test=NULL;
 struct row_data_tag *datptr;
 unsigned char *xvpic_data;
-GdkPixmap *pixmap,*small_pixmap;
+GdkPixbuf *pixbuf,*small_pixbuf;
 struct stat realpic,xvpic;
 int w,h;
 g_autofree char *ptr = NULL;
@@ -197,22 +197,18 @@ if(stat(buf,&xvpic)==-1 || realpic.st_mtime>xvpic.st_mtime ||
   
   if(makexv332(ptr,buf,&xvpic_data,&w,&h,&written_ok))
     {
-    /* now update pixmap, whether it wrote the thumbnail or not.
+    /* now update pixbuf, whether it wrote the thumbnail or not.
      * (makexv332()'s ret value indicates if source image existed etc.)
      */
-    pixmap=xvpic2pixmap(xvpic_data,w,h,&small_pixmap);
-    if(pixmap)
+    pixbuf=xvpic2pixbuf(xvpic_data,w,h,&small_pixbuf);
+    if(pixbuf)
       {
-      if(datptr->pm_norm)  g_object_unref(datptr->pm_norm);
-      if(datptr->pm_small) g_object_unref(datptr->pm_small);
-      if(datptr->pm_norm_mask)  g_object_unref(datptr->pm_norm_mask);
-      if(datptr->pm_small_mask) g_object_unref(datptr->pm_small_mask);
-      datptr->pm_norm=pixmap;
-      datptr->pm_small=small_pixmap;
-      datptr->pm_norm_mask=datptr->pm_small_mask=NULL;
-      set_row_pixmap(row,SELECTOR_TN_COL,
-                           thin_rows?datptr->pm_small:datptr->pm_norm,
-                           NULL);
+      if(datptr->pb_norm)  g_object_unref(datptr->pb_norm);
+      if(datptr->pb_small) g_object_unref(datptr->pb_small);
+      datptr->pb_norm=pixbuf;
+      datptr->pb_small=small_pixbuf;
+      set_row_pixbuf(row,SELECTOR_TN_COL,
+                           thin_rows?datptr->pb_small:datptr->pb_norm);
       }
     
     free(xvpic_data);
@@ -320,8 +316,8 @@ float prev_vadj_value;
 /* if by some miracle there are no files, don't bother ;-) */
 if(!numrows) return;
 
-/* save vertical position in clist */
-flist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
+/* save vertical position in treeview */
+flist_vadj=gtk_tree_view_get_vadjustment(GTK_TREE_VIEW(treeview));
 prev_vadj_value=gtk_adjustment_get_value(flist_vadj);
 
 /* remove any running thumbnail read. We'll restart it after we're done.
@@ -355,7 +351,7 @@ if(!mainwin)
 if(update_tn_win)
   gtk_widget_destroy(update_tn_win);
 
-/* restore vertical position in clist */
+/* restore vertical position in treeview */
 gtk_adjustment_set_value(flist_vadj,prev_vadj_value);
 
 /* restart thumbnail-read if needed */
@@ -462,11 +458,11 @@ if(!numrows) return;
 /* save orig dir to return to (in case they abort) */
 origdir=getcwd_allocated();
 
-/* save vertical position in clist
+/* save vertical position in treeview
  * (may not be reasonable once we get back, but IIRC the value is
  * bounds-tested, so that doesn't really matter)
  */
-flist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
+flist_vadj=gtk_tree_view_get_vadjustment(GTK_TREE_VIEW(treeview));
 prev_vadj_value=gtk_adjustment_get_value(flist_vadj);
 
 /* also save focus row, via pastpos. */
@@ -507,7 +503,7 @@ xzgv_chdir(origdir);
 free(origdir);
 reinit_dir(1,0);	/* init with pastpos */
 
-/* restore vertical position in clist */
+/* restore vertical position in treeview */
 gtk_adjustment_set_value(flist_vadj,prev_vadj_value);
 }
 
