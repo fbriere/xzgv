@@ -156,7 +156,7 @@ static char buf[256];
 GtkWidget *progress_win,*progbar;
 int f,t,numtagged;
 int done;
-char *ptr;
+g_autofree char *ptr = NULL;
 
 /* if by some miracle there are no files, don't bother ;-) */
 if(!numrows) return;

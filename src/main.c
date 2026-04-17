@@ -388,9 +388,11 @@ return(TRUE);
 }
 
 
+/* NOTE: The caller takes ownership ot *text, and is responsible for freeing it. */
 void get_row_text(int row, int column, char **text)
 {
   gtk_clist_get_text(GTK_CLIST(clist), row, column, text);
+  *text = g_strdup(*text);
 }
 
 void set_row_text(int row, int column, char *text)
@@ -1202,9 +1204,14 @@ if(goto_next_char)
       datptr=gtk_clist_get_row_data(GTK_CLIST(clist),f);
       if(!datptr->isdir)
         {
+        char first_char;
+
         get_row_text(f,SELECTOR_NAME_COL,&ptr);
+        first_char = ptr[0];
+        g_free(ptr);
+
         nofiles=0;
-        if(*ptr>=event->keyval)
+        if(first_char>=event->keyval)
           {
           set_focus_row(f);
           found=1;
@@ -2641,6 +2648,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     get_row_text(*entryp,SELECTOR_NAME_COL,&ptr);
     strcpy(buf,".xvpics/");
     strncat(buf,ptr,sizeof(buf)-8-2);	/* above string is 8 chars long */
+    g_free(ptr);
     
     datptr=gtk_clist_get_row_data(GTK_CLIST(clist),*entryp);
     
@@ -3126,7 +3134,8 @@ orient_current_state=0;
 void cb_delete_file_confirmed(void)
 {
 static char *prefix=".xvpics/";
-char *ptr,*tn;
+g_autofree char *ptr = NULL;
+char *tn;
 int row;
 int was_reading=0;
 
@@ -3191,7 +3200,8 @@ void cb_delete_file(void)
 {
 static char *prefix="Really delete `",*suffix="'?";
 struct row_data_tag *datptr;
-char *ptr,*msg;
+g_autofree char *ptr = NULL;
+char *msg;
 int row;
 
 row=focus_row;
@@ -3225,7 +3235,8 @@ free(msg);
 void reinit_dir(int do_pastpos,int try_to_save_cursor_pos)
 {
 int row;
-char *ptr,*oldname=NULL;
+g_autofree char *ptr = NULL;
+char *oldname=NULL;
 
 if(do_pastpos && try_to_save_cursor_pos)
   fprintf(stderr,"xzgv: both args to reinit_dir() set, bug alert :-)\n"),
@@ -3320,7 +3331,7 @@ ignore_selector_input=0;
 void cb_selection(GtkWidget *clist,gint row,gint column,
                   GdkEventButton *event,GtkScrolledWindow *sw)
 {
-char *ptr;
+g_autofree char *ptr = NULL;
 xzgv_image *oldimage=theimage;
 struct row_data_tag *datptr;
 int orient_lastpicexit_state=0;
@@ -4254,6 +4265,7 @@ for(f=0;f<numrows;f++)
   if(datptr && datptr->tagged)
     printf("%s\n",ptr);
   }
+  g_free(ptr);
 }
 
 
@@ -4317,6 +4329,7 @@ if(read_dir)
     get_row_text(0,SELECTOR_NAME_COL,&ptr);
     if(strcmp(ptr,"..")==0)
       set_focus_row(1);
+    g_free(ptr);
     }
   }
 else

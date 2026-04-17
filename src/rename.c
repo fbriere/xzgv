@@ -105,6 +105,7 @@ int tbl_row;
 current_row=focus_row;
 if(current_row<0 || current_row>=numrows) return;
 
+g_free(oldname);
 oldname=NULL;
 get_row_text(current_row,SELECTOR_NAME_COL,&oldname);
 
