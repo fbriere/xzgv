@@ -16,7 +16,6 @@ typedef struct _xzgv_image xzgv_image;
 
 
 extern int backend_init(void);
-extern void backend_image_init(xzgv_image *image);
 
 extern void backend_flip_vert(xzgv_image *image);
 extern void backend_flip_horiz(xzgv_image *image);
