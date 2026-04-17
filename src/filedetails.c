@@ -266,6 +266,7 @@ if(row<0 || row>=numrows)
 /* make the window and fill with details */
 get_row_filename(row,&ptr);
 make_details_win(ptr);
+g_free(ptr);
 
 /* that's it then; it's modal so we can just leave GTK+ to deal with things. */
 }
