@@ -158,7 +158,7 @@ unsigned char *xvpic_data;
 GdkPixmap *pixmap,*small_pixmap;
 struct stat realpic,xvpic;
 int w,h;
-char *ptr;
+g_autofree char *ptr = NULL;
 int written_ok=1;	/* only 0 if we *tried* to write one and it failed */
 
 get_row_filename(row,&ptr);
