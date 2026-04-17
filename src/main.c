@@ -388,6 +388,17 @@ return(TRUE);
 }
 
 
+void flist_freeze(void)
+{
+  gtk_clist_freeze(GTK_CLIST(clist));
+}
+
+void flist_thaw(void)
+{
+  gtk_clist_thaw(GTK_CLIST(clist));
+}
+
+
 int get_row_at_pos(int x, int y)
 {
   int row, col;
@@ -578,12 +589,12 @@ void cb_tag_all(void)
 {
 int f;
 
-gtk_clist_freeze(GTK_CLIST(clist));
+flist_freeze();
 
 for(f=0;f<numrows;f++)
   set_tagged_state(f,1);
 
-gtk_clist_thaw(GTK_CLIST(clist));
+flist_thaw();
 }
 
 
@@ -591,12 +602,12 @@ void cb_untag_all(void)
 {
 int f;
 
-gtk_clist_freeze(GTK_CLIST(clist));
+flist_freeze();
 
 for(f=0;f<numrows;f++)
   set_tagged_state(f,0);
 
-gtk_clist_thaw(GTK_CLIST(clist));
+flist_thaw();
 }
 
 
@@ -604,12 +615,12 @@ void cb_toggle_all(void)
 {
 int f;
 
-gtk_clist_freeze(GTK_CLIST(clist));
+flist_freeze();
 
 for(f=0;f<numrows;f++)
   set_tagged_state(f,!get_tagged_state(f));
 
-gtk_clist_thaw(GTK_CLIST(clist));
+flist_thaw();
 }
 
 
@@ -2066,7 +2077,7 @@ if(!listen_to_toggles || in_nextprev) return;
 
 listen_to_toggles=0;
 
-gtk_clist_freeze(GTK_CLIST(clist));
+flist_freeze();
 
 thin_rows=!thin_rows;
 fix_row_heights();
@@ -2089,7 +2100,7 @@ for(f=0;f<numrows;f++)
                        thin_rows?datptr->pm_small_mask:datptr->pm_norm_mask);
   }
 
-gtk_clist_thaw(GTK_CLIST(clist));
+flist_thaw();
 
 /* this is required to avoid minor redraw-related position gliches
  * when moving the focus row (below).
@@ -2803,7 +2814,7 @@ struct row_data_tag *datptr;
 
 if(numrows==0) return;
 
-gtk_clist_freeze(GTK_CLIST(clist));
+flist_freeze();
 
 /* stop any `currently'-running idle func to read thumbnails
  * (doing this now is probably overly paranoid, but it can't hurt)
@@ -2835,7 +2846,7 @@ numrows=0;
 
 focus_row = 0;
 
-gtk_clist_thaw(GTK_CLIST(clist));
+flist_thaw();
 }
 
 
@@ -3035,7 +3046,7 @@ xzgv_getcwd(cdir,sizeof(cdir)-1);
 /* remove any currently-running idle func */
 stop_thumbnail_read();
 
-gtk_clist_freeze(GTK_CLIST(clist));
+flist_freeze();
 
 numrows=0;
 while((dent=readdir(dirfile))!=NULL)
@@ -3079,7 +3090,7 @@ if(numrows)
   start_thumbnail_read();
   }
 
-gtk_clist_thaw(GTK_CLIST(clist));
+flist_thaw();
 }
 
 
