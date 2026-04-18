@@ -91,7 +91,7 @@
 
 GtkWidget *align,*sw_for_pic;
 GtkWidget *image_widget, *eb_for_pic;
-GtkWidget *clist,*statusbar,*sw_for_clist;
+GtkWidget *clist,*statusbar,*sw_for_flist;
 GtkWidget *selector_menu,*viewer_menu;
 GtkWidget *zoom_widget;		/* widget for zoom opt on menu */
 GtkWidget *pane;
@@ -619,7 +619,7 @@ gtk_clist_thaw(GTK_CLIST(clist));
 }
 
 
-void cb_back_to_clist(void)
+void cb_back_to_flist(void)
 {
 RECURSE_PROTECT_START;
 
@@ -654,7 +654,7 @@ if(hidden)
 else
   {
   do_gtk_stuff();   /* in case it's being done immediately after an unhide */
-  gtk_widget_get_allocation(sw_for_clist, &allocation);
+  gtk_widget_get_allocation(sw_for_flist, &allocation);
   hide_saved_pos=allocation.width;
   gtk_paned_set_position(GTK_PANED(pane),1);
   hidden=1;
@@ -712,7 +712,7 @@ switch(event->button)
   case 3:
     /* move cursor to row clicked on (if any) */
     row = get_row_at_pos(event->x, event->y);
-    cb_back_to_clist();			/* show selector and switch to it */
+    cb_back_to_flist();			/* show selector and switch to it */
     if(row>=0 && row<numrows)
       set_focus_row(row);
     
@@ -788,7 +788,7 @@ switch(event->button)
   
   case 2:	/* middle button is a bit like Esc (handy in auto-hide mode) */
     if(hidden)
-      cb_back_to_clist();	/* like Esc - show and focus */
+      cb_back_to_flist();	/* like Esc - show and focus */
     else
       cb_hide_selector();	/* really toggles it */
     break;
@@ -848,7 +848,7 @@ return(TRUE);
 }
 
 
-gint clist_sw_ebox_button_press(GtkWidget *widget,GdkEventButton *event)
+gint flist_sw_ebox_button_press(GtkWidget *widget,GdkEventButton *event)
 {
 if(event->button==1)
   {
@@ -938,7 +938,7 @@ int common_key_press(GdkEventKey *event)
 {
 GtkAllocation allocation;
 
-gtk_widget_get_allocation(sw_for_clist, &allocation);
+gtk_widget_get_allocation(sw_for_flist, &allocation);
 int maxpos,oldpos,pos=allocation.width;
 int step=20;
 
@@ -1134,7 +1134,7 @@ switch(event->keyval)
     break;
   
   case GDK_KEY_Tab:		/* also treat tab as esc */
-    cb_back_to_clist();
+    cb_back_to_flist();
     break;
   
   case GDK_KEY_F10: case GDK_KEY_Menu:
@@ -1422,7 +1422,7 @@ else
     case GDK_KEY_F10: case GDK_KEY_Menu:
       /* pop-up menu, as for viewer */
       gtk_menu_popup(GTK_MENU(selector_menu),NULL,NULL,
-                     (GtkMenuPositionFunc)keyboard_menu_pos,sw_for_clist,
+                     (GtkMenuPositionFunc)keyboard_menu_pos,sw_for_flist,
                      3,event->time);
       break;
     
@@ -3202,7 +3202,7 @@ void cb_file_close(void)
 {
 unselect_all();
 current_selection=-1;
-cb_back_to_clist();		/* enable selector */
+cb_back_to_flist();		/* enable selector */
 
 if(theimage)
 {
@@ -3234,7 +3234,7 @@ if(remove(ptr)==-1)
   return;
   }
 
-cb_back_to_clist();
+cb_back_to_flist();
 
 /* construct thumbnail filename early, as we're about to delete
  * the row containing the filename itself.
@@ -3384,14 +3384,14 @@ reinit_dir(0,1);		/* reread, don't do pastpos, save cursor pos */
 
 void cb_copy_files(void)
 {
-cb_back_to_clist();
+cb_back_to_flist();
 cb_copymove_file_or_tagged_files(0);
 }
 
 
 void cb_move_files(void)
 {
-cb_back_to_clist();
+cb_back_to_flist();
 cb_copymove_file_or_tagged_files(1);
 }
 
@@ -3488,7 +3488,7 @@ else
 if(datptr->isdir)
   {
   /* if it's a dir, chdir to it and read files there instead. */
-  cb_back_to_clist();	/* in case of mouse click, to show pastpos action */
+  cb_back_to_flist();	/* in case of mouse click, to show pastpos action */
   new_pastpos(row);
   xzgv_chdir(ptr);
   reinit_dir(1,0);	/* reinit and do pastpos */
@@ -3518,7 +3518,7 @@ if((theimage=load_image(ptr,0,NULL,NULL))==NULL)
    * may not even *be* an image. (Also, it makes it very obvious
    * which file screwed up.)
    */
-  cb_back_to_clist();	/* enable selector */
+  cb_back_to_flist();	/* enable selector */
   
   selector_unblock();
   in_nextprev=in_routine=0;
@@ -3630,7 +3630,7 @@ void init_window(void)
  *  `----------------------------------------'
  */
 GtkWidget *vboxl;
-GtkWidget *clist_sw_ebox;
+GtkWidget *flist_sw_ebox;
 GtkUIManager *ui_manager;
 GdkPixbuf *icon;
 char *ptr;
@@ -3807,7 +3807,7 @@ GtkActionEntry viewer_menu_entries[] = {
   { "HelpIndex",    NULL, "_Index",      NULL,  NULL, G_CALLBACK(cb_help_index) },
   { "About",        NULL, "_About...",   NULL,  NULL, G_CALLBACK(cb_help_about) },
 
-  { "ExitToSelector", NULL, "E_xit to Selector", "Escape", NULL, G_CALLBACK(cb_back_to_clist) }
+  { "ExitToSelector", NULL, "E_xit to Selector", "Escape", NULL, G_CALLBACK(cb_back_to_flist) }
 };
 
 GtkToggleActionEntry viewer_menu_toggle_entries[] = {
@@ -3978,8 +3978,8 @@ gtk_widget_show(vboxl);
  * scrollbars are drawn to the right, i.e. off the window, and X clips
  * them. :-)
  */
-clist_sw_ebox=gtk_event_box_new();
-gtk_box_pack_start(GTK_BOX(vboxl),clist_sw_ebox,TRUE,TRUE,0);
+flist_sw_ebox=gtk_event_box_new();
+gtk_box_pack_start(GTK_BOX(vboxl),flist_sw_ebox,TRUE,TRUE,0);
 
 /* pass on left-button motion events to viewer's image-dragging stuff,
  * so it doesn't stop dragging just because you drag the pointer over
@@ -3987,25 +3987,25 @@ gtk_box_pack_start(GTK_BOX(vboxl),clist_sw_ebox,TRUE,TRUE,0);
  * start in the selector though, hence the left-button-press event
  * handling here.
  */
-g_signal_connect(clist_sw_ebox, "button_press_event",
-                   G_CALLBACK(clist_sw_ebox_button_press), NULL);
-g_signal_connect(clist_sw_ebox, "motion_notify_event",
+g_signal_connect(flist_sw_ebox, "button_press_event",
+                   G_CALLBACK(flist_sw_ebox_button_press), NULL);
+g_signal_connect(flist_sw_ebox, "motion_notify_event",
                    G_CALLBACK(viewer_motion), NULL);
-gtk_widget_set_events(clist_sw_ebox,
+gtk_widget_set_events(flist_sw_ebox,
                       GDK_BUTTON_PRESS_MASK|GDK_BUTTON1_MOTION_MASK);
-gtk_widget_show(clist_sw_ebox);
+gtk_widget_show(flist_sw_ebox);
 
 /* now the scrolled window for clist, and the clist which goes into it. */
-sw_for_clist=gtk_scrolled_window_new(NULL,NULL);
-gtk_widget_set_can_focus(sw_for_clist, FALSE);
-gtk_container_set_border_width(GTK_CONTAINER(sw_for_clist),0);
+sw_for_flist=gtk_scrolled_window_new(NULL,NULL);
+gtk_widget_set_can_focus(sw_for_flist, FALSE);
+gtk_container_set_border_width(GTK_CONTAINER(sw_for_flist),0);
 
 /* first `POLICY' is horiz, second is vert */
-gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_clist),
+gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_flist),
                                GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
 
-gtk_container_add(GTK_CONTAINER(clist_sw_ebox),sw_for_clist);
-gtk_widget_show(sw_for_clist);
+gtk_container_add(GTK_CONTAINER(flist_sw_ebox),sw_for_flist);
+gtk_widget_show(sw_for_flist);
 
 /* the clist */
 clist=gtk_clist_new(SELECTOR_NUM_COLUMNS);
@@ -4033,7 +4033,7 @@ gtk_clist_set_sort_column(GTK_CLIST(clist),SELECTOR_NAME_COL);
  * surprised the GTK+ tutorial describes it as `the' way to do it,
  * even if it does work for all widgets. :-/)
  */
-gtk_container_add(GTK_CONTAINER(sw_for_clist),clist);
+gtk_container_add(GTK_CONTAINER(sw_for_flist),clist);
 
 /* menu stuff */
 selector_menu = make_menu(ui_manager,

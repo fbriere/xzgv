@@ -314,15 +314,15 @@ void cb_update_tn(void)
 {
 GtkWidget *update_tn_win,*progbar;
 int was_reading=0;
-GtkAdjustment *clist_vadj;
+GtkAdjustment *flist_vadj;
 float prev_vadj_value;
 
 /* if by some miracle there are no files, don't bother ;-) */
 if(!numrows) return;
 
 /* save vertical position in clist */
-clist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
-prev_vadj_value=gtk_adjustment_get_value(clist_vadj);
+flist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
+prev_vadj_value=gtk_adjustment_get_value(flist_vadj);
 
 /* remove any running thumbnail read. We'll restart it after we're done.
  * (This makes sure we pick up any not updated by this routine.)
@@ -356,7 +356,7 @@ if(update_tn_win)
   gtk_widget_destroy(update_tn_win);
 
 /* restore vertical position in clist */
-gtk_adjustment_set_value(clist_vadj,prev_vadj_value);
+gtk_adjustment_set_value(flist_vadj,prev_vadj_value);
 
 /* restart thumbnail-read if needed */
 if(was_reading)
@@ -453,7 +453,7 @@ free(old_cwd);
 void cb_update_tn_recursive_confirmed(void)
 {
 GtkWidget *update_tn_win,*progbar;
-GtkAdjustment *clist_vadj;
+GtkAdjustment *flist_vadj;
 float prev_vadj_value;
 char *origdir;
 
@@ -466,8 +466,8 @@ origdir=getcwd_allocated();
  * (may not be reasonable once we get back, but IIRC the value is
  * bounds-tested, so that doesn't really matter)
  */
-clist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
-prev_vadj_value=gtk_adjustment_get_value(clist_vadj);
+flist_vadj=gtk_clist_get_vadjustment(GTK_CLIST(clist));
+prev_vadj_value=gtk_adjustment_get_value(flist_vadj);
 
 /* also save focus row, via pastpos. */
 new_pastpos(focus_row);
@@ -508,7 +508,7 @@ free(origdir);
 reinit_dir(1,0);	/* init with pastpos */
 
 /* restore vertical position in clist */
-gtk_adjustment_set_value(clist_vadj,prev_vadj_value);
+gtk_adjustment_set_value(flist_vadj,prev_vadj_value);
 }
 
 
