@@ -283,6 +283,10 @@ viewer to use the whole window.
 @item --careful-jpeg
 @strong{Deprecated.}  This option no longer has any effect.
 
+@vindex checkerboard
+@item --checkerboard
+Display a checkerboard pattern underneath transparent images (similar to GIMP).
+
 @vindex delete-single-prompt
 @item --delete-single-prompt
 (Note that this is normally enabled; use
@@ -2344,6 +2348,13 @@ depth making gradations look much better, but it's slower than
 undithered rendering, and can (in 16-bit) slightly distort a picture's
 colour balance. (The @kbd{F} key was chosen for this as the dither
 toggle is functionally similar to zgv's `fakecols' toggle.)
+
+@kindex Alt-k
+@item Alt-k
+@findex Viewer menu, Options, Display checkerboard as background
+@itemx Viewer menu, Options, Display checkerboard as background
+Toggle the background pattern underneath transparent images, between a
+checkerboard (similar to GIMP) and alternating black and white pixels.
 
 @findex Viewer menu, Options, Revert Scaling For New Pic
 @item Viewer menu, Options, Revert Scaling For New Pic

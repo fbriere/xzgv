@@ -289,13 +289,32 @@ gdk_draw_pixbuf(win,gc,BACKEND_IMAGE(image),
  *
  * (Use xzgv_image's `backend_ext' field to save the pixmap pointer.)
  */
-int backend_render_pixmap_for_image(xzgv_image *image,int x,int y)
+int backend_render_pixmap_for_image(xzgv_image *image,int x,int y,
+                                    gboolean checkerboard)
 {
 GdkPixbuf *backim;
 GdkPixmap *pixmap;
+/* checkerboard background options */
+int check_size;
+guint32 color1, color2;
+
+if (checkerboard)
+{
+  /* the well-known transparency checkerboard; values copied from GIMP */
+  check_size = 8;
+  color1 = 0x666666;
+  color2 = 0x999999;
+}
+else
+{
+  /* alternating black and white pixels */
+  check_size = 1;
+  color1 = 0x000000;
+  color2 = 0xffffff;
+}
 
 backim=gdk_pixbuf_composite_color_simple(BACKEND_IMAGE(image),x,y,interp_type,
-				255,1,0x000000,0xffffff);
+                                         255, check_size, color1, color2);
 if(backim==NULL)
   return(0);
 

@@ -1385,7 +1385,7 @@ if(!zoom)
 
 /* so now our image will be sw x sh */
 if(!scaling_up_enabled)
-  backend_render_pixmap_for_image(theimage,sw,sh);
+  backend_render_pixmap_for_image(theimage, sw, sh, checkerboard);
 
 /* remove any backing pixmap */
 gdk_window_set_back_pixmap(drawing_area->window,NULL,FALSE);
@@ -1904,6 +1904,18 @@ if(theimage)
 render_pixmap(0);
 
 listen_to_toggles=1;
+}
+
+
+void toggle_checkerboard(gpointer cb_data, guint cb_action, GtkWidget *widget)
+{
+  if (!listen_to_toggles || in_nextprev) return;
+  listen_to_toggles = 0;
+
+  checkerboard = !checkerboard;
+  render_pixmap(0);
+
+  listen_to_toggles = 1;
 }
 
 
@@ -3650,6 +3662,8 @@ static GtkItemFactoryEntry viewer_menu_items[]=
    toggle_mouse_x,	1,	"<ToggleItem>"},
   {"/_Options/_Dither in 15 & 16-bit","<shift>f",
    toggle_hicol_dither,1, "<ToggleItem>"},
+  {"/_Options/Display chec_kerboard as background", "<alt>k",
+   toggle_checkerboard, 0, "<ToggleItem>"},
   {"/_Options/Use _Exif Orientation",NULL,toggle_exif_orient,1, "<ToggleItem>"},
   {"/_Options/sep1",	NULL,		NULL,		0,	"<Separator>"},
   {"/_Options/Revert _Scaling For New Pic",NULL,
@@ -3903,6 +3917,12 @@ gtk_check_menu_item_set_active(
     gtk_item_factory_get_widget(viewer_menu_factory,
                                 "<main>/Options/Interpolate when Scaling")),
   interp);
+
+gtk_check_menu_item_set_active(
+  GTK_CHECK_MENU_ITEM(
+    gtk_item_factory_get_widget(viewer_menu_factory,
+                                "<main>/Options/Display checkerboard as background")),
+  checkerboard);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
