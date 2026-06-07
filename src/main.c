@@ -798,7 +798,7 @@ return(TRUE);
 
 
 /* used by gtk_menu_popup() calls invoked from keyboard */
-void keyboard_menu_pos(GtkMenu *menu,gint *xp,gint *yp,GtkWidget *data)
+void keyboard_menu_pos(GtkMenu *menu,gint *xp,gint *yp,gboolean *push_in,GtkWidget *data)
 {
 gdk_window_get_position(mainwin->window,xp,yp);
 *xp+=data->allocation.x;
