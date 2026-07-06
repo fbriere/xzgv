@@ -364,7 +364,7 @@ return(TRUE);
 void make_visible_if_not(int row)
 {
 if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-  gtk_clist_moveto(GTK_CLIST(clist),row,0,0.5,0.);
+  gtk_clist_moveto(GTK_CLIST(clist),row,-1,0.5,0.);
 }
 
 
@@ -1210,7 +1210,7 @@ else
         {
         set_focus_row(row=row-1);
         if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-          gtk_clist_moveto(GTK_CLIST(clist),row,0,0.,0.);
+          gtk_clist_moveto(GTK_CLIST(clist),row,-1,0.,0.);
         }
       break;
     case GDK_j:		/* down */
@@ -1218,7 +1218,7 @@ else
         {
         set_focus_row(row=row+1);
         if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-          gtk_clist_moveto(GTK_CLIST(clist),row,0,1.,0.);
+          gtk_clist_moveto(GTK_CLIST(clist),row,-1,1.,0.);
         }
       break;
 
@@ -1245,7 +1245,7 @@ else
         {
         set_focus_row(row);
         if(gtk_clist_row_is_visible(GTK_CLIST(clist),row)!=GTK_VISIBILITY_FULL)
-          gtk_clist_moveto(GTK_CLIST(clist),row,0,up?0.:1.,0.);
+          gtk_clist_moveto(GTK_CLIST(clist),row,-1,up?0.:1.,0.);
         }
       break;
       
