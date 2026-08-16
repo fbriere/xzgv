@@ -88,6 +88,9 @@
 #define RECURSE_PROTECT_START	static int here=0; if(here) return; here=1
 #define RECURSE_PROTECT_END	here=0
 
+/* dragging gestures were added in GTK 3.14 */
+#define HAVE_DRAG_GESTURES GTK_CHECK_VERSION(3,14,0)
+
 
 GtkWidget *align,*sw_for_pic;
 GtkWidget *image_widget, *eb_for_pic;
@@ -129,8 +132,7 @@ int listen_to_toggles=0;	/* ignore fix-up toggles initially */
 				/* (see init_window()) */
 int in_nextprev=0;		/* needed to protect against recursion */
 
-float orig_x,orig_y;		/* for image dragging with mouse */
-int ignore_drag=1;		/* ignore image drags if true */
+int orig_x,orig_y;		/* for image dragging with mouse */
 int next_on_release=0;		/* if true, do next-pic on but1 release */
 int current_selection=-1;	/* needed for viewer's next/previous file */
 guint cb_selection_id;		/* id of cb_selection() handler */
@@ -1013,6 +1015,14 @@ return(FALSE);
 }
 
 
+/* get the pointer's current position on the screen */
+void get_pointer_root_coordinates(gint* xp, gint* yp)
+{
+    GdkDisplay *display = gdk_display_get_default();
+    gdk_display_get_pointer(display, NULL, xp, yp, NULL);
+}
+
+
 /* button press on any part of the viewer
  * (except the scrollbars, filtered out kludgily by the next routine)
  */
@@ -1040,11 +1050,9 @@ switch(event->button)
       break;
       }
     
-    ignore_drag=0;
     next_on_release=1;
     /* set initial position */
-    orig_x=event->x_root;
-    orig_y=event->y_root;
+    get_pointer_root_coordinates(&orig_x, &orig_y);
     break;
   
   case 2:	/* middle button is a bit like Esc (handy in auto-hide mode) */
@@ -1109,19 +1117,6 @@ return(TRUE);
 }
 
 
-gint flist_sw_ebox_button_press(GtkWidget *widget,GdkEventButton *event)
-{
-if(event->button==1)
-  {
-  /* this is a drag on the selector, so make sure image-dragging ignores it! */
-  ignore_drag=1;
-  next_on_release=0;	/* don't try to move to next image */
-  }
-
-return(FALSE);
-}
-
-
 void move_pic(float xadd,float yadd)
 {
 GtkAdjustment *hadj,*vadj;
@@ -1151,33 +1146,45 @@ if(yadd)
 }
 
 
-gint viewer_motion(GtkWidget *widget,GdkEventMotion *event)
-{
-float diff_x,diff_y;
+#if HAVE_DRAG_GESTURES
 
-/* ignore it if the drag started on the selector */
-if(ignore_drag) return(FALSE);
+void on_viewer_drag_update(GtkGestureDrag *gesture,
+                           gdouble offset_x, gdouble offset_y,
+                           gpointer user_data)
+{
+gint root_x, root_y;
+gint diff_x, diff_y;
 
 next_on_release=0;
 
 /* ignore it if neither scrollbar is onscreen */
 if(!gtk_widget_get_visible(gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic))) &&
    !gtk_widget_get_visible(gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic))))
-  return(TRUE);
+  return;
 
 /* XXX! should absorb all pending motion-notify events somehow, and
  * only use the X/Y pos of the last of those!
  */
 /* have to use [xy]_root, as the window the events happen on will be moving! */
-diff_x=orig_x-event->x_root;
-diff_y=orig_y-event->y_root;
-orig_x=event->x_root;
-orig_y=event->y_root;
+get_pointer_root_coordinates(&root_x, &root_y);
+diff_x = orig_x - root_x;
+diff_y = orig_y - root_y;
+orig_x = root_x;
+orig_y = root_y;
 
 move_pic(diff_x,diff_y);
-
-return(TRUE);
 }
+
+#else
+
+/* scroll dragging is not available; make sure drags don't register as clicks */
+gint viewer_motion(GtkWidget *widget,GdkEventMotion *event)
+{
+  next_on_release=0;
+  return(TRUE);
+}
+
+#endif
 
 
 /* used by gtk_menu_popup() calls invoked from keyboard */
@@ -4234,16 +4241,24 @@ viewer_menu = make_menu(ui_manager,
     NULL, 0, NULL
     );
 
+#if HAVE_DRAG_GESTURES
+GtkGesture *gesture = gtk_gesture_drag_new(eb_for_pic);
+gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);
+g_signal_connect(gesture, "drag-update",
+                 G_CALLBACK(on_viewer_drag_update), NULL);
+#else
 g_signal_connect(eb_for_pic, "motion_notify_event",
                    G_CALLBACK(viewer_motion), NULL);
+#endif
 g_signal_connect(eb_for_pic, "key_press_event",
                    G_CALLBACK(viewer_key_press), NULL);
 
-/* need to ask for motion while button 1 is pressed (for drag),
- * keypresses, and (for scaling) expose.
- */
+/* need to ask for keypresses, and (for scaling) expose. */
 gtk_widget_set_events(eb_for_pic,
-                      GDK_BUTTON1_MOTION_MASK|GDK_KEY_PRESS_MASK|
+#if ! HAVE_DRAG_GESTURES
+                      GDK_BUTTON1_MOTION_MASK|  /* to ignore drags */
+#endif
+                      GDK_KEY_PRESS_MASK|
                       GDK_EXPOSURE_MASK);
 
 gtk_widget_show(image_widget);
@@ -4296,21 +4311,10 @@ gtk_widget_show(vboxl);
 flist_sw_ebox=gtk_event_box_new();
 gtk_box_pack_start(GTK_BOX(vboxl),flist_sw_ebox,TRUE,TRUE,0);
 
-/* pass on left-button motion events to viewer's image-dragging stuff,
- * so it doesn't stop dragging just because you drag the pointer over
- * the selector. This means we have to carefully ignore any drags which
- * start in the selector though, hence the left-button-press event
- * handling here.
- */
-g_signal_connect(flist_sw_ebox, "button_press_event",
-                   G_CALLBACK(flist_sw_ebox_button_press), NULL);
-g_signal_connect(flist_sw_ebox, "motion_notify_event",
-                   G_CALLBACK(viewer_motion), NULL);
 /* also capture key presses, so we can handle them in stead of treeview */
 g_signal_connect(flist_sw_ebox, "key_press_event",
                    G_CALLBACK(selector_key_press), NULL);
 gtk_widget_set_events(flist_sw_ebox,
-                      GDK_BUTTON_PRESS_MASK|GDK_BUTTON1_MOTION_MASK|
                       GDK_KEY_PRESS_MASK);
 gtk_widget_show(flist_sw_ebox);
 
@@ -4593,12 +4597,17 @@ gtk_widget_add_accelerator(
 
 
 /* severely hairy, but needed to allow menu to appear when a non-image
- * bit of the viewer window is selected. Also allows drags in non-image
- * bits, which is handy for really thin images.
+ * bit of the viewer window is selected.
  */
 g_signal_connect(sw_for_pic,
                    "button_press_event",
                    G_CALLBACK(viewer_button_press), NULL);
+g_signal_connect(sw_for_pic,
+                   "button_release_event",
+                   G_CALLBACK(viewer_button_release), NULL);
+gtk_widget_set_events(sw_for_pic,
+                      GDK_BUTTON_PRESS_MASK|
+                      GDK_BUTTON_RELEASE_MASK);
 
 /* have to carefully override this for scrollbars! */
 g_signal_connect_after(
@@ -4611,16 +4620,9 @@ g_signal_connect_after(
 
 g_signal_connect(mainwin, "configure_event",
                    G_CALLBACK(pic_win_resized), NULL);
-/* this catches dragging across the pane splitter */
-g_signal_connect(mainwin, "motion_notify_event",
-                   G_CALLBACK(viewer_motion), NULL);
-g_signal_connect(mainwin,
-                   "button_release_event",
-                   G_CALLBACK(viewer_button_release), NULL);
-/* ask for configure and left-button drag */
+/* ask for configure */
 gtk_widget_set_events(mainwin,
-                      GDK_STRUCTURE_MASK|GDK_BUTTON1_MOTION_MASK|
-                      GDK_BUTTON_RELEASE_MASK);
+                      GDK_STRUCTURE_MASK);
 
 
 /* if hidden is set, we should hide it initially */
