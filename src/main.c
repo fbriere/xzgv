@@ -1298,7 +1298,7 @@ else
       adj_value +=
           (event->keyval == GDK_Right ? 1 : -1) *
           (event->state & GDK_CONTROL_MASK ? adj->page_increment : adj->step_increment);
-      /* retrain the value to the scrollbar's range */
+      /* restrict the value to the scrollbar's range */
       adj_value = MAX(adj_value, adj->lower);
       adj_value = MIN(adj_value, adj->upper - adj->page_size);
       gtk_adjustment_set_value(adj, adj_value);
