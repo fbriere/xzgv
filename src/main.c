@@ -3631,8 +3631,6 @@ static GtkItemFactoryEntry viewer_menu_items[]=
   {"/_Next Image",	"space",	cb_next_image,	0,	NULL},
   {"/_Previous Image",	"b",		cb_prev_image,	0,	NULL},
   {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
-  {"/Parent _Directory", "<alt>Up",	cb_parent_dir,	0,	NULL},
-  {"/sep1",		NULL,		NULL,		0,	"<Separator>"},
   {"/_Tagging/_Tag then Next","<control>space",cb_tag_then_next,0,	NULL},
   {"/_Tagging/sep1",	NULL,		NULL,		0,	"<Separator>"},
   {"/_Tagging/_Next Tagged","slash",cb_viewer_next_tagged,0,	NULL},
@@ -4001,10 +3999,6 @@ if(hidden)
   gtk_widget_set_sensitive(
     gtk_item_factory_get_widget(selector_menu_factory,
                                 "<main>/Options/Thin Rows"),FALSE);
-
-  gtk_widget_set_sensitive(
-    gtk_item_factory_get_widget(viewer_menu_factory,
-                                "<main>/Parent Directory"),FALSE);
   }
 
 /* hook up an alternative quit key (q) */
