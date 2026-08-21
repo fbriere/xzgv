@@ -589,12 +589,8 @@ void cb_tag_all(void)
 {
 int f;
 
-flist_freeze();
-
 for(f=0;f<numrows;f++)
   set_tagged_state(f,1);
-
-flist_thaw();
 }
 
 
@@ -602,12 +598,8 @@ void cb_untag_all(void)
 {
 int f;
 
-flist_freeze();
-
 for(f=0;f<numrows;f++)
   set_tagged_state(f,0);
-
-flist_thaw();
 }
 
 
@@ -615,12 +607,8 @@ void cb_toggle_all(void)
 {
 int f;
 
-flist_freeze();
-
 for(f=0;f<numrows;f++)
   set_tagged_state(f,!get_tagged_state(f));
-
-flist_thaw();
 }
 
 
