@@ -161,7 +161,7 @@ int w,h;
 g_autofree char *ptr = NULL;
 int written_ok=1;	/* only 0 if we *tried* to write one and it failed */
 
-get_row_text(row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,MODEL_NAME_COL,&ptr);
 datptr=get_row_data(row);
 
 /* skip dirs, files we can't stat, and hidden files */
@@ -207,7 +207,7 @@ if(stat(buf,&xvpic)==-1 || realpic.st_mtime>xvpic.st_mtime ||
       if(datptr->pb_small) g_object_unref(datptr->pb_small);
       datptr->pb_norm=pixbuf;
       datptr->pb_small=small_pixbuf;
-      set_row_pixbuf(row,SELECTOR_TN_COL,
+      set_row_pixbuf(row,MODEL_TN_COL,
                            thin_rows?datptr->pb_small:datptr->pb_norm);
       }
     

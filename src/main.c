@@ -503,7 +503,7 @@ struct row_data_tag *get_row_data(int row)
     return(NULL);
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_DATA_COL, &datptr, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_DATA_COL, &datptr, -1);
 
   return(datptr);
 }
@@ -526,7 +526,7 @@ void move_to_row(int row, float row_align)
 
 void disable_sorting(void)
 {
-  /* no need to backup the sort column, as it is always SELECTOR_NAME_COL */
+  /* no need to backup the sort column, as it is always MODEL_NAME_COL */
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
       GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
       GTK_SORT_ASCENDING);
@@ -535,7 +535,7 @@ void disable_sorting(void)
 void enable_sorting(void)
 {
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
-      SELECTOR_NAME_COL,
+      MODEL_NAME_COL,
       GTK_SORT_ASCENDING);
 }
 
@@ -827,7 +827,7 @@ if(datptr)
   }
 
 gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-gtk_list_store_set(liststore, &iter, SELECTOR_TAGGED_COL, datptr->tagged, -1);
+gtk_list_store_set(liststore, &iter, MODEL_TAGGED_COL, datptr->tagged, -1);
 }
 
 
@@ -1562,7 +1562,7 @@ if(goto_next_char)
         {
         char first_char;
 
-        get_row_text(f,SELECTOR_NAME_COL,&ptr);
+        get_row_text(f,MODEL_NAME_COL,&ptr);
         first_char = ptr[0];
         g_free(ptr);
 
@@ -1927,7 +1927,7 @@ void set_thumbnail_column_width(void)
 {
   GtkTreeViewColumn *column;
 
-  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL);
+  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL);
   gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
   gtk_tree_view_column_set_fixed_width(column,
                            thin_rows ? (80 / ROW_HEIGHT_DIV + 1) : 80);
@@ -2398,11 +2398,11 @@ set_thumbnail_column_width();
  */
 for(f=0;f<numrows;f++)
   {
-  if(!get_row_pixbuf(f,SELECTOR_TN_COL,&pixbuf))
+  if(!get_row_pixbuf(f,MODEL_TN_COL,&pixbuf))
     continue;
   
   datptr=get_row_data(f);
-  set_row_pixbuf(f,SELECTOR_TN_COL,
+  set_row_pixbuf(f,MODEL_TN_COL,
                        thin_rows?datptr->pb_small:datptr->pb_norm);
   }
 
@@ -3038,10 +3038,10 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   {
   /* if there's already a pixbuf there, skip it. */
   if(!get_row_pixbuf(*entryp,
-                           SELECTOR_TN_COL,&pixbuf))
+                           MODEL_TN_COL,&pixbuf))
     {
     /* construct filename for file's (possible) thumbnail */
-    get_row_text(*entryp,SELECTOR_NAME_COL,&ptr);
+    get_row_text(*entryp,MODEL_NAME_COL,&ptr);
     strcpy(buf,".xvpics/");
     strncat(buf,ptr,sizeof(buf)-8-2);	/* above string is 8 chars long */
     g_free(ptr);
@@ -3053,7 +3053,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
       {
       datptr->pb_norm=g_object_ref(dir_icon);
       datptr->pb_small=g_object_ref(dir_icon_small);
-      set_row_pixbuf(*entryp,SELECTOR_TN_COL,
+      set_row_pixbuf(*entryp,MODEL_TN_COL,
                            thin_rows?datptr->pb_small:datptr->pb_norm);
       }
     else
@@ -3064,7 +3064,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
         {
         datptr->pb_norm=pixbuf;
         datptr->pb_small=small_pixbuf;
-        set_row_pixbuf(*entryp,SELECTOR_TN_COL,
+        set_row_pixbuf(*entryp,MODEL_TN_COL,
                              thin_rows?datptr->pb_small:datptr->pb_norm);
         }
       else
@@ -3072,7 +3072,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
         /* no thumbnail then, use ref to file_icon pixbuf. */
         datptr->pb_norm=g_object_ref(file_icon);
         datptr->pb_small=g_object_ref(file_icon_small);
-        set_row_pixbuf(*entryp,SELECTOR_TN_COL,
+        set_row_pixbuf(*entryp,MODEL_TN_COL,
                              thin_rows?datptr->pb_small:datptr->pb_norm);
         }
       }
@@ -3160,10 +3160,10 @@ gint sort_cmp(
 g_autofree char *txt1 = NULL, *txt2 = NULL;
 struct row_data_tag *dat1,*dat2;
 
-gtk_tree_model_get(model, a, SELECTOR_NAME_COL, &txt1, -1);
-gtk_tree_model_get(model, b, SELECTOR_NAME_COL, &txt2, -1);
-gtk_tree_model_get(model, a, SELECTOR_DATA_COL, &dat1, -1);
-gtk_tree_model_get(model, b, SELECTOR_DATA_COL, &dat2, -1);
+gtk_tree_model_get(model, a, MODEL_NAME_COL, &txt1, -1);
+gtk_tree_model_get(model, b, MODEL_NAME_COL, &txt2, -1);
+gtk_tree_model_get(model, a, MODEL_DATA_COL, &dat1, -1);
+gtk_tree_model_get(model, b, MODEL_DATA_COL, &dat2, -1);
 
 /* directories always come first.
  * so, if comparing two files, use a normal comparison;
@@ -3280,8 +3280,8 @@ datptr->pb_norm=datptr->pb_small=NULL;	/* no pixbufs initially */
 
 gtk_list_store_append(liststore, &iter);
 gtk_list_store_set(liststore, &iter,
-    SELECTOR_NAME_COL, filename,
-    SELECTOR_DATA_COL, datptr,
+    MODEL_NAME_COL, filename,
+    MODEL_DATA_COL, datptr,
     -1);
 
 /* we *could* put pixbufs in place for directories right now,
@@ -3532,7 +3532,7 @@ int was_reading=0;
 GtkTreeIter iter;
 
 row=focus_row;
-get_row_text(row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,MODEL_NAME_COL,&ptr);
 
 /* delete the file */
 if(remove(ptr)==-1)
@@ -3600,7 +3600,7 @@ int row;
 row=focus_row;
 if(row<0 || row>=numrows) return;
 
-get_row_text(row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,MODEL_NAME_COL,&ptr);
 if(!ptr) return;
 
 datptr=get_row_data(row);
@@ -3638,7 +3638,7 @@ if(do_pastpos && try_to_save_cursor_pos)
 if(try_to_save_cursor_pos)
   {
   get_row_text(focus_row,
-                     SELECTOR_NAME_COL,&ptr);
+                     MODEL_NAME_COL,&ptr);
   if(!ptr || (oldname=malloc(strlen(ptr)+1))==NULL)
     try_to_save_cursor_pos=0;
   else
@@ -3657,7 +3657,7 @@ if(try_to_save_cursor_pos)
 
   for(f=0;f<numrows;f++)
     {
-    get_row_text(f,SELECTOR_NAME_COL,&ptr);
+    get_row_text(f,MODEL_NAME_COL,&ptr);
     if(*ptr==*oldname && strcmp(ptr,oldname)==0)
       {
       /* focus and make sure it's visible */
@@ -3759,7 +3759,7 @@ gtk_tree_path_free(path);
 current_selection=row;
 set_focus_row(row);
 
-get_row_text(row,SELECTOR_NAME_COL,&ptr);
+get_row_text(row,MODEL_NAME_COL,&ptr);
 
 /* don't think this can happen, but what the heck */
 if(!ptr)
@@ -4344,11 +4344,11 @@ gtk_widget_show(sw_for_flist);
 
 /* the liststore */
 liststore = gtk_list_store_new(
-    SELECTOR_NUM_COLUMNS,
-    GDK_TYPE_PIXBUF,      /* SELECTOR_TN_COL */
-    G_TYPE_STRING,        /* SELECTOR_NAME_COL */
-    G_TYPE_POINTER,       /* SELECTOR_DATA_COL */
-    G_TYPE_BOOLEAN        /* SELECTOR_TAGGED_COL */
+    MODEL_NUM_COLUMNS,
+    GDK_TYPE_PIXBUF,   /* MODEL_TN_COL */
+    G_TYPE_STRING,     /* MODEL_NAME_COL */
+    G_TYPE_POINTER,    /* MODEL_DATA_COL */
+    G_TYPE_BOOLEAN     /* MODEL_TAGGED_COL */
     );
 
 /* the treeview */
@@ -4361,7 +4361,7 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     "Thumbnail",  /* title */
     renderer,     /* cell */
     /* attributes */
-    "pixbuf", SELECTOR_TN_COL,  /* fetch pixbuf from thumbnail column */
+    "pixbuf", MODEL_TN_COL,  /* fetch pixbuf from thumbnail column */
     NULL);
 
 /* column 2: filename */
@@ -4371,8 +4371,8 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     "Filename",   /* title */
     renderer,     /* cell */
     /* attributes */
-    "text",           SELECTOR_NAME_COL,    /* fetch text from name column */
-    "foreground-set", SELECTOR_TAGGED_COL,  /* use foreground color if tagged */
+    "text",           MODEL_NAME_COL,    /* fetch text from name column */
+    "foreground-set", MODEL_TAGGED_COL,  /* use foreground color if tagged */
     NULL);
 /* set default properties for our filename cell renderer */
 g_object_set(renderer,
@@ -4417,15 +4417,15 @@ cb_selection_id = g_signal_connect(selection, "changed",
 
 set_thumbnail_column_width();		/* set width of thumbnail column */
 gtk_tree_view_column_set_alignment(
-    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL),
+    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL),
     GTK_JUSTIFY_CENTER);
 
 /* set up the sort comparison function */
 gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore),
-    SELECTOR_NAME_COL,  /* sort_column_id */
-    sort_cmp,           /* sort_func */
-    NULL,               /* user_data */
-    NULL);              /* destroy */
+    MODEL_NAME_COL,  /* sort_column_id */
+    sort_cmp,        /* sort_func */
+    NULL,            /* user_data */
+    NULL);           /* destroy */
 /* and turn it on */
 enable_sorting();
 
@@ -4740,7 +4740,7 @@ int f;
 
 for(f=0;f<numrows;f++)
   {
-  get_row_text(f,SELECTOR_NAME_COL,&ptr);
+  get_row_text(f,MODEL_NAME_COL,&ptr);
   datptr=get_row_data(f);
   if(datptr && datptr->tagged)
     printf("%s\n",ptr);
@@ -4806,7 +4806,7 @@ if(read_dir)
     char *ptr;
     
     /* check it's really `..' (won't be if in root dir) */
-    get_row_text(0,SELECTOR_NAME_COL,&ptr);
+    get_row_text(0,MODEL_NAME_COL,&ptr);
     if(strcmp(ptr,"..")==0)
       set_focus_row(1);
     g_free(ptr);
@@ -4817,7 +4817,7 @@ else
   disable_sorting();  /* preserve the order of command-line filenames */
   add_new_rows_from_cmdline(argsleft,argc,argv);
   gtk_tree_view_column_set_visible(
-    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL),
+    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL),
     FALSE);
 
   /* select first image, but make sure things are up and running first */
