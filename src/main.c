@@ -105,6 +105,7 @@ int focus_row = -1;
 GtkWidget *mainwin;
 
 GtkListStore *liststore;
+GtkCellRenderer *thumbnail_renderer;  /* thumbnail cell renderer, for toggle_thin_row() */
 
 guint8 xvpic_pal[256][3];		/* palette for thumbnails */
 
@@ -461,7 +462,7 @@ void set_row_filename(int row, char *filename)
 }
 
 
-int get_row_thumbnail(int row, GdkPixbuf **pixbuf)
+int get_row_thumbnails(int row, GdkPixbuf **pixbuf, GdkPixbuf **small_pixbuf)
 {
   GtkTreeIter iter;
 
@@ -469,12 +470,15 @@ int get_row_thumbnail(int row, GdkPixbuf **pixbuf)
     return 0;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_TN_COL, pixbuf, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter,
+                     MODEL_TN_NORMAL_COL, pixbuf,
+                     MODEL_TN_SMALL_COL, small_pixbuf,
+                     -1);
 
   return (*pixbuf != NULL);
 }
 
-void set_row_thumbnail(int row, GdkPixbuf *pixbuf)
+void set_row_thumbnails(int row, GdkPixbuf *pixbuf, GdkPixbuf *small_pixbuf)
 {
   GtkTreeIter iter;
 
@@ -482,7 +486,10 @@ void set_row_thumbnail(int row, GdkPixbuf *pixbuf)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_list_store_set(liststore, &iter, MODEL_TN_COL, pixbuf, -1);
+  gtk_list_store_set(liststore, &iter,
+                     MODEL_TN_NORMAL_COL, pixbuf,
+                     MODEL_TN_SMALL_COL, small_pixbuf,
+                     -1);
 }
 
 
@@ -2374,9 +2381,7 @@ use_exif_orient=!use_exif_orient;
 
 void toggle_thin_rows(gpointer cb_data,guint cb_action,GtkWidget *widget)
 {
-struct row_data_tag *datptr;
-GdkPixbuf *pixbuf;
-int f;
+GtkTreeViewColumn *column;
 
 if(!listen_to_toggles || in_nextprev) return;
 
@@ -2388,21 +2393,12 @@ thin_rows=!thin_rows;
 fix_row_heights();
 set_thumbnail_column_width();
 
-/* switch pixbufs (normal for small, small for normal).
- * This is slightly tricky as there may be a thumbnail-read ongoing.
- * The current state is at least consistent though (it's not actually
- * multi-threaded or anything :-)), so just switch all which have
- * pixbufs.
- */
-for(f=0;f<numrows;f++)
-  {
-  if(!get_row_thumbnail(f,&pixbuf))
-    continue;
-  
-  datptr=get_row_data(f);
-  set_row_thumbnail(f,
-                       thin_rows?datptr->pb_small:datptr->pb_norm);
-  }
+/* switch model source column for the view thumbnail column */
+column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL);
+/* GTK does not support modifying an attribute, so clear them all and re-add */
+gtk_cell_layout_clear_attributes(GTK_CELL_LAYOUT(column), thumbnail_renderer);
+gtk_tree_view_column_add_attribute(column, thumbnail_renderer,
+    "pixbuf", (thin_rows ? MODEL_TN_SMALL_COL : MODEL_TN_NORMAL_COL));
 
 flist_thaw();
 
@@ -3035,7 +3031,7 @@ if(adjval!=idle_xvpic_lastadjval)
 for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   {
   /* if there's already a pixbuf there, skip it. */
-  if(!get_row_thumbnail(*entryp,&pixbuf))
+  if(!get_row_thumbnails(*entryp, &pixbuf, &small_pixbuf))
     {
     /* construct filename for file's (possible) thumbnail */
     get_row_filename(*entryp,&ptr);
@@ -3048,10 +3044,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     /* if it's a dir, use ref to dir_icon pixbuf. */
     if(datptr->isdir)
       {
-      datptr->pb_norm=g_object_ref(dir_icon);
-      datptr->pb_small=g_object_ref(dir_icon_small);
-      set_row_thumbnail(*entryp,
-                           thin_rows?datptr->pb_small:datptr->pb_norm);
+      set_row_thumbnails(*entryp, dir_icon, dir_icon_small);
       }
     else
       {
@@ -3059,18 +3052,12 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
       if(read_xvpic(buf,xvpic_data,&w,&h) &&
          (pixbuf=xvpic2pixbuf(xvpic_data,w,h,&small_pixbuf))!=NULL)
         {
-        datptr->pb_norm=pixbuf;
-        datptr->pb_small=small_pixbuf;
-        set_row_thumbnail(*entryp,
-                             thin_rows?datptr->pb_small:datptr->pb_norm);
+        set_row_thumbnails(*entryp, pixbuf, small_pixbuf);
         }
       else
         {
         /* no thumbnail then, use ref to file_icon pixbuf. */
-        datptr->pb_norm=g_object_ref(file_icon);
-        datptr->pb_small=g_object_ref(file_icon_small);
-        set_row_thumbnail(*entryp,
-                             thin_rows?datptr->pb_small:datptr->pb_norm);
+        set_row_thumbnails(*entryp, file_icon, file_icon_small);
         }
       }
     }
@@ -3120,19 +3107,9 @@ stop_thumbnail_read();
 
 for(f=0;f<numrows;f++)
   {
-  /* seems to free the pixbufs itself, but doesn't free the data AFAIK
-   * (reasonable enough - the data could point to something static, etc.)
-   * However, only one of our pixbufs (normal/small) is showing currently;
-   * remove the other before removing the data.
-   */
   datptr=get_row_data(f);
-  /* be careful - we may be halfway through thumbnail-read... */
   if(datptr)
-    {
-    if(datptr->pb_norm) g_object_unref(datptr->pb_norm);
-    if(datptr->pb_small) g_object_unref(datptr->pb_small);
     free(datptr);
-    }
   }
 
 /* now remove all rows at once */
@@ -3272,7 +3249,6 @@ datptr->mtime=sbuf->st_mtime;
 datptr->ctime=sbuf->st_ctime;
 datptr->atime=sbuf->st_atime;
 datptr->tagged=0;
-datptr->pb_norm=datptr->pb_small=NULL;	/* no pixbufs initially */
 
 gtk_list_store_insert_with_values(liststore,
     NULL,  /* iter */
@@ -4339,10 +4315,11 @@ gtk_widget_show(sw_for_flist);
 /* the liststore */
 liststore = gtk_list_store_new(
     MODEL_NUM_COLUMNS,
-    GDK_TYPE_PIXBUF,   /* MODEL_TN_COL */
     G_TYPE_STRING,     /* MODEL_NAME_COL */
     G_TYPE_POINTER,    /* MODEL_DATA_COL */
-    G_TYPE_BOOLEAN     /* MODEL_TAGGED_COL */
+    G_TYPE_BOOLEAN,    /* MODEL_TAGGED_COL */
+    GDK_TYPE_PIXBUF,   /* MODEL_TN_NORMAL_COL */
+    GDK_TYPE_PIXBUF    /* MODEL_TN_SMALL_COL */
     );
 
 /* the treeview */
@@ -4355,8 +4332,12 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     "Thumbnail",  /* title */
     renderer,     /* cell */
     /* attributes */
-    "pixbuf", MODEL_TN_COL,  /* fetch pixbuf from thumbnail column */
+    /* fetch pixbuf from thumbnail column */
+    "pixbuf", (thin_rows ? MODEL_TN_SMALL_COL : MODEL_TN_NORMAL_COL),
+    /* (make sure to re-add any additional attributes in toggle_thin_rows!) */
     NULL);
+/* we'll need to remember this for toggle_thin_rows() */
+thumbnail_renderer = renderer;
 
 /* column 2: filename */
 renderer = gtk_cell_renderer_text_new();
