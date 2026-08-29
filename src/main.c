@@ -446,7 +446,7 @@ void get_row_filename(int row, char **filename)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_NAME_COL, filename, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_NAME_COL, filename, -1);
 }
 
 void set_row_filename(int row, char *filename)
@@ -457,7 +457,7 @@ void set_row_filename(int row, char *filename)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_list_store_set(liststore, &iter, SELECTOR_NAME_COL, filename, -1);
+  gtk_list_store_set(liststore, &iter, MODEL_NAME_COL, filename, -1);
 }
 
 
@@ -469,7 +469,7 @@ int get_row_thumbnail(int row, GdkPixbuf **pixbuf)
     return 0;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_TN_COL, pixbuf, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_TN_COL, pixbuf, -1);
 
   return (*pixbuf != NULL);
 }
@@ -482,7 +482,7 @@ void set_row_thumbnail(int row, GdkPixbuf *pixbuf)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_list_store_set(liststore, &iter, SELECTOR_TN_COL, pixbuf, -1);
+  gtk_list_store_set(liststore, &iter, MODEL_TN_COL, pixbuf, -1);
 }
 
 
@@ -495,7 +495,7 @@ struct row_data_tag *get_row_data(int row)
     return(NULL);
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, SELECTOR_DATA_COL, &datptr, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_DATA_COL, &datptr, -1);
 
   return(datptr);
 }
@@ -521,7 +521,7 @@ void move_to_row(int row, float row_align)
 void enable_sorting(void)
 {
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
-      SELECTOR_NAME_COL,
+      MODEL_NAME_COL,
       GTK_SORT_ASCENDING);
 }
 
@@ -819,7 +819,7 @@ if(datptr)
   }
 
 gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-gtk_list_store_set(liststore, &iter, SELECTOR_TAGGED_COL, datptr->tagged, -1);
+gtk_list_store_set(liststore, &iter, MODEL_TAGGED_COL, datptr->tagged, -1);
 }
 
 
@@ -1919,7 +1919,7 @@ void set_thumbnail_column_width(void)
 {
   GtkTreeViewColumn *column;
 
-  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL);
+  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL);
   gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
   gtk_tree_view_column_set_fixed_width(column,
                            thin_rows ? (80 / ROW_HEIGHT_DIV + 1) : 80);
@@ -3151,10 +3151,10 @@ gint sort_cmp(
 g_autofree char *txt1 = NULL, *txt2 = NULL;
 struct row_data_tag *dat1,*dat2;
 
-gtk_tree_model_get(model, a, SELECTOR_NAME_COL, &txt1, -1);
-gtk_tree_model_get(model, b, SELECTOR_NAME_COL, &txt2, -1);
-gtk_tree_model_get(model, a, SELECTOR_DATA_COL, &dat1, -1);
-gtk_tree_model_get(model, b, SELECTOR_DATA_COL, &dat2, -1);
+gtk_tree_model_get(model, a, MODEL_NAME_COL, &txt1, -1);
+gtk_tree_model_get(model, b, MODEL_NAME_COL, &txt2, -1);
+gtk_tree_model_get(model, a, MODEL_DATA_COL, &dat1, -1);
+gtk_tree_model_get(model, b, MODEL_DATA_COL, &dat2, -1);
 
 /* directories always come first.
  * so, if comparing two files, use a normal comparison;
@@ -3271,8 +3271,8 @@ datptr->pb_norm=datptr->pb_small=NULL;	/* no pixbufs initially */
 
 gtk_list_store_append(liststore, &iter);
 gtk_list_store_set(liststore, &iter,
-    SELECTOR_NAME_COL, filename,
-    SELECTOR_DATA_COL, datptr,
+    MODEL_NAME_COL, filename,
+    MODEL_DATA_COL, datptr,
     -1);
 
 /* we *could* put pixbufs in place for directories right now,
@@ -4332,11 +4332,11 @@ gtk_widget_show(sw_for_flist);
 
 /* the liststore */
 liststore = gtk_list_store_new(
-    SELECTOR_NUM_COLUMNS,
-    GDK_TYPE_PIXBUF,      /* SELECTOR_TN_COL */
-    G_TYPE_STRING,        /* SELECTOR_NAME_COL */
-    G_TYPE_POINTER,       /* SELECTOR_DATA_COL */
-    G_TYPE_BOOLEAN        /* SELECTOR_TAGGED_COL */
+    MODEL_NUM_COLUMNS,
+    GDK_TYPE_PIXBUF,   /* MODEL_TN_COL */
+    G_TYPE_STRING,     /* MODEL_NAME_COL */
+    G_TYPE_POINTER,    /* MODEL_DATA_COL */
+    G_TYPE_BOOLEAN     /* MODEL_TAGGED_COL */
     );
 
 /* the treeview */
@@ -4349,7 +4349,7 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     "Thumbnail",  /* title */
     renderer,     /* cell */
     /* attributes */
-    "pixbuf", SELECTOR_TN_COL,  /* fetch pixbuf from thumbnail column */
+    "pixbuf", MODEL_TN_COL,  /* fetch pixbuf from thumbnail column */
     NULL);
 
 /* column 2: filename */
@@ -4359,8 +4359,8 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     "Filename",   /* title */
     renderer,     /* cell */
     /* attributes */
-    "text",           SELECTOR_NAME_COL,    /* fetch text from name column */
-    "foreground-set", SELECTOR_TAGGED_COL,  /* use foreground color if tagged */
+    "text",           MODEL_NAME_COL,    /* fetch text from name column */
+    "foreground-set", MODEL_TAGGED_COL,  /* use foreground color if tagged */
     NULL);
 /* set default properties for our filename cell renderer */
 g_object_set(renderer,
@@ -4405,15 +4405,15 @@ cb_selection_id = g_signal_connect(selection, "changed",
 
 set_thumbnail_column_width();		/* set width of thumbnail column */
 gtk_tree_view_column_set_alignment(
-    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL),
+    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL),
     GTK_JUSTIFY_CENTER);
 
 /* set up the sort comparison function */
 gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore),
-    SELECTOR_NAME_COL,  /* sort_column_id */
-    sort_cmp,           /* sort_func */
-    NULL,               /* user_data */
-    NULL);              /* destroy */
+    MODEL_NAME_COL,  /* sort_column_id */
+    sort_cmp,        /* sort_func */
+    NULL,            /* user_data */
+    NULL);           /* destroy */
 /* but make sure it's only called on request */
 disable_sorting();
 
@@ -4804,7 +4804,7 @@ else
   {
   add_new_rows_from_cmdline(argsleft,argc,argv);
   gtk_tree_view_column_set_visible(
-    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), SELECTOR_TN_COL),
+    gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL),
     FALSE);
 
   /* select first image, but make sure things are up and running first */
