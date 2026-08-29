@@ -8,10 +8,12 @@
 /* which column is which in the liststore model */
 enum
 {
-  MODEL_TN_COL = 0,  /* thumbnail */
-  MODEL_NAME_COL,    /* filename */
-  MODEL_DATA_COL,    /* struct row_data_tag */
-  MODEL_TAGGED_COL,  /* bool: row is tagged */
+  MODEL_NAME_COL = 0,  /* filename */
+  MODEL_DATA_COL,      /* struct row_data_tag */
+  MODEL_TAGGED_COL,    /* bool: row is tagged */
+
+  MODEL_TN_NORMAL_COL, /* normal thumbnail */
+  MODEL_TN_SMALL_COL,  /* small thumbnail */
 
   MODEL_NUM_COLUMNS
 };
@@ -31,8 +33,6 @@ struct row_data_tag
   off_t size;
   time_t mtime,ctime,atime;
   int extofs;
-  GdkPixbuf *pb_norm;	/* normal thumbnail pixbuf */
-  GdkPixbuf *pb_small;	/* small version for thin rows mode */
   };
 
 extern GtkWidget *treeview,*mainwin;
@@ -48,8 +48,8 @@ extern xzgv_image *load_image(char *file,int for_thumbnail,
 extern struct row_data_tag *get_row_data(int row);
 extern void get_row_filename(int row, char **text);
 extern void set_row_filename(int row, char *text);
-extern int get_row_thumbnail(int row, GdkPixbuf **pixbuf);
-extern void set_row_thumbnail(int row, GdkPixbuf *pixbuf);
+extern int get_row_thumbnails(int row, GdkPixbuf **pixbuf, GdkPixbuf **small_pixbuf);
+extern void set_row_thumbnails(int row, GdkPixbuf *pixbuf, GdkPixbuf *small_pixbuf);
 extern void make_visible_if_not(int row);
 extern int get_tagged_state(int row);
 extern int thumbnail_read_running(void);
