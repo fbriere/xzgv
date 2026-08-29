@@ -5,15 +5,23 @@
  *		but stuff here is on a `need to know' basis :-)
  */
 
-/* which column is which in selector */
+/* which column is which in the liststore model */
 enum
 {
-  SELECTOR_TN_COL = 0,  /* thumbnail */
-  SELECTOR_NAME_COL,    /* filename */
-  SELECTOR_DATA_COL,    /* struct row_data_tag */
-  SELECTOR_TAGGED_COL,  /* bool: row is tagged */
+  MODEL_TN_COL = 0,  /* thumbnail */
+  MODEL_NAME_COL,    /* filename */
+  MODEL_DATA_COL,    /* struct row_data_tag */
+  MODEL_TAGGED_COL,  /* bool: row is tagged */
 
-  SELECTOR_NUM_COLUMNS
+  MODEL_NUM_COLUMNS
+};
+/* which column is which in the treeview */
+enum
+{
+  VIEW_TN_COL = 0,  /* thumbnail */
+  VIEW_NAME_COL,    /* filename */
+
+  VIEW_NUM_COLUMNS
 };
 
 struct row_data_tag
