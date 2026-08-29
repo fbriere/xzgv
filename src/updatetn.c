@@ -203,12 +203,10 @@ if(stat(buf,&xvpic)==-1 || realpic.st_mtime>xvpic.st_mtime ||
     pixbuf=xvpic2pixbuf(xvpic_data,w,h,&small_pixbuf);
     if(pixbuf)
       {
-      if(datptr->pb_norm)  g_object_unref(datptr->pb_norm);
-      if(datptr->pb_small) g_object_unref(datptr->pb_small);
-      datptr->pb_norm=pixbuf;
-      datptr->pb_small=small_pixbuf;
-      set_row_thumbnail(row,
-                           thin_rows?datptr->pb_small:datptr->pb_norm);
+      set_row_thumbnails(row, pixbuf, small_pixbuf);
+      /* the treeview has now acquired its own refs on these */
+      g_object_unref(pixbuf);
+      g_object_unref(small_pixbuf);
       }
     
     free(xvpic_data);
