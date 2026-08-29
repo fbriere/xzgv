@@ -91,7 +91,7 @@
 
 GtkWidget *align,*sw_for_pic;
 GtkWidget *image_widget, *eb_for_pic;
-GtkWidget *treeview,*statusbar,*sw_for_flist;
+GtkWidget *treeview,*statusbar,*sw_for_flist,*flist_sw_ebox;
 GtkWidget *selector_menu,*viewer_menu;
 GtkWidget *zoom_widget;		/* widget for zoom opt on menu */
 GtkWidget *pane;
@@ -654,7 +654,7 @@ gboolean get_focus_row_rect(GdkRectangle *rect)
   GdkRectangle row_area;      /* area occupied by row, in bin_window coordinates */
 
   /* have the cursor disappear when focus is lost */
-  if ((focus_row < 0) || !gtk_widget_has_focus(treeview))
+  if ((focus_row < 0) || !gtk_widget_has_focus(flist_sw_ebox))
     return(FALSE);
 
   /* Note that although we are dealing with three different coordinate systems,
@@ -778,7 +778,7 @@ gboolean refresh_focus_row(void)
  */
 void set_focus_row(int new_row)
 {
-int had_focus=gtk_widget_has_focus(treeview);
+int had_focus=gtk_widget_has_focus(flist_sw_ebox);
 
 if(had_focus)
   gtk_widget_grab_focus(eb_for_pic);
@@ -787,7 +787,7 @@ focus_row=new_row;
 refresh_focus_row();
 
 if(had_focus)
-  gtk_widget_grab_focus(treeview);
+  gtk_widget_grab_focus(flist_sw_ebox);
 }
 
 
@@ -899,8 +899,8 @@ if(hidden)
   hidden=0;
   }
 
-gtk_widget_set_can_focus(treeview, TRUE);
-gtk_widget_grab_focus(treeview);
+gtk_widget_set_can_focus(flist_sw_ebox, TRUE);
+gtk_widget_grab_focus(flist_sw_ebox);
 
 /* XXX kludge: make sure pic is fixed in zoom mode */
 pic_win_resized(NULL,NULL);
@@ -1585,6 +1585,8 @@ else
   int oldrow,incdec,up;
   int row=focus_row;
   float vpage;
+  GtkAdjustment *adj;
+  float adj_value;
   
   /* if not a goto-next-char char... */
   switch(event->keyval)
@@ -1697,6 +1699,21 @@ else
                      3,event->time);
       break;
     
+    case GDK_KEY_Left:
+    case GDK_KEY_Right:
+      adj = gtk_scrolled_window_get_hadjustment(GTK_SCROLLED_WINDOW(sw_for_flist));
+      adj_value = gtk_adjustment_get_value(adj);
+      adj_value +=
+          (event->keyval == GDK_KEY_Right ? 1 : -1) *
+          (event->state & GDK_CONTROL_MASK
+            ? gtk_adjustment_get_page_increment(adj)
+            : gtk_adjustment_get_step_increment(adj));
+      /* restrict the value to the scrollbar's range */
+      adj_value = MAX(adj_value, gtk_adjustment_get_lower(adj));
+      adj_value = MIN(adj_value, gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj));
+      gtk_adjustment_set_value(adj, adj_value);
+      break;
+
     default:
       /* check for non-menu-item keys common to selector and viewer */
       if(!common_key_press(event))
@@ -3880,7 +3897,7 @@ gtk_statusbar_pop(GTK_STATUSBAR(statusbar),sel_id);
 gtk_widget_grab_focus(eb_for_pic);
 
 /* stop us allowing kybd focus (until esc/tab) */
-gtk_widget_set_can_focus(treeview, FALSE);
+gtk_widget_set_can_focus(flist_sw_ebox, FALSE);
 
 /* hide us if auto hide is on */
 if(auto_hide && !hidden)
@@ -3931,7 +3948,6 @@ void init_window(void)
  *  `----------------------------------------'
  */
 GtkWidget *vboxl;
-GtkWidget *flist_sw_ebox;
 GtkUIManager *ui_manager;
 GdkPixbuf *icon;
 char *ptr;
@@ -4280,6 +4296,14 @@ gtk_widget_show(vboxl);
  * is near left of window). The image is ok on this count 'cos its
  * scrollbars are drawn to the right, i.e. off the window, and X clips
  * them. :-)
+ *
+ * This also serves a second purpose, as GTK 3's TreeView will, when keyboard
+ * focus is acquired, automatically select an entry when none is selected.
+ * (This does not happen in GTK 2, strangely enough.)  Since this is obviously
+ * not something we want, and since there does not appear to be any way to
+ * disable that behavior, we simply circumvent it by disabling focus for the
+ * TreeView, enabling it instead for the event box, and having the latter
+ * handle all key presses by itself.  It's silly, but at least it works.
  */
 flist_sw_ebox=gtk_event_box_new();
 gtk_box_pack_start(GTK_BOX(vboxl),flist_sw_ebox,TRUE,TRUE,0);
@@ -4294,8 +4318,12 @@ g_signal_connect(flist_sw_ebox, "button_press_event",
                    G_CALLBACK(flist_sw_ebox_button_press), NULL);
 g_signal_connect(flist_sw_ebox, "motion_notify_event",
                    G_CALLBACK(viewer_motion), NULL);
+/* also capture key presses, so we can handle them in stead of treeview */
+g_signal_connect(flist_sw_ebox, "key_press_event",
+                   G_CALLBACK(selector_key_press), NULL);
 gtk_widget_set_events(flist_sw_ebox,
-                      GDK_BUTTON_PRESS_MASK|GDK_BUTTON1_MOTION_MASK);
+                      GDK_BUTTON_PRESS_MASK|GDK_BUTTON1_MOTION_MASK|
+                      GDK_KEY_PRESS_MASK);
 gtk_widget_show(flist_sw_ebox);
 
 /* now the scrolled window for treeview, and the treeview which goes into it. */
@@ -4356,6 +4384,9 @@ gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
 gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
 
+/* make sure treeview does not capture focus; let flist_sw_ebox do it */
+gtk_widget_set_can_focus(treeview, FALSE);
+
 /* refresh the focus row cursor when appropriate */
 #if GTK_MAJOR_VERSION >= 3
 /* GTK 3: whenever treeview redraws itself */
@@ -4369,9 +4400,9 @@ g_signal_connect_after(flist_sw_ebox, "expose-event",
     G_CALLBACK(refresh_focus_row), NULL);
 #endif
 /* also refresh the cursor on focus in/out */
-g_signal_connect_after(treeview, "focus-in-event",
+g_signal_connect_after(flist_sw_ebox, "focus-in-event",
     G_CALLBACK(refresh_focus_row), NULL);
-g_signal_connect_after(treeview, "focus-out-event",
+g_signal_connect_after(flist_sw_ebox, "focus-out-event",
     G_CALLBACK(refresh_focus_row), NULL);
 
 /* selection callback - we save handler id as it needs to be blocked
@@ -4418,8 +4449,6 @@ g_signal_connect(treeview, "button_press_event",
                    G_CALLBACK(selector_button_press), NULL);
 g_signal_connect(treeview, "button_release_event",
                    G_CALLBACK(selector_button_release), NULL);
-g_signal_connect(treeview, "key_press_event",
-                   G_CALLBACK(selector_key_press), NULL);
 /* need to ask for button press (for menu), release (for tag), and key press */
 gtk_widget_set_events(treeview,
                       GDK_BUTTON_PRESS_MASK|GDK_BUTTON_RELEASE_MASK|
@@ -4613,8 +4642,8 @@ gtk_paned_set_position(GTK_PANED(pane),hidden?1:hide_saved_pos);
 gtk_widget_set_size_request(mainwin,100,50);
 
 /* initially focus treeview's event box */
-gtk_widget_set_can_focus(treeview, TRUE);
-gtk_widget_grab_focus(treeview);
+gtk_widget_set_can_focus(flist_sw_ebox, TRUE);
+gtk_widget_grab_focus(flist_sw_ebox);
 
 /* make sure option toggles are acknowledged */
 listen_to_toggles=1;
