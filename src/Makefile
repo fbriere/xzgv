@@ -13,9 +13,9 @@ include ../config.mk
 override CFLAGS += -std=c99 -D_DEFAULT_SOURCE
 
 # Linking against various libraries
-override CFLAGS+=`pkg-config --cflags gtk+-2.0` `pkg-config --cflags gdk-pixbuf-2.0` \
+override CFLAGS+=`pkg-config --cflags gtk+-${GTK_VERSION}` `pkg-config --cflags gdk-pixbuf-2.0` \
 	`pkg-config --cflags x11` `pkg-config --cflags libexif`
-override LDFLAGS+=`pkg-config --libs gtk+-2.0` `pkg-config --libs gdk-pixbuf-2.0` \
+override LDFLAGS+=`pkg-config --libs gtk+-${GTK_VERSION}` `pkg-config --libs gdk-pixbuf-2.0` \
 	`pkg-config --libs x11` `pkg-config --libs libexif`
 
 all: xzgv
