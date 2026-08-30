@@ -4026,8 +4026,6 @@ cb_selection_id = g_signal_connect(clist, "select_row",
 
 set_thumbnail_column_width();		/* set width of thumbnail column */
 gtk_clist_set_column_auto_resize(GTK_CLIST(clist),SELECTOR_NAME_COL,TRUE);
-/* set heights to thin initially; see end of routine for why */
-set_row_height(ROW_HEIGHT_THIN);
 gtk_clist_set_column_justification(GTK_CLIST(clist),
                                    SELECTOR_TN_COL,GTK_JUSTIFY_CENTER);
 gtk_clist_set_compare_func(GTK_CLIST(clist),sort_cmp);
@@ -4279,12 +4277,8 @@ if(fullscreen)
   gdk_window_set_functions(main_gdk_window,GDK_FUNC_CLOSE);
   }
 
-/* adjust row heights now, which should leave filename text
- * auto-adjusted to be roughly centred. This is really kludgey, but
- * I couldn't get this to work using vertical shifts for both
- * thin_rows modes.
- */
-set_row_height(ROW_HEIGHT_NORMAL);
+/* adjust row heights */
+fix_row_heights();
 
 /* that's all folks */
 }
@@ -4431,13 +4425,6 @@ else
   do_gtk_stuff();
   select_row(0);
   }
-
-/* initialise thin_rows stuff (has to be after above so there's something
- * (or nothing :-)) in the clist). Only needed if thin_rows is initially
- * true, though.
- */
-if(thin_rows)
-  fix_row_heights();
 
 gtk_main();
 
