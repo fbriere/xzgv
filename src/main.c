@@ -43,6 +43,7 @@
 #include "backend.h"
 #include "resizepic.h"
 #include "rcfile.h"		/* needed for config vars */
+#include "getopt.h"		/* for optind */
 #include "filedetails.h"
 #include "gotodir.h"
 #include "updatetn.h"
