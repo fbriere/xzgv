@@ -773,22 +773,10 @@ gboolean refresh_focus_row(void)
 }
 
 
-/* moving the cursor while the treeview is focused can screw up the display.
- * Instead, we unfocus the treeview (if focused), change rows, then
- * (if it was previously focused) return focus to treeview.
- */
 void set_focus_row(int new_row)
 {
-int had_focus=gtk_widget_has_focus(flist_sw_ebox);
-
-if(had_focus)
-  gtk_widget_grab_focus(eb_for_pic);
-
 focus_row=new_row;
 refresh_focus_row();
-
-if(had_focus)
-  gtk_widget_grab_focus(flist_sw_ebox);
 }
 
 
