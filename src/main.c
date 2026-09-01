@@ -1768,6 +1768,12 @@ else
 }
 
 
+#if GTK_MAJOR_VERSION <= 2
+/* GTK 2 does not have/need GTK_POLICY_EXTERNAL; GTK_POLICY_NEVER does the job */
+# define GTK_POLICY_EXTERNAL GTK_POLICY_NEVER
+#endif
+
+
 /* render pixbuf from image, resize drawing area to fit, and just
  * generally update things. Call this to update the image after pretty
  * much any change at all. :-)
@@ -2285,8 +2291,8 @@ listen_to_toggles=0;
 zoom=!zoom;
 if(zoom)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
-                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
+                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_EXTERNAL:GTK_POLICY_AUTOMATIC,
+                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_EXTERNAL:GTK_POLICY_AUTOMATIC);
 else
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
                                  GTK_POLICY_AUTOMATIC,
@@ -4288,8 +4294,8 @@ gtk_container_set_border_width(GTK_CONTAINER(sw_for_pic),0);
 /* first `POLICY' is horiz, second is vert */
 if(zoom)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
-                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
+                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_EXTERNAL:GTK_POLICY_AUTOMATIC,
+                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_EXTERNAL:GTK_POLICY_AUTOMATIC);
 else
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
                                  GTK_POLICY_AUTOMATIC,
