@@ -48,6 +48,7 @@ extern int image_bigness_threshold;
 extern int delete_single_prompt;
 extern int careful_jpeg;
 extern int sort_timestamp_type;
+extern int sort_name_icase;
 extern int use_exif_orient;
 extern int show_images_only;
 

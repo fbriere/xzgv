@@ -61,6 +61,7 @@
 "skip-parent"	'k'	1 1 OPT_ARG	get_bool	&skip_parent
 "sort-order"	'o'	1 1 REQ_ARG	get_sortorder	NULL
 "sort-timestamp-type" 0 1 1 REQ_ARG	get_timetype	NULL
+"sort-name-icase" 0	1 1 OPT_ARG	get_bool	&sort_name_icase
 "statusbar"	0	1 1 OPT_ARG	get_bool	&have_statusbar
 "thin-rows"	't'	1 1 OPT_ARG	get_bool	&thin_rows
 "zoom"		'z'	1 1 OPT_ARG	get_bool	&zoom

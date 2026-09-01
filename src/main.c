@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -2707,6 +2708,17 @@ void cb_set_timestamp_type(GtkRadioAction *action, GtkRadioAction *current, gpoi
   resort_finish();
 }
 
+void cb_name_icase_toggle(void)
+{
+  if (!listen_to_toggles || in_nextprev) return;
+  listen_to_toggles = 0;
+
+  sort_name_icase = !sort_name_icase;
+  resort_finish();
+
+  listen_to_toggles = 1;
+}
+
 
 void cb_next_image(void)
 {
@@ -3157,6 +3169,8 @@ flist_thaw();
 }
 
 
+#define STRCMP_FILENAME(s1, s2) \
+  (sort_name_icase ? strcasecmp((s1), (s2)) : strcmp((s1), (s2)))
 gint sort_cmp(
     GtkTreeModel *model,
     GtkTreeIter  *a,
@@ -3183,7 +3197,7 @@ if (strcmp(txt2, "..") == 0)
  * otherwise it's one file and one dir, and the dir is always `less'.
  */
 if(dat1->isdir && dat2->isdir)
-  return(strcmp(txt1,txt2));  /* both directories, use strcmp. */
+  return(STRCMP_FILENAME(txt1,txt2));  /* both directories, use strcmp. */
 
 if(!dat1->isdir && !dat2->isdir)
   {
@@ -3193,7 +3207,7 @@ if(!dat1->isdir && !dat2->isdir)
   switch(filesel_sorttype)
     {
     case sort_name:
-      ret=strcmp(txt1,txt2);
+      ret=STRCMP_FILENAME(txt1,txt2);
       break;
     
     case sort_ext:
@@ -3230,7 +3244,7 @@ if(!dat1->isdir && !dat2->isdir)
   
   /* for all equal matches on primary key, use name as secondary */
   if(ret==0)
-    ret=strcmp(txt1,txt2);
+    ret=STRCMP_FILENAME(txt1,txt2);
   
   return(ret);
   }	/* end of if */
@@ -4073,11 +4087,13 @@ GtkActionEntry selector_menu_entries[] = {
 };
 
 GtkToggleActionEntry selector_menu_toggle_entries[] = {
-  { "ImagesOnly",    NULL, "_Images Only",    "<alt>i", NULL, G_CALLBACK(cb_show_images),   FALSE },
-  { "AutoHide",      NULL, "_Auto Hide",      "<alt>a", NULL, G_CALLBACK(toggle_auto_hide), FALSE },
-  { "StatusBar",     NULL, "_Status Bar",     "<alt>b", NULL, G_CALLBACK(toggle_status),    FALSE },
-  { "ThumbnailMsgs", NULL, "Thumb_nail Msgs", NULL,     NULL, G_CALLBACK(toggle_tn_msgs),   FALSE },
-  { "ThinRows",      NULL, "_Thin Rows",      "v",      NULL, G_CALLBACK(toggle_thin_rows), FALSE }
+  { "ImagesOnly",    NULL, "_Images Only",    "<alt>i",        NULL, G_CALLBACK(cb_show_images),       FALSE },
+  { "IgnoreCase",    NULL, "Ign_ore case when comparing names",
+                                              "<alt><shift>i", NULL, G_CALLBACK(cb_name_icase_toggle), FALSE },
+  { "AutoHide",      NULL, "_Auto Hide",      "<alt>a",        NULL, G_CALLBACK(toggle_auto_hide),     FALSE },
+  { "StatusBar",     NULL, "_Status Bar",     "<alt>b",        NULL, G_CALLBACK(toggle_status),        FALSE },
+  { "ThumbnailMsgs", NULL, "Thumb_nail Msgs", NULL,            NULL, G_CALLBACK(toggle_tn_msgs),       FALSE },
+  { "ThinRows",      NULL, "_Thin Rows",      "v",             NULL, G_CALLBACK(toggle_thin_rows),     FALSE }
 };
 
 GtkRadioActionEntry selector_menu_sort_radio_entries[] = {
@@ -4139,6 +4155,8 @@ char *selector_menu_ui =
 "        <menuitem action='DatetimeCtime' />"
 "        <menuitem action='DatetimeAtime' />"
 "      </menu>"
+"      <separator />"
+"      <menuitem action='IgnoreCase' />"
 "    </menu>"
 "    <menu action='sOptionsMenu'>"
 "      <menuitem action='AutoHide' />"
@@ -4594,6 +4612,12 @@ gtk_check_menu_item_set_active(
     gtk_ui_manager_get_widget(ui_manager,
                                 "/SelectorMenu/DirectoryMenu/ImagesOnly")),
   show_images_only);
+
+gtk_check_menu_item_set_active(
+  GTK_CHECK_MENU_ITEM(
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/SelectorMenu/DirectoryMenu/IgnoreCase")),
+  sort_name_icase);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(
