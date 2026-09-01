@@ -149,6 +149,10 @@ int xscaling=1,yscaling=1;
 
 /* GTK+ border thickness in scrolled window (not counting scrollbars). */
 int sw_border_width,sw_border_height;
+/* thickness of each of the scrolled window scrollbars */
+int sw_vscrollbar_thickness, sw_hscrollbar_thickness;
+/* additional spacing between the scrollbars and the window's contents */
+int sw_scrollbar_spacing;
 
 
 
@@ -1749,12 +1753,15 @@ if (!zoom_panorama)
   }
 else
   {
-    if (((float)width/scrnwide)>((float)height/scrnhigh))
+    /* scrolled window dimensions, excluding scrollbars, and with a minimum of 1 */
+    int scrnwide_adj = MAX(scrnwide - (sw_vscrollbar_thickness + sw_scrollbar_spacing), 1);
+    int scrnhigh_adj = MAX(scrnhigh - (sw_hscrollbar_thickness + sw_scrollbar_spacing), 1);
+    if (((float)width/scrnwide_adj)>((float)height/scrnhigh_adj))
       /* pan horizontally */
-      zoom_panorama_sb=0,*swp=(scrnhigh*width)/height,*shp=scrnhigh;
+      zoom_panorama_sb=0,*swp=(scrnhigh*width)/height,*shp=scrnhigh_adj;
     else
       /* pan vertically */
-      zoom_panorama_sb=1,*swp=scrnwide,*shp=(scrnwide*height)/width;
+      zoom_panorama_sb=1,*swp=scrnwide_adj,*shp=(scrnwide*height)/width;
   }
   /* don't expand if it's shrink-only. */
   if(zoom_reduce_only && (*swp>width || *shp>height))
@@ -4624,6 +4631,23 @@ gtk_widget_get_allocation(sw_for_pic, &allocation);
 gtk_widget_get_allocation(align, &allocation2);
 sw_border_width=allocation.width-allocation2.width;
 sw_border_height=allocation.height-allocation2.height;
+
+/* and now for the dimensions of its scrollbars */
+gtk_widget_style_get(sw_for_pic, "scrollbar-spacing", &sw_scrollbar_spacing, NULL);
+/* force the creation of its GtkScrollbar children */
+gtk_scrolled_window_set_hadjustment(GTK_SCROLLED_WINDOW(sw_for_pic), NULL);
+gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw_for_pic), NULL);
+/* fetch each scrollbar's requisition to obtain its thickness */
+GtkWidget *scrollbar;
+GtkRequisition requisition;
+/* vertical scrollbar, occupying a portion of the window's width */
+scrollbar = gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic));
+gtk_widget_size_request(GTK_WIDGET(scrollbar), &requisition);
+sw_vscrollbar_thickness = requisition.width;
+/* horizontal scrollbar, occupying a portion of the window's height */
+scrollbar = gtk_scrolled_window_get_hscrollbar(GTK_SCROLLED_WINDOW(sw_for_pic));
+gtk_widget_size_request(GTK_WIDGET(scrollbar), &requisition);
+sw_hscrollbar_thickness = requisition.height;
 
 /* set icon (XXX size should be configurable) */
 icon = gdk_pixbuf_new_from_xpm_data((const char **) icon_48_xpm);
