@@ -3946,8 +3946,8 @@ GtkActionEntry selector_menu_entries[] = {
   { "ToggleAll",    NULL, "T_oggle All",      "<alt>o",     NULL, G_CALLBACK(cb_toggle_all) },
 
   { "DirectoryMenu", NULL, "_Directory" },
-  { "ChangeDir",     NULL, "_Change...",           "<shift>g",   NULL, G_CALLBACK(cb_goto_dir) },
-  { "RescanDir",     NULL, "_Rescan",              "<control>r", NULL, G_CALLBACK(cb_reread_dir) },
+  { "ChangeDir",     NULL, "_Change...", "<shift>g",   NULL, G_CALLBACK(cb_goto_dir) },
+  { "RescanDir",     NULL, "_Rescan",    "<control>r", NULL, G_CALLBACK(cb_reread_dir) },
 
   { "DatetimeTypeMenu", NULL, "Time & Date _Type" },
 
@@ -4058,11 +4058,11 @@ GtkActionEntry viewer_menu_entries[] = {
   { "vPrevTagged", NULL, "_Previous Tagged", "question",       NULL, G_CALLBACK(cb_viewer_prev_tagged) },
 
   { "ScalingMenu",   NULL, "_Scaling" },
-  { "NormalScaling", NULL, "_Normal",               "n",        NULL, G_CALLBACK(cb_normal) },
-  { "DoubleScaling", NULL, "_Double Scaling",       "d",        NULL, G_CALLBACK(cb_scaling_double) },
-  { "HalveScaling",  NULL, "_Halve Scaling",        "<shift>d", NULL, G_CALLBACK(cb_scaling_halve) },
-  { "AddScaling",    NULL, "_Add 1 to Scaling",     "s",        NULL, G_CALLBACK(cb_scaling_add) },
-  { "SubScaling",    NULL, "_Sub 1 from Scaling",   "<shift>s", NULL, G_CALLBACK(cb_scaling_sub) },
+  { "NormalScaling", NULL, "_Normal",             "n",        NULL, G_CALLBACK(cb_normal) },
+  { "DoubleScaling", NULL, "_Double Scaling",     "d",        NULL, G_CALLBACK(cb_scaling_double) },
+  { "HalveScaling",  NULL, "_Halve Scaling",      "<shift>d", NULL, G_CALLBACK(cb_scaling_halve) },
+  { "AddScaling",    NULL, "_Add 1 to Scaling",   "s",        NULL, G_CALLBACK(cb_scaling_add) },
+  { "SubScaling",    NULL, "_Sub 1 from Scaling", "<shift>s", NULL, G_CALLBACK(cb_scaling_sub) },
 
   { "XScalingMenu",   NULL, "_X Only" },
   { "DoubleXScaling", NULL, "_Double Scaling",     "x",             NULL, G_CALLBACK(cb_xscaling_double) },
