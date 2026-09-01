@@ -3158,6 +3158,12 @@ gtk_tree_model_get(model, b, MODEL_NAME_COL, &txt2, -1);
 gtk_tree_model_get(model, a, MODEL_DATA_COL, &dat1, -1);
 gtk_tree_model_get(model, b, MODEL_DATA_COL, &dat2, -1);
 
+/* "..", if present, should always be sorted at the top */
+if (strcmp(txt1, "..") == 0)
+  return(-1);
+if (strcmp(txt2, "..") == 0)
+  return(1);
+
 /* directories always come first.
  * so, if comparing two files, use a normal comparison;
  * otherwise if it's two dirs, use a strcmp on the names;
