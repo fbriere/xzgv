@@ -1338,6 +1338,11 @@ else
 }
 
 
+#if GTK_MAJOR_VERSION <= 2
+/* GTK 2 does not have/need GTK_POLICY_EXTERNAL; GTK_POLICY_NEVER does the job */
+# define GTK_POLICY_EXTERNAL GTK_POLICY_NEVER
+#endif
+
 void adjust_sw_policy(void)
 {
   GtkPolicyType policy_h, policy_v;
@@ -1348,9 +1353,11 @@ void adjust_sw_policy(void)
      * Note: although AUTOMATIC should work fine in theory, it can result in
      *       scrollbars popping in and out of existence when resizing
      * Note: panorama can't use ALWAYS, because of zoom-reduce-only
+     * Note: On GTK 3, GTK_POLICY_NEVER will prevent the window from being
+     *       resized smaller than the image, hence GTK_POLICY_EXTERNAL
      */
-    policy_h = (zoom_panorama && !zoom_panorama_sb) ? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER;
-    policy_v = (zoom_panorama && zoom_panorama_sb) ? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER;
+    policy_h = (zoom_panorama && !zoom_panorama_sb) ? GTK_POLICY_AUTOMATIC : GTK_POLICY_EXTERNAL;
+    policy_v = (zoom_panorama && zoom_panorama_sb) ? GTK_POLICY_AUTOMATIC : GTK_POLICY_EXTERNAL;
   }
   else
   {
