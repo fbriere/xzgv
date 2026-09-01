@@ -3069,6 +3069,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     /* can't have jump to return from, so just remove ourselves. */
     stop_thumbnail_read();
     *entryp=-1;
+    break;
     }
   }
 return 1;
