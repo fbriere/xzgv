@@ -56,6 +56,8 @@ retval = chdir(target_dir);
 if (retval == 0) {
   g_free(current_dir);
   current_dir = target_dir;
+} else {
+  g_free(target_dir);
 }
 
 return retval;
