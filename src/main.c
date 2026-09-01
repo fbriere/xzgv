@@ -1769,6 +1769,37 @@ else
 }
 
 
+#if GTK_MAJOR_VERSION <= 2
+/* GTK 2 does not have/need GTK_POLICY_EXTERNAL; GTK_POLICY_NEVER does the job */
+# define GTK_POLICY_EXTERNAL GTK_POLICY_NEVER
+#endif
+
+void adjust_sw_policy(void)
+{
+  GtkPolicyType policy_h, policy_v;
+
+  if (zoom)
+  {
+    /* disable scrollbars (except for one of them when using panorama)
+     * Note: although AUTOMATIC should work fine in theory, it can result in
+     *       scrollbars popping in and out of existence when resizing
+     * Note: panorama can't use ALWAYS, because of zoom-reduce-only
+     * Note: On GTK 3, GTK_POLICY_NEVER will prevent the window from being
+     *       resized smaller than the image, hence GTK_POLICY_EXTERNAL
+     */
+    policy_h = (zoom_panorama && !zoom_panorama_sb) ? GTK_POLICY_AUTOMATIC : GTK_POLICY_EXTERNAL;
+    policy_v = (zoom_panorama && zoom_panorama_sb) ? GTK_POLICY_AUTOMATIC : GTK_POLICY_EXTERNAL;
+  }
+  else
+  {
+    policy_h = GTK_POLICY_AUTOMATIC;
+    policy_v = GTK_POLICY_AUTOMATIC;
+  }
+
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic), policy_h, policy_v);
+}
+
+
 /* render pixbuf from image, resize drawing area to fit, and just
  * generally update things. Call this to update the image after pretty
  * much any change at all. :-)
@@ -1840,6 +1871,7 @@ if(reset_pos)
  * Without this you get a nasty `bounce' effect whenever scrollbars
  * appear/disappear. But it can still happen when resizing. (XXX)
  */
+adjust_sw_policy();
 do_gtk_stuff();
 
 /* put pixbuf onto window as background. We could then free it, but
@@ -2033,8 +2065,7 @@ if(!zoom) return;
 
 listen_to_toggles=0;
 zoom=0;
-gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+adjust_sw_policy();
 xscaling=yscaling=1;
 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(zoom_widget),zoom);
 listen_to_toggles=1;
@@ -2284,14 +2315,6 @@ if(!listen_to_toggles || in_nextprev) return;
 listen_to_toggles=0;
 
 zoom=!zoom;
-if(zoom)
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
-                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
-else
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                                 GTK_POLICY_AUTOMATIC,
-                                 GTK_POLICY_AUTOMATIC);
 xscaling=yscaling=1;
 render_pixbuf(1);
 
@@ -4254,15 +4277,8 @@ gtk_widget_show(align);
 sw_for_pic=gtk_scrolled_window_new(NULL,NULL);
 gtk_widget_set_can_focus(sw_for_pic, FALSE);
 gtk_container_set_border_width(GTK_CONTAINER(sw_for_pic),0);
-/* first `POLICY' is horiz, second is vert */
-if(zoom)
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                               (zoom_panorama&&zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC,
-                               (zoom_panorama&&!zoom_panorama_sb)?GTK_POLICY_NEVER:GTK_POLICY_AUTOMATIC);
-else
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw_for_pic),
-                                 GTK_POLICY_AUTOMATIC,
-                                 GTK_POLICY_AUTOMATIC);
+/* zoom_panorama_sb hasn't been set yet, but this shouldn't be a problem */
+adjust_sw_policy();
 gtk_paned_add2(GTK_PANED(pane),sw_for_pic);
 gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw_for_pic),
                                       align);
