@@ -3223,23 +3223,60 @@ return(1);			/* else second one is dir */
 }
 
 
+/* get a list of file extensions that are associated with an image format
+ * supported by GdkPixbuf; each element is an uppercase string with a
+ * leading dot (e.g. ".PNG").
+ */
+GList *supported_file_extensions(void)
+{
+  /* we use a hash table to filter out duplicates */
+  GHashTable *hash_table =
+    g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+  /* list of supported image formats */
+  GSList *formats = gdk_pixbuf_get_formats();
+
+  for (GSList *lp = formats; lp != NULL; lp = lp->next)
+  {
+    GdkPixbufFormat *format = lp->data;
+    /* list of filename extensions associated with that format */
+    gchar **extensions = gdk_pixbuf_format_get_extensions(format);
+
+    /* convert each extension to uppercase, with a leading dot */
+    for (int i = 0; extensions[i] != NULL; i++)
+    {
+      gchar *upper_ext = g_ascii_strup(extensions[i], -1);
+      gchar *dotted_ext = g_strconcat(".", upper_ext, NULL);
+      g_hash_table_add(hash_table, dotted_ext);
+      g_free(upper_ext);
+      /* dotted_ext is owned by the hash table and should not be freed  */
+    }
+
+    g_strfreev(extensions);
+  }
+
+  g_slist_free(formats);
+
+  return g_hash_table_get_keys(hash_table);
+}
+
+
 int add_new_row(char *filename,struct stat *sbuf)
 {
 struct row_data_tag *datptr;
 char *ptr;
 GtkTreeIter iter;
-static char* extensions[] ={".GIF", ".JPEG", ".JPG", ".PNG", ".PBM", ".PGM", ".PPM",
-                            ".PNM", ".BMP",  ".TGA", ".PCX", ".MRF", ".PRF", ".XBM",
-                            ".XPM", ".TIFF", ".TIF", ".TIM", ".XWD"};
+static GList *extensions = NULL;
 
 if (!S_ISDIR(sbuf->st_mode) && show_images_only)
     {
+    if (extensions == NULL)
+      extensions = supported_file_extensions();
     int isImage = 0;
-    int i;
     gchar* nameUpper = g_ascii_strup(filename, -1);
-    for(i = 0; i < 19; ++i)
+    for (GList *lp = extensions; lp != NULL; lp = lp->next)
       {
-      if(g_str_has_suffix(nameUpper, extensions[i]))
+      if(g_str_has_suffix(nameUpper, lp->data))
         {
         isImage = 1;
         break;
