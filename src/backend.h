@@ -25,7 +25,8 @@ extern void backend_rotate_acw(xzgv_image *image);
 
 extern xzgv_image *backend_create_image_from_file(char *filename);
 extern int backend_get_orientation_from_file(char *filename);
-extern int backend_render_pixbuf_for_image(xzgv_image *image,int x,int y);
+extern int backend_render_pixbuf_for_image(xzgv_image *image,int x,int y,
+                                           gboolean checkerboard);
 extern GdkPixbuf *backend_get_and_detach_pixbuf(xzgv_image *image);
 
 extern void backend_pixbuf_destroy(GdkPixbuf *pixbuf);

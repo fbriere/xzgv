@@ -198,12 +198,31 @@ return(im);
  *
  * (Use xzgv_image's `backend_ext' field to save the pixbuf pointer.)
  */
-int backend_render_pixbuf_for_image(xzgv_image *image,int x,int y)
+int backend_render_pixbuf_for_image(xzgv_image *image,int x,int y,
+                                    gboolean checkerboard)
 {
 GdkPixbuf *pixbuf;
+/* checkerboard background options */
+int check_size;
+guint32 color1, color2;
+
+if (checkerboard)
+{
+  /* the well-known transparency checkerboard; values copied from GIMP */
+  check_size = 8;
+  color1 = 0x666666;
+  color2 = 0x999999;
+}
+else
+{
+  /* alternating black and white pixels */
+  check_size = 1;
+  color1 = 0x000000;
+  color2 = 0xffffff;
+}
 
 pixbuf=gdk_pixbuf_composite_color_simple(BACKEND_IMAGE(image),x,y,interp_type,
-				255,1,0x000000,0xffffff);
+                                         255, check_size, color1, color2);
 if(pixbuf==NULL)
   return(0);
 

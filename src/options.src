@@ -43,6 +43,7 @@
 
 "auto-hide"	'a'	1 1 OPT_ARG	get_bool	&auto_hide
 "careful-jpeg"	0	1 1 OPT_ARG	get_bool	&careful_jpeg
+"checkerboard"	0	1 1 OPT_ARG	get_bool	&checkerboard
 "click-for-next" 0	0 1 OPT_ARG	get_bool	&click_nextpic
 "dither-hicol"	0	1 1 OPT_ARG	get_bool	&hicol_dither
 "delete-single-prompt" 0 1 1 OPT_ARG	get_bool	&delete_single_prompt

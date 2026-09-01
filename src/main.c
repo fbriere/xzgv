@@ -1847,7 +1847,7 @@ if(!zoom)
 
 /* so now our image will be sw x sh */
 if(!scaling_up_enabled)
-  backend_render_pixbuf_for_image(theimage,sw,sh);
+  backend_render_pixbuf_for_image(theimage, sw, sh, checkerboard);
 
 if(thepixbuf)
   backend_pixbuf_destroy(thepixbuf),thepixbuf=NULL;
@@ -2358,6 +2358,18 @@ backend_set_interp(interp);
 render_pixbuf(0);
 
 listen_to_toggles=1;
+}
+
+
+void toggle_checkerboard(gpointer cb_data, guint cb_action, GtkWidget *widget)
+{
+  if (!listen_to_toggles || in_nextprev) return;
+  listen_to_toggles = 0;
+
+  checkerboard = !checkerboard;
+  render_pixbuf(0);
+
+  listen_to_toggles = 1;
 }
 
 
@@ -4172,14 +4184,15 @@ GtkActionEntry viewer_menu_entries[] = {
 };
 
 GtkToggleActionEntry viewer_menu_toggle_entries[] = {
-  { "Zoom",          NULL, "_Zoom (fit to window)",       "z",        NULL, G_CALLBACK(toggle_zoom),          FALSE },
-  { "ReduceOnly",    NULL, "When Zooming _Reduce Only",   "<alt>r",   NULL, G_CALLBACK(toggle_zoom_reduce),   FALSE },
-  { "Panorama",      NULL, "When Zooming _Panorama",      "<alt>p",   NULL, G_CALLBACK(toggle_zoom_panorama), FALSE },
-  { "Interpolate",   NULL, "_Interpolate when Scaling",   "i",        NULL, G_CALLBACK(toggle_interp),        FALSE },
-  { "MouseX",        NULL, "_Ctl+Click Scales X Axis",    "<alt>c",   NULL, G_CALLBACK(toggle_mouse_x),       FALSE },
-  { "UseExif",       NULL, "Use _Exif Orientation",       NULL,       NULL, G_CALLBACK(toggle_exif_orient),   FALSE },
-  { "RevertScaling", NULL, "Revert _Scaling For New Pic", NULL,       NULL, G_CALLBACK(toggle_revert),        FALSE },
-  { "RevertOrient",  NULL, "Revert _Orient. For New Pic", NULL,       NULL, G_CALLBACK(toggle_revert_orient), FALSE }
+  { "Zoom",          NULL, "_Zoom (fit to window)",               "z",      NULL, G_CALLBACK(toggle_zoom),          FALSE },
+  { "ReduceOnly",    NULL, "When Zooming _Reduce Only",           "<alt>r", NULL, G_CALLBACK(toggle_zoom_reduce),   FALSE },
+  { "Panorama",      NULL, "When Zooming _Panorama",              "<alt>p", NULL, G_CALLBACK(toggle_zoom_panorama), FALSE },
+  { "Interpolate",   NULL, "_Interpolate when Scaling",           "i",      NULL, G_CALLBACK(toggle_interp),        FALSE },
+  { "MouseX",        NULL, "_Ctl+Click Scales X Axis",            "<alt>c", NULL, G_CALLBACK(toggle_mouse_x),       FALSE },
+  { "Checkerboard",  NULL, "Display chec_kerboard as background", "<alt>k", NULL, G_CALLBACK(toggle_checkerboard),  FALSE },
+  { "UseExif",       NULL, "Use _Exif Orientation",               NULL,     NULL, G_CALLBACK(toggle_exif_orient),   FALSE },
+  { "RevertScaling", NULL, "Revert _Scaling For New Pic",         NULL,     NULL, G_CALLBACK(toggle_revert),        FALSE },
+  { "RevertOrient",  NULL, "Revert _Orient. For New Pic",         NULL,     NULL, G_CALLBACK(toggle_revert_orient), FALSE }
 };
 
 char *viewer_menu_ui =
@@ -4231,6 +4244,7 @@ char *viewer_menu_ui =
 "      <menuitem action='Panorama' />"
 "      <menuitem action='Interpolate' />"
 "      <menuitem action='MouseX' />"
+"      <menuitem action='Checkerboard' />"
 "      <menuitem action='UseExif' />"
 "      <separator />"
 "      <menuitem action='RevertScaling' />"
@@ -4579,6 +4593,12 @@ gtk_check_menu_item_set_active(
     gtk_ui_manager_get_widget(ui_manager,
                                 "/ViewerMenu/vOptionsMenu/MouseX")),
   mouse_scale_x);
+
+gtk_check_menu_item_set_active(
+  GTK_CHECK_MENU_ITEM(
+    gtk_ui_manager_get_widget(ui_manager,
+                                "/ViewerMenu/vOptionsMenu/Checkerboard")),
+  checkerboard);
 
 gtk_check_menu_item_set_active(
   GTK_CHECK_MENU_ITEM(

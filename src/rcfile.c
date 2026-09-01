@@ -33,6 +33,7 @@ int zoom_reduce_only=0;		/* when zooming, shrink only (don't enlarge) */
 int zoom_panorama=0;		/* when zooming, adapt to the smallest size (panorama) */
 int zoom_panorama_sb=0;		/* when panorama zooming, hide only one scrollbar */
 int interp=0;			/* interpolate pixels when scaling */
+int checkerboard=0;		/* display a checkerboard for transparency */
 int have_statusbar=0;		/* show statusbar */
 int tn_msgs=0;			/* say when reading thumbnails (on sbar) */
 int thin_rows=0;		/* use lower row height */
@@ -565,6 +566,8 @@ puts(
 "usage: xzgv [options] [dir | file ...]\n"
 "\n"
 "   -a	--auto-hide	automatically hide selector on selecting a picture.\n"
+"	--checkerboard	display a checkerboard as background for transparency\n"
+"			(similar to GIMP).\n"
 "	--delete-single-prompt\n"
 "			(normally enabled, use --delete-single-prompt=off to\n"
 "			disable) if *disabled*, don't prompt for confirmation\n"

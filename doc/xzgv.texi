@@ -283,6 +283,10 @@ viewer to use the whole window.
 @item --careful-jpeg
 @strong{Deprecated.}  This option no longer has any effect.
 
+@vindex checkerboard
+@item --checkerboard
+Display a checkerboard pattern underneath transparent images (similar to GIMP).
+
 @vindex delete-single-prompt
 @item --delete-single-prompt
 (Note that this is normally enabled; use
@@ -2323,6 +2327,13 @@ already been mentioned (@pxref{Scaling}).
 @itemx Viewer menu, Options, Ctl+Click Scales X Axis
 Toggle the axis scaled when you control-click (or control-right-click)
 on the image. The default is to scale the y axis.
+
+@kindex Alt-k
+@item Alt-k
+@findex Viewer menu, Options, Display checkerboard as background
+@itemx Viewer menu, Options, Display checkerboard as background
+Toggle the background pattern underneath transparent images, between a
+checkerboard (similar to GIMP) and alternating black and white pixels.
 
 @findex Viewer menu, Options, Revert Scaling For New Pic
 @item Viewer menu, Options, Revert Scaling For New Pic

@@ -30,6 +30,7 @@ extern int zoom_reduce_only;
 extern int zoom_panorama;
 extern int zoom_panorama_sb;
 extern int interp;
+extern int checkerboard;
 extern int have_statusbar;
 extern int tn_msgs;
 extern int thin_rows;
