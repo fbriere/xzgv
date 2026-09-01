@@ -211,6 +211,7 @@ void cb_xscaling_halve(void);
 void cb_yscaling_halve(void);
 void cb_next_image(void);
 void cb_tag_then_next(void);
+void cb_parent_dir(void);
 void set_title(int include_dir);
 void set_window_pos_and_size(void);
 
@@ -3770,6 +3771,28 @@ ignore_selector_input=0;
 }
 
 
+void cb_parent_dir(void)
+{
+  char cdir[1024];
+
+  xzgv_getcwd(cdir, sizeof(cdir) - 1);
+  if (strcmp(cdir, "/") == 0)
+    return;
+
+  RECURSE_PROTECT_START;
+  /* block mouse click/release and keys on selector while loading. */
+  selector_block();
+
+  cb_back_to_flist();	/* show selector and switch to it */
+  new_pastpos(0);
+  xzgv_chdir("..");
+  reinit_dir(1, 0);	/* reinit and do pastpos */
+
+  selector_unblock();
+  RECURSE_PROTECT_END;
+}
+
+
 void cb_selection(GtkTreeSelection *selection,
                   GtkScrolledWindow *sw)
 {
@@ -4032,8 +4055,9 @@ GtkActionEntry selector_menu_entries[] = {
   { "ToggleAll",    NULL, "T_oggle All",      "<alt>o",     NULL, G_CALLBACK(cb_toggle_all) },
 
   { "DirectoryMenu", NULL, "_Directory" },
-  { "ChangeDir",     NULL, "_Change...",           "<shift>g",   NULL, G_CALLBACK(cb_goto_dir) },
-  { "RescanDir",     NULL, "_Rescan",              "<control>r", NULL, G_CALLBACK(cb_reread_dir) },
+  { "ChangeDir",     NULL, "_Change...",        "<shift>g",   NULL, G_CALLBACK(cb_goto_dir) },
+  { "ParentDir",     NULL, "_Parent Directory", "<alt>Up",    NULL, G_CALLBACK(cb_parent_dir) },
+  { "RescanDir",     NULL, "_Rescan",           "<control>r", NULL, G_CALLBACK(cb_reread_dir) },
 
   { "DatetimeTypeMenu", NULL, "Time & Date _Type" },
 
@@ -4101,6 +4125,7 @@ char *selector_menu_ui =
 "    </menu>"
 "    <menu action='DirectoryMenu'>"
 "      <menuitem action='ChangeDir' />"
+"      <menuitem action='ParentDir' />"
 "      <menuitem action='RescanDir' />"
 "      <separator />"
 "      <menuitem action='ImagesOnly' />"
@@ -4642,6 +4667,9 @@ if(hidden)
   gtk_action_set_sensitive(
     gtk_ui_manager_get_action(ui_manager,
                                 "/SelectorMenu/DirectoryMenu/ChangeDir"),FALSE);
+  gtk_action_set_sensitive(
+    gtk_ui_manager_get_action(ui_manager,
+                                "/SelectorMenu/DirectoryMenu/ParentDir"),FALSE);
   gtk_action_set_sensitive(
     gtk_ui_manager_get_action(ui_manager,
                                 "/SelectorMenu/DirectoryMenu/RescanDir"),FALSE);
