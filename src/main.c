@@ -391,22 +391,14 @@ return(TRUE);
 }
 
 
-/* the code section about sorting is a bit further down... */
-void disable_sorting(void);
-void enable_sorting(void);
-
 void flist_freeze(void)
 {
   /* detach model */
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), NULL);
-
-  disable_sorting();
 }
 
 void flist_thaw(void)
 {
-  enable_sorting();
-
   /* re-attach model */
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(liststore));
 }
@@ -525,14 +517,6 @@ void move_to_row(int row, float row_align)
 }
 
 
-void disable_sorting(void)
-{
-  /* no need to backup the sort column, as it is always MODEL_NAME_COL */
-  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
-      GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
-      GTK_SORT_ASCENDING);
-}
-
 void enable_sorting(void)
 {
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
@@ -540,11 +524,16 @@ void enable_sorting(void)
       GTK_SORT_ASCENDING);
 }
 
-void sort_rows(void)
+void disable_sorting(void)
 {
-  /* AFAIK, there is no public method to force a re-sort on a GtkListStore, so
-   * we simply trigger one ourselves by disabling and re-enabling sorting.
-   */
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
+      GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+      GTK_SORT_ASCENDING);
+}
+
+/* sort model rows -- resort_finish() should usually be called instead */
+void sort_model_rows(void)
+{
   enable_sorting();
   disable_sorting();
 }
@@ -2607,7 +2596,7 @@ path=gtk_tree_path_new_from_indices(focus_row, -1);
 row_ref = gtk_tree_row_reference_new(GTK_TREE_MODEL(liststore), path);
 gtk_tree_path_free(path);
 
-sort_rows();
+sort_model_rows();
 
 /* look up data, and reselect it. */
 if(row_ref)
@@ -3341,7 +3330,7 @@ closedir(dirfile);
 if(numrows)
   {
   /* sort the list (using sort_cmp) */
-  sort_rows();
+  sort_model_rows();
   
   /* unselect the first row to give us a sane initial pos for
    * keyboard movement. (Doesn't seem to be necessary after sorting,
@@ -4392,8 +4381,8 @@ gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore),
     sort_cmp,        /* sort_func */
     NULL,            /* user_data */
     NULL);           /* destroy */
-/* and turn it on */
-enable_sorting();
+/* but make sure it's only called on request */
+disable_sorting();
 
 /* put in scrolled_window
  * (can't use ...add_with_viewport() if I want keyboard control to work)
@@ -4780,7 +4769,6 @@ if(read_dir)
   }
 else
   {
-  disable_sorting();  /* preserve the order of command-line filenames */
   add_new_rows_from_cmdline(argsleft,argc,argv);
   gtk_tree_view_column_set_visible(
     gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL),
