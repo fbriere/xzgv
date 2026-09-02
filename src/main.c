@@ -3593,8 +3593,6 @@ if(try_to_save_cursor_pos)
   }
 
 blast_liststore();
-/* reset horizontal scrollbar */
-gtk_adjustment_set_value(gtk_tree_view_get_hadjustment(GTK_TREE_VIEW(treeview)), 0);
 add_new_rows_from_dir();
 set_title(1);
 
