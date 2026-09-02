@@ -750,17 +750,17 @@ gboolean refresh_focus_row_timer_cb(gpointer user_data)
  * as a callback */
 gboolean refresh_focus_row(void)
 {
+#if GTK_MAJOR_VERSION >= 3
+  /* this will trigger draw_callback() */
   gtk_widget_queue_draw(treeview);
 
-#if GTK_MAJOR_VERSION <= 2
-  /* add a single-shot timer with a very slight delay */
+  return GDK_EVENT_PROPAGATE;
+#else
+  /* add a single-shot timer with a slight delay; g_idle_add() would be too fast */
   g_timeout_add(10, refresh_focus_row_timer_cb, GINT_TO_POINTER(TRUE));
 
-  /* this handy alias was added in GTK 3 */
-# define GDK_EVENT_PROPAGATE FALSE
+  return FALSE;  /* GDK_EVENT_PROPAGATE */
 #endif
-
-  return GDK_EVENT_PROPAGATE;
 }
 
 
