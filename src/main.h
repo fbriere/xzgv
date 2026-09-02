@@ -48,8 +48,8 @@ extern xzgv_image *load_image(char *file,int for_thumbnail,
 extern struct row_data_tag *get_row_data(int row);
 extern void get_row_text(int row, int column, char **text);
 extern void set_row_text(int row, int column, char *text);
-extern int get_row_pixbuf(int row, int column, GdkPixbuf **pixbuf);
-extern void set_row_pixbuf(int row, int column, GdkPixbuf *pixbuf);
+extern int get_row_thumbnails(int row, GdkPixbuf **pixbuf, GdkPixbuf **small_pixbuf);
+extern void set_row_thumbnails(int row, GdkPixbuf *pixbuf, GdkPixbuf *small_pixbuf);
 extern void make_visible_if_not(int row);
 extern int get_tagged_state(int row);
 extern int thumbnail_read_running(void);
