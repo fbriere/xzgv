@@ -462,7 +462,7 @@ void set_row_text(int row, int column, char *text)
 }
 
 
-int get_row_pixbuf(int row, int column, GdkPixbuf **pixbuf)
+int get_row_thumbnails(int row, GdkPixbuf **pixbuf, GdkPixbuf **small_pixbuf)
 {
   GtkTreeIter iter;
 
@@ -470,12 +470,13 @@ int get_row_pixbuf(int row, int column, GdkPixbuf **pixbuf)
     return 0;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, column, pixbuf, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_TN_NORMAL_COL, pixbuf, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_TN_SMALL_COL, small_pixbuf, -1);
 
   return (*pixbuf != NULL);
 }
 
-void set_row_pixbuf(int row, int column, GdkPixbuf *pixbuf)
+void set_row_thumbnails(int row, GdkPixbuf *pixbuf, GdkPixbuf *small_pixbuf)
 {
   GtkTreeIter iter;
 
@@ -483,7 +484,8 @@ void set_row_pixbuf(int row, int column, GdkPixbuf *pixbuf)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_list_store_set(liststore, &iter, column, pixbuf, -1);
+  gtk_list_store_set(liststore, &iter, MODEL_TN_NORMAL_COL, pixbuf, -1);
+  gtk_list_store_set(liststore, &iter, MODEL_TN_SMALL_COL, small_pixbuf, -1);
 }
 
 
@@ -3004,8 +3006,7 @@ if(adjval!=idle_xvpic_lastadjval)
 for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   {
   /* if there's already a pixbuf there, skip it. */
-  if(!get_row_pixbuf(*entryp,
-                           MODEL_TN_NORMAL_COL,&pixbuf))
+  if(!get_row_thumbnails(*entryp, &pixbuf,&small_pixbuf))
     {
     /* construct filename for file's (possible) thumbnail */
     get_row_text(*entryp,MODEL_NAME_COL,&ptr);
@@ -3018,8 +3019,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
     /* if it's a dir, use ref to dir_icon pixbuf. */
     if(datptr->isdir)
       {
-      set_row_pixbuf(*entryp, MODEL_TN_NORMAL_COL, dir_icon);
-      set_row_pixbuf(*entryp, MODEL_TN_SMALL_COL, dir_icon_small);
+      set_row_thumbnails(*entryp, dir_icon, dir_icon_small);
       }
     else
       {
@@ -3027,14 +3027,12 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
       if(read_xvpic(buf,xvpic_data,&w,&h) &&
          (pixbuf=xvpic2pixbuf(xvpic_data,w,h,&small_pixbuf))!=NULL)
         {
-        set_row_pixbuf(*entryp, MODEL_TN_NORMAL_COL, pixbuf);
-        set_row_pixbuf(*entryp, MODEL_TN_SMALL_COL, small_pixbuf);
+        set_row_thumbnails(*entryp, pixbuf, small_pixbuf);
         }
       else
         {
         /* no thumbnail then, use ref to file_icon pixbuf. */
-        set_row_pixbuf(*entryp, MODEL_TN_NORMAL_COL, file_icon);
-        set_row_pixbuf(*entryp, MODEL_TN_SMALL_COL, file_icon_small);
+        set_row_thumbnails(*entryp, file_icon, file_icon_small);
         }
       }
     }

@@ -203,8 +203,7 @@ if(stat(buf,&xvpic)==-1 || realpic.st_mtime>xvpic.st_mtime ||
     pixbuf=xvpic2pixbuf(xvpic_data,w,h,&small_pixbuf);
     if(pixbuf)
       {
-      set_row_pixbuf(row, MODEL_TN_NORMAL_COL, pixbuf);
-      set_row_pixbuf(row, MODEL_TN_SMALL_COL, small_pixbuf);
+      set_row_thumbnails(row, pixbuf, small_pixbuf);
       /* the treeview has now acquired its own refs on these */
       g_object_unref(pixbuf);
       g_object_unref(small_pixbuf);
