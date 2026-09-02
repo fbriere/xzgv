@@ -161,7 +161,7 @@ int w,h;
 g_autofree char *ptr = NULL;
 int written_ok=1;	/* only 0 if we *tried* to write one and it failed */
 
-get_row_text(row,MODEL_NAME_COL,&ptr);
+get_row_filename(row,&ptr);
 datptr=get_row_data(row);
 
 /* skip dirs, files we can't stat, and hidden files */

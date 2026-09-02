@@ -195,7 +195,7 @@ for(done=f=0;f<numrows;f++)
   else
     if(!get_tagged_state(f)) continue;
   
-  get_row_text(f,MODEL_NAME_COL,&ptr);
+  get_row_filename(f,&ptr);
   
   if(!copy_or_move(ptr,destdir,cm_do_move))
     {

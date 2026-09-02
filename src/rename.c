@@ -68,7 +68,7 @@ if((tn_src=malloc(8+strlen(oldname)+1))==NULL ||
    (tn_dst=malloc(8+strlen(dest)+1))==NULL)
   {
   /* rename entry */
-  set_row_text(current_row,MODEL_NAME_COL,dest);
+  set_row_filename(current_row,dest);
   if(tn_src) free(tn_src);
   resort_finish();
   return;
@@ -82,7 +82,7 @@ strcat(tn_dst,dest);
 rename(tn_src,tn_dst);		/* don't much care if it works or not */
 
 /* rename entry */
-set_row_text(current_row,MODEL_NAME_COL,dest);
+set_row_filename(current_row,dest);
 
 free(tn_dst);
 free(tn_src);
@@ -107,7 +107,7 @@ if(current_row<0 || current_row>=numrows) return;
 
 g_free(oldname);
 oldname=NULL;
-get_row_text(current_row,MODEL_NAME_COL,&oldname);
+get_row_filename(current_row,&oldname);
 
 rename_win=gtk_dialog_new();
 

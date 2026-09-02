@@ -438,8 +438,8 @@ int get_row_at_pos(int x, int y)
 }
 
 
-/* NOTE: The caller takes ownership ot *text, and is responsible for freeing it. */
-void get_row_text(int row, int column, char **text)
+/* NOTE: The caller takes ownership ot *filename, and is responsible for freeing it. */
+void get_row_filename(int row, char **filename)
 {
   GtkTreeIter iter;
 
@@ -447,10 +447,10 @@ void get_row_text(int row, int column, char **text)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, column, text, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_NAME_COL, filename, -1);
 }
 
-void set_row_text(int row, int column, char *text)
+void set_row_filename(int row, char *filename)
 {
   GtkTreeIter iter;
 
@@ -458,7 +458,7 @@ void set_row_text(int row, int column, char *text)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_list_store_set(liststore, &iter, column, text, -1);
+  gtk_list_store_set(liststore, &iter, MODEL_NAME_COL, filename, -1);
 }
 
 
@@ -1542,7 +1542,7 @@ if(goto_next_char)
         {
         char first_char;
 
-        get_row_text(f,MODEL_NAME_COL,&ptr);
+        get_row_filename(f,&ptr);
         first_char = ptr[0];
         g_free(ptr);
 
@@ -3009,7 +3009,7 @@ for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   if(!get_row_thumbnails(*entryp, &pixbuf,&small_pixbuf))
     {
     /* construct filename for file's (possible) thumbnail */
-    get_row_text(*entryp,MODEL_NAME_COL,&ptr);
+    get_row_filename(*entryp,&ptr);
     strcpy(buf,".xvpics/");
     strncat(buf,ptr,sizeof(buf)-8-2);	/* above string is 8 chars long */
     g_free(ptr);
@@ -3480,7 +3480,7 @@ int was_reading=0;
 GtkTreeIter iter;
 
 row=focus_row;
-get_row_text(row,MODEL_NAME_COL,&ptr);
+get_row_filename(row,&ptr);
 
 /* delete the file */
 if(remove(ptr)==-1)
@@ -3548,7 +3548,7 @@ int row;
 row=focus_row;
 if(row<0 || row>=numrows) return;
 
-get_row_text(row,MODEL_NAME_COL,&ptr);
+get_row_filename(row,&ptr);
 if(!ptr) return;
 
 datptr=get_row_data(row);
@@ -3585,8 +3585,7 @@ if(do_pastpos && try_to_save_cursor_pos)
 
 if(try_to_save_cursor_pos)
   {
-  get_row_text(focus_row,
-                     MODEL_NAME_COL,&ptr);
+  get_row_filename(focus_row,&ptr);
   if(!ptr || (oldname=malloc(strlen(ptr)+1))==NULL)
     try_to_save_cursor_pos=0;
   else
@@ -3605,7 +3604,7 @@ if(try_to_save_cursor_pos)
 
   for(f=0;f<numrows;f++)
     {
-    get_row_text(f,MODEL_NAME_COL,&ptr);
+    get_row_filename(f,&ptr);
     if(*ptr==*oldname && strcmp(ptr,oldname)==0)
       {
       /* focus and make sure it's visible */
@@ -3707,7 +3706,7 @@ gtk_tree_path_free(path);
 current_selection=row;
 set_focus_row(row);
 
-get_row_text(row,MODEL_NAME_COL,&ptr);
+get_row_filename(row,&ptr);
 
 /* don't think this can happen, but what the heck */
 if(!ptr)
@@ -4693,7 +4692,7 @@ int f;
 
 for(f=0;f<numrows;f++)
   {
-  get_row_text(f,MODEL_NAME_COL,&ptr);
+  get_row_filename(f,&ptr);
   datptr=get_row_data(f);
   if(datptr && datptr->tagged)
     printf("%s\n",ptr);
@@ -4759,7 +4758,7 @@ if(read_dir)
     char *ptr;
     
     /* check it's really `..' (won't be if in root dir) */
-    get_row_text(0,MODEL_NAME_COL,&ptr);
+    get_row_filename(0,&ptr);
     if(strcmp(ptr,"..")==0)
       set_focus_row(1);
     g_free(ptr);

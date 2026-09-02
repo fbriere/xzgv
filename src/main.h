@@ -46,8 +46,8 @@ extern void do_gtk_stuff(void);
 extern xzgv_image *load_image(char *file,int for_thumbnail,
                                  int *origwp,int *orighp);
 extern struct row_data_tag *get_row_data(int row);
-extern void get_row_text(int row, int column, char **text);
-extern void set_row_text(int row, int column, char *text);
+extern void get_row_filename(int row, char **text);
+extern void set_row_filename(int row, char *text);
 extern int get_row_thumbnails(int row, GdkPixbuf **pixbuf, GdkPixbuf **small_pixbuf);
 extern void set_row_thumbnails(int row, GdkPixbuf *pixbuf, GdkPixbuf *small_pixbuf);
 extern void make_visible_if_not(int row);
