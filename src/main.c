@@ -511,10 +511,12 @@ struct row_data_tag *get_row_data(int row)
 
 void move_to_row(int row, float row_align)
 {
-  GtkTreePath *path;
-  GtkTreeViewColumn* column;
+  /* these constants are just there to act as named function arguments  */
   const float col_align = 0;
   const gboolean use_align = TRUE;
+
+  GtkTreePath *path;
+  GtkTreeViewColumn* column;
 
   path = gtk_tree_path_new_from_indices(row, -1);
   column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0);

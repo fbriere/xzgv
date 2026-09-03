@@ -36,7 +36,6 @@ struct row_data_tag
   };
 
 extern GtkWidget *treeview,*mainwin;
-extern GtkListStore *liststore;
 extern GtkAccelGroup *mainwin_accel_group;
 extern int numrows;
 extern int cmdline_files;
