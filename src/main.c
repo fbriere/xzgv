@@ -3062,7 +3062,7 @@ if(adjval!=idle_xvpic_lastadjval)
 for(f=0;f<IDLE_XVPIC_NUM_PER_CALL;f++)
   {
   /* if there's already a pixbuf there, skip it. */
-  if(!get_row_thumbnails(*entryp, &pixbuf,&small_pixbuf))
+  if(!get_row_thumbnails(*entryp, &pixbuf, &small_pixbuf))
     {
     /* construct filename for file's (possible) thumbnail */
     get_row_text(*entryp,MODEL_NAME_COL,&ptr);
