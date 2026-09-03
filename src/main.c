@@ -546,6 +546,7 @@ void sort_model_rows(void)
   disable_sorting();
 }
 
+
 void select_row(int row)
 {
   GtkTreeSelection *selection;
