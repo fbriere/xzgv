@@ -3817,7 +3817,7 @@ in_routine=1;
 /* block mouse click/release and keys on selector while loading. */
 selector_block();
 
-if (! gtk_tree_selection_get_selected(selection, NULL, &iter))
+if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
 {
   /* no row selected */
   selector_unblock();
@@ -4347,7 +4347,7 @@ g_signal_connect(eb_for_pic, "key_press_event",
 
 /* need to ask for keypresses, and (for scaling) expose. */
 gtk_widget_set_events(eb_for_pic,
-#if ! HAVE_DRAG_GESTURES
+#if !HAVE_DRAG_GESTURES
                       GDK_BUTTON1_MOTION_MASK|  /* to ignore drags */
 #endif
                       GDK_KEY_PRESS_MASK|
