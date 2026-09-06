@@ -476,8 +476,10 @@ int get_row_thumbnails(int row, GdkPixbuf **pixbuf, GdkPixbuf **small_pixbuf)
     return 0;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_TN_NORMAL_COL, pixbuf, -1);
-  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter, MODEL_TN_SMALL_COL, small_pixbuf, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(liststore), &iter,
+                     MODEL_TN_NORMAL_COL, pixbuf,
+                     MODEL_TN_SMALL_COL, small_pixbuf,
+                     -1);
 
   return (*pixbuf != NULL);
 }
@@ -490,8 +492,10 @@ void set_row_thumbnails(int row, GdkPixbuf *pixbuf, GdkPixbuf *small_pixbuf)
     return;
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(liststore), &iter, NULL, row);
-  gtk_list_store_set(liststore, &iter, MODEL_TN_NORMAL_COL, pixbuf, -1);
-  gtk_list_store_set(liststore, &iter, MODEL_TN_SMALL_COL, small_pixbuf, -1);
+  gtk_list_store_set(liststore, &iter,
+                     MODEL_TN_NORMAL_COL, pixbuf,
+                     MODEL_TN_SMALL_COL, small_pixbuf,
+                     -1);
 }
 
 
@@ -616,7 +620,7 @@ gboolean row_is_fully_visible(int row)
   GtkTreePath *path;
   GdkRectangle visible_rect;  /* visible region, in tree coordinates */
   GdkRectangle row_area_bin;  /* area occupied by row, in bin_window coordinates */
-  gint tree_x, tree_y;        /* row area in tree coordinates */
+  gint tree_x, tree_y;        /* same, in tree coordinates */
 
   gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &visible_rect);
 
@@ -661,8 +665,8 @@ gboolean get_focus_row_rect(GdkRectangle *rect)
     return(FALSE);
 
   /* Note that although we are dealing with three different coordinate systems,
-   * converting between them is merely a translation, so it does not affect any
-   * width/height measurement. */
+   * converting between them is merely a geometric translation, so it does not
+   * affect any width/height measurement. */
 
   /* Horizontal (x) coordinates, anchored to the widget itself */
 
@@ -3288,7 +3292,6 @@ int add_new_row(char *filename,struct stat *sbuf)
 {
 struct row_data_tag *datptr;
 char *ptr;
-GtkTreeIter iter;
 static GList *extensions = NULL;
 
 if (!S_ISDIR(sbuf->st_mode) && show_images_only)
@@ -3330,8 +3333,9 @@ datptr->ctime=sbuf->st_ctime;
 datptr->atime=sbuf->st_atime;
 datptr->tagged=0;
 
-gtk_list_store_append(liststore, &iter);
-gtk_list_store_set(liststore, &iter,
+gtk_list_store_insert_with_values(liststore,
+    NULL,  /* iter */
+    -1,    /* position */
     MODEL_NAME_COL, filename,
     MODEL_DATA_COL, datptr,
     -1);
