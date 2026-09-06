@@ -516,6 +516,7 @@ struct row_data_tag *get_row_data(int row)
 void move_to_row(int row, float row_align)
 {
   /* these constants are just there to act as named function arguments  */
+  const int column_idx = 0;
   const float col_align = 0;
   const gboolean use_align = TRUE;
 
@@ -523,7 +524,7 @@ void move_to_row(int row, float row_align)
   GtkTreeViewColumn* column;
 
   path = gtk_tree_path_new_from_indices(row, -1);
-  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0);
+  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), column_idx);
   gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(treeview),
       path, column,
       use_align, row_align, col_align);
@@ -586,10 +587,10 @@ void unselect_all(void)
 
 int first_visible_row(void)
 {
-  GtkTreePath *start_path, *end_path;
+  GtkTreePath *start_path;
   int row;
 
-  if (!gtk_tree_view_get_visible_range(GTK_TREE_VIEW(treeview), &start_path, &end_path))
+  if (!gtk_tree_view_get_visible_range(GTK_TREE_VIEW(treeview), &start_path, NULL))
     return -1;
 
   row = get_path_row_number(start_path);
@@ -620,7 +621,7 @@ gboolean row_is_fully_visible(int row)
   GtkTreePath *path;
   GdkRectangle visible_rect;  /* visible region, in tree coordinates */
   GdkRectangle row_area_bin;  /* area occupied by row, in bin_window coordinates */
-  gint tree_x, tree_y;        /* same, in tree coordinates */
+  gint row_area_tree_x, row_area_tree_y;  /* same, in tree coordinates */
 
   gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &visible_rect);
 
@@ -633,11 +634,11 @@ gboolean row_is_fully_visible(int row)
       GTK_TREE_VIEW(treeview),
       row_area_bin.x,
       row_area_bin.y,
-      &tree_x,
-      &tree_y);
+      &row_area_tree_x,
+      &row_area_tree_y);
 
-  return (tree_y >= visible_rect.y) &&
-    ((tree_y + row_area_bin.height) <= (visible_rect.y + visible_rect.height));
+  return (row_area_tree_y >= visible_rect.y) &&
+    ((row_area_tree_y + row_area_bin.height) <= (visible_rect.y + visible_rect.height));
 }
 
 /* make a row visible if it's partly/fully obscured or `offscreen'. */
@@ -748,7 +749,8 @@ gboolean refresh_focus_row_timer_cb(gpointer user_data)
 
     gdk_gc_set_subwindow(gc, GDK_INCLUDE_INFERIORS);
 
-    gdk_draw_rectangle(win, gc, FALSE,
+    gdk_draw_rectangle(win, gc,
+        FALSE,  /* filled */
         rect.x, rect.y,
         /* we need to remove one line width from both dimensions */
         rect.width - 1, rect.height - 1);
@@ -2644,14 +2646,15 @@ if(current_selection!=-1)
   set_focus_row(current_selection);
 
 /* now we do everything in terms of the focus row.
+ * get a row reference so we can look the row up after.
  */
-path=gtk_tree_path_new_from_indices(focus_row, -1);
+path = gtk_tree_path_new_from_indices(focus_row, -1);
 row_ref = gtk_tree_row_reference_new(GTK_TREE_MODEL(liststore), path);
 gtk_tree_path_free(path);
 
 sort_model_rows();
 
-/* look up data, and reselect it. */
+/* fetch back the row, and reselect it. */
 if(row_ref)
   {
   path = gtk_tree_row_reference_get_path(row_ref);
@@ -2979,11 +2982,19 @@ if (NULL == pixbuf)
     return(NULL);
   }
 
+/* (from that point on, `pixbuf` will automatically free `buffer` for us) */
+
 gdk_flush();
 
 /* reuse image to draw scaled-down version for thin rows */
 
 small_buffer = malloc (small_w * small_h * sizeof (guint8) * 3);
+
+if (NULL == small_buffer) {
+    /* malloc failed */
+    g_object_unref(pixbuf);
+    return NULL;
+}
 
 for(y=0;y<small_h;y++) {
   for(x=0;x<small_w;x++) {
@@ -3125,7 +3136,7 @@ return 1;
 }
 
 
-/* remove everything from liststore, freeing pixbufs beforehand */
+/* remove everything from liststore */
 void blast_liststore(void)
 {
 int f;
@@ -4021,7 +4032,7 @@ void init_window(void)
  *   (paned in window contains all this)
  *   __________________paned_________________
  * v|                |^|                     | 	maybe toolbar here eventually?
- * b|list of pics    |||                     |
+ * b|treeview of pics|||                     |
  * o| in scrolled win|||                     |
  * x|1st col xvpic,  ||| pic in scrolled win |
  * l|2nd col fname.  |||                     |
@@ -4438,7 +4449,7 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     -1,           /* position */
     "Thumbnail",  /* title */
     renderer,     /* cell */
-    /* attributes */
+    /* attributes: */
     /* fetch pixbuf from thumbnail column */
     "pixbuf", (thin_rows ? MODEL_TN_SMALL_COL : MODEL_TN_NORMAL_COL),
     /* (make sure to re-add any additional attributes in toggle_thin_rows!) */
@@ -4452,7 +4463,7 @@ gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
     -1,           /* position */
     "Filename",   /* title */
     renderer,     /* cell */
-    /* attributes */
+    /* attributes: */
     "text",           MODEL_NAME_COL,    /* fetch text from name column */
     "foreground-set", MODEL_TAGGED_COL,  /* use foreground color if tagged */
     NULL);
@@ -4502,7 +4513,10 @@ gtk_tree_view_column_set_alignment(
     gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), VIEW_TN_COL),
     GTK_JUSTIFY_CENTER);
 
-/* set up the sort comparison function */
+/* set up the sort comparison function
+ * from the liststore's POV, there is only one way to sort rows (by
+ * filename), as all sorting options are handled by sort_cmp()
+ */
 gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore),
     MODEL_NAME_COL,  /* sort_column_id */
     sort_cmp,        /* sort_func */
